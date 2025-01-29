@@ -1,0 +1,9 @@
+comment.cut
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.lof
+*.lot
+*.toc
