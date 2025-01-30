@@ -14,7 +14,10 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-
+for auxfile in chapter*.aux
+do
+    bibtex `basename $auxfile .aux`
+done
 bibtex $BASE
 pdflatex -shell-escape $BASE.tex
 pdflatex -shell-escape $BASE.tex
