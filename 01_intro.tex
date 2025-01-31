@@ -10,7 +10,7 @@ Having an abstract for the introduction seems dumb, and I'm not sure I want a mo
 
 We're talking about Choreographic Programming (CP).
 
-\section{An illustrative example}
+\subsection{An illustrative example}
 
 \Cref{fig:kvsenclave} shows an example choreography.
 Probably a KVS variation.
@@ -66,15 +66,53 @@ Here we describe what it does and how to read it.
 \end{figure}
 
 
-Here is a citation, \shortcite{skalka-smith-aplas04}.
+Here is a citation, \shortcite{li2021model}.
 
-\section{Layout and Contributions}
+\subsection{Layout and Contributions}
 
 The remainder of this chapter covers the history and theory of CP
 and discusses some modern work relevant to the ongoing development of CP systems.
-In particular, \Cref{sec:koc-strategies} discusses the "Knowledge of Choice" problem,
+In particular, \Cref{sec:knowledge-of-choice} discusses the "Knowledge of Choice" problem,
 a central difficulty in the design of CP systems,
 and a number of strategies that have been used to solve it.
 
-\Cref{sec:asdf} should be highlited?	
+\Cref{sec:formalism} presents our first contribution:
+a formal model of a CP system with two novel features:
+\emph{multiply-located values} (MLVs)
+and \emph{enclaves}.
+These features combine to allow a compelling new strategy for KoC management.
 
+\Cref{sec:multichor} presents our implementation of the enclaves-\&-MLVs paradigm in Haskell.
+
+
+
+\section{Background}
+\label{sec:background}
+In this section, we give a brief overview of choreographic programming (CP).
+For a comprehensive introduction to the topic, we refer the reader to~\cite{montesi_book}.
+
+Choreographic programming is a paradigm that expresses a distributed system
+as a single, global program describing the behavior and interactions of all parties.
+The global view of the distributed system enables easier reasoning about the system's behavior;
+for example choreographic languages can ensure \emph{deadlock freedom}~\cite{montesi-carbone-dfbd}
+and choreographies can be composed modularly like normal single-threaded protocols.
+
+
+
+\subsection{Knowledge of Choice}
+\label{sec:knowledge-of-choice}
+
+Choreographies with conditionals
+(\inlinecode{if}-expressions or anything that could be used for conditional control-flow)
+introduce
+a challenge for endpoint projection:
+\emph{some parties might not know which branch to take!}
+This challenge is referred to as the \emph{knowledge of choice}  (KoC)~\cite{castagna-knowledge-of-choice} problem.
+All choreographic programming languages include a strategy for KoC
+that ensures that relevant parties have enough information to play their part in the program.
+
+
+\subsection{Additional Literature}
+\label{sec:modern-work}
+
+Review recent work on CP systems, including other systems that use MLVs.

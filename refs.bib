@@ -1,0 +1,580 @@
+
+@inproceedings{austin2012,
+author = {Austin, Thomas H. and Flanagan, Cormac},
+title = {Multiple facets for dynamic information flow},
+year = {2012},
+isbn = {9781450310833},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2103656.2103677},
+doi = {10.1145/2103656.2103677},
+abstract = {JavaScript has become a central technology of the web, but it is also the source of many security problems, including cross-site scripting attacks and malicious advertising code. Central to these problems is the fact that code from untrusted sources runs with full privileges. We implement information flow controls in Firefox to help prevent violations of data confidentiality and integrity. Most previous information flow techniques have primarily relied on either static type systems, which are a poor fit for JavaScript, or on dynamic analyses that sometimes get stuck due to problematic implicit flows, even in situations where the target web application correctly satisfies the desired security policy. We introduce faceted values, a new mechanism for providing information flow security in a dynamic manner that overcomes these limitations. Taking inspiration from secure multi-execution, we use faceted values to simultaneously and efficiently simulate multiple executions for different security levels, thus providing non-interference with minimal overhead, and without the reliance on the stuck executions of prior dynamic approaches.},
+booktitle = {Proceedings of the 39th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {165–178},
+numpages = {14},
+keywords = {dynamic analysis, information flow control, javascript, web security},
+location = {Philadelphia, PA, USA},
+series = {POPL '12}
+}
+
+@inproceedings{li2021model,
+  title={Model-contrastive federated learning},
+  author={Li, Qinbin and He, Bingsheng and Song, Dawn},
+  booktitle={Proceedings of the IEEE/CVF conference on computer vision and pattern recognition},
+  pages={10713--10722},
+  year={2021}
+}
+
+@inproceedings{keller2020mp,
+  title={MP-SPDZ: A versatile framework for multi-party computation},
+  author={Keller, Marcel},
+  booktitle={Proceedings of the 2020 ACM SIGSAC conference on computer and communications security},
+  pages={1575--1590},
+  year={2020}
+}
+
+@inproceedings{krook2024parti,
+author = {Krook, Robert and Hammersberg, Samuel},
+title = {Welcome to the Parti(tioning) (Functional Pearl): Using Rewrite Rules and Specialisation to Partition Haskell Programs},
+year = {2024},
+isbn = {9798400711022},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3677999.3678276},
+doi = {10.1145/3677999.3678276},
+abstract = {Writing distributed applications is hard, as the programmer needs to describe the communication protocol between the different endpoints. If this is not done correctly, we can introduce bugs such as deadlocks and data races.  Tierless and choreographic programming models aim to make this easier by describing the interactions of every endpoint in a single compilation unit. When such a program is compiled, ideally, a single endpoint is projected and the code for the other endpoints is removed. This leads to smaller binaries with fewer dependencies, and is called program partitioning.  In this pearl, we show how we can use rewrite rules and specialisation to get GHC to partition our Haskell programs (almost) for free, if they are written using the Haste App or HasChor framework.  As an example of why partitioning is useful, we show how an example application can be more easily built and deployed after being partitioned.},
+booktitle = {Proceedings of the 17th ACM SIGPLAN International Haskell Symposium},
+pages = {27–40},
+numpages = {14},
+keywords = {Choreographic Programming, Haskell, Program Partitioning, Rewrite Rules, Specialisation, Tierless Programming},
+location = {Milan, Italy},
+series = {Haskell 2024}
+}
+
+@inproceedings{corrigan2017prio,
+  title={Prio: Private, robust, and scalable computation of aggregate statistics},
+  author={Corrigan-Gibbs, Henry and Boneh, Dan},
+  booktitle={14th USENIX symposium on networked systems design and implementation (NSDI 17)},
+  pages={259--282},
+  year={2017}
+}
+
+@inproceedings{montesi-carbone-dfbd,
+author = {Carbone, Marco and Montesi, Fabrizio},
+title = {Deadlock-freedom-by-design: multiparty asynchronous global programming},
+year = {2013},
+isbn = {9781450318327},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2429069.2429101},
+doi = {10.1145/2429069.2429101},
+abstract = {Over the last decade, global descriptions have been successfully employed for the verification and implementation of communicating systems, respectively as protocol specifications and choreographies. In this work, we bring these two practices together by proposing a purely-global programming model. We show a novel interpretation of asynchrony and parallelism in a global setting and develop a typing discipline that verifies choreographies against protocol specifications, based on multiparty sessions. Exploiting the nature of global descriptions, our type system defines a new class of deadlock-free concurrent systems (deadlock-freedom-by-design), provides type inference, and supports session mobility. We give a notion of Endpoint Projection (EPP) which generates correct entity code (as pi-calculus terms) from a choreography. Finally, we evaluate our approach by providing a prototype implementation for a concrete programming language and by applying it to some examples from multicore and service-oriented programming.},
+booktitle = {Proceedings of the 40th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+pages = {263–274},
+numpages = {12},
+keywords = {types, sessions, concurrency, choreography},
+location = {Rome, Italy},
+series = {POPL '13}
+}
+
+@phdthesis{montesi-dissertation,
+itle = "Choreographic Programming",
+abstract = {Choreographies are descriptions of distributed systems where the developer gives a global view of how messages are exchanged by endpoint nodes (endpoints for short), instead of separately defining the behaviour of each endpoint. They have a significant impact on the quality of software, as they offer a concise view of the message flows enacted by a system. For this reason, in the last decade choreographies have been used in the development of programming languages, giving rise to a programming paradigm that in this dissertation we refer to as Choreographic Programming.Recent studies show that choreographies have potential as foundations for the development of safe distributed software. The key idea is that since choreographies abstract from the single input/output actions of endpoints, they avoid typical safety problems such as deadlocks and race conditions; the concrete implementation of each endpoint described in a choreography can then be automatically generated, ensuring that such implementations are safe by construction. However, current formal models for choreographies do not deal with critical aspects of distributed programming, such as asynchrony, mobility, modularity, and multiparty sessions; it remains thus unclear whether choreographies can still guarantee safety when dealing with such nontrivial features.This PhD dissertation argues for the suitability of choreographic programming as a paradigm for the development of safe distributed systems. We proceed by investigating its foundations and application. To this aim, we provide three main contributions.The first contribution is the development of a formal model for choreographic programming that supports asynchrony, mobility, modularity, and multiparty sessions. In the model, choreographies are projected to distributed endpoint code in terms of the π-calculus. Projection preserves the expected safety properties of choreographies, among which freedom from deadlocks and race conditions.The second contribution is the development of Linear Connection Logic (LCL), an extension of linear logic. We propose a Curry-Howard correspondence between LCL and a calculus of choreographies, proving that: (i) proofs in LCL correspond to choreographies; and (ii) proof transformations in LCL yield procedures for compiling choreographies to endpoint programs and vice versa. The latter result, known as round-trip development, contributes to the open problem of extracting choreographies from existing endpoint programs.The third contribution is the implementation of a prototype framework for choreographic programming, called Chor. Chor provides an Integrated Development Environment (IDE) for programming with choreographies, equipped with a type checker for verifying their correctness based on our formal development. Programs in Chor can be compiled to executable endpoint code in Jolie, a language for distributed programming. We use Chor for evaluating choreographic programming against a series of use cases.},
+author = "Fabrizio Montesi",
+year = "2014",
+language = "English",
+isbn = "978-87-7949-299-8",
+series = "ITU-DS",
+publisher = "IT-Universitetet i K{\o}benhavn",
+number = "104",
+address = "Denmark"
+}
+
+@article{robust_choreographies,
+  author       = {Fabrizio Montesi and
+                  Marco Peressotti},
+  title        = {Choreographies meet Communication Failures},
+  journal      = {CoRR},
+  volume       = {abs/1712.05465},
+  year         = {2017},
+  url          = {http://arxiv.org/abs/1712.05465},
+  eprinttype    = {arXiv},
+  eprint       = {1712.05465},
+  timestamp    = {Mon, 13 Aug 2018 16:47:38 +0200},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-1712-05465.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{bonawitz2017practical,
+  title={Practical secure aggregation for privacy-preserving machine learning},
+  author={Bonawitz, Keith and Ivanov, Vladimir and Kreuter, Ben and Marcedone, Antonio and McMahan, H Brendan and Patel, Sarvar and Ramage, Daniel and Segal, Aaron and Seth, Karn},
+  booktitle={proceedings of the 2017 ACM SIGSAC Conference on Computer and Communications Security},
+  pages={1175--1191},
+  year={2017}
+}
+
+@article{bonawitz2019towards,
+  title={Towards federated learning at scale: System design},
+  author={Bonawitz, Keith and Eichner, Hubert and Grieskamp, Wolfgang and Huba, Dzmitry and Ingerman, Alex and Ivanov, Vladimir and Kiddon, Chloe and Kone{\v{c}}n{\`y}, Jakub and Mazzocchi, Stefano and McMahan, Brendan and others},
+  journal={Proceedings of machine learning and systems},
+  volume={1},
+  pages={374--388},
+  year={2019}
+}
+
+@article{wu2020safa,
+  title={SAFA: A semi-asynchronous protocol for fast federated learning with low overhead},
+  author={Wu, Wentai and He, Ligang and Lin, Weiwei and Mao, Rui and Maple, Carsten and Jarvis, Stephen},
+  journal={IEEE Transactions on Computers},
+  volume={70},
+  number={5},
+  pages={655--668},
+  year={2020},
+  publisher={IEEE}
+}
+
+@inproceedings{naor2001efficient,
+  title={Efficient oblivious transfer protocols.},
+  author={Naor, Moni and Pinkas, Benny},
+  booktitle={SODA},
+  volume={1},
+  pages={448--457},
+  year={2001}
+}
+
+@incollection{goldreich2019play,
+  title={How to play any mental game, or a completeness theorem for protocols with honest majority},
+  author={Goldreich, Oded and Micali, Silvio and Wigderson, Avi},
+  booktitle={Providing Sound Foundations for Cryptography: On the Work of Shafi Goldwasser and Silvio Micali},
+  pages={307--328},
+  year={2019}
+}
+
+@article{evans2018pragmatic,
+  title={A pragmatic introduction to secure multi-party computation},
+  author={Evans, David and Kolesnikov, Vladimir and Rosulek, Mike and others},
+  journal={Foundations and Trends{\textregistered} in Privacy and Security},
+  volume={2},
+  number={2-3},
+  pages={70--246},
+  year={2018},
+  publisher={Now Publishers, Inc.}
+}
+
+@book{montesi_book,
+    place={Cambridge},
+    title={Introduction to Choreographies},
+    publisher={Cambridge University Press},
+    author={Montesi, Fabrizio},
+    year={2023}
+}
+
+@misc{bates2024know,
+      title={We Know I Know You Know; Choreographic Programming With Multicast and Multiply Located Values}, 
+      author={Mako Bates and Joseph P. Near},
+      year={2024},
+      eprint={2403.05417},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL}
+}
+
+@InBook{chor-lambda,
+  author =       "Luís Cruz-Filipe and Eva Graversen and Lovro Lugović and Fabrizio Montesi and Marco Peressotti",
+  editor =       "Helmut Seidl, Zhiming Liu, and Corina S. Pasareanu",
+  title =        "Theoretical Aspects of Computing",
+  subtitle =     "ICTAC 2022 – 19th International Colloquium",
+  series =       "Lecture Notes in Computer Science",
+  year =         "2022",
+  address =      "Tbilisi, Georgia",
+  publisher =    "Springer",
+  doi =          "doi:10.1007/978-3-031-17715-6_15",
+  url =          "https://arxiv.org/abs/2111.03701",
+  volume =       "13572",
+  chapter =      "Functional choreographic programming",
+  pages =        "212–237",
+  number =       "",
+  type =         "",
+  month =        "September",
+  note =         "",
+}
+@InProceedings{chor-lambda-2,
+  author =	{Cruz-Filipe, Lu{\'\i}s and Graversen, Eva and Lugovi\'{c}, Lovro and Montesi, Fabrizio and Peressotti, Marco},
+  title =	{{Modular Compilation for Higher-Order Functional Choreographies}},
+  booktitle =	{37th European Conference on Object-Oriented Programming (ECOOP 2023)},
+  pages =	{7:1--7:37},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-281-5},
+  ISSN =	{1868-8969},
+  year =	{2023},
+  volume =	{263},
+  editor =	{Ali, Karim and Salvaneschi, Guido},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2023.7},
+  URN =		{urn:nbn:de:0030-drops-182005},
+  doi =		{10.4230/LIPIcs.ECOOP.2023.7},
+  annote =	{Keywords: Choreographies, Concurrency, \lambda-calculus, Type Systems}
+}
+
+@article{giallorenzo-choral,
+author = {Giallorenzo, Saverio and Montesi, Fabrizio and Peressotti, Marco},
+title = {Choral: Object-oriented Choreographic Programming},
+year = {2024},
+issue_date = {March 2024},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {46},
+number = {1},
+issn = {0164-0925},
+url = {https://doi.org/10.1145/3632398},
+doi = {10.1145/3632398},
+abstract = {Choreographies are coordination plans for concurrent and distributed systems, which define the roles of the involved participants and how they are supposed to work together. In the paradigm of choreographic programming, choreographies are programs that can be compiled into executable implementations.In this article, we present Choral, the first choreographic programming language based on mainstream abstractions. The key idea in Choral is a new notion of data type, which allows for expressing that data is distributed over different roles. We use this idea to reconstruct the paradigm of choreographic programming through object-oriented abstractions. Choreographies are classes, and instances of choreographies are objects with states and behaviours implemented collaboratively by roles.Choral comes with a compiler that, given a choreography, generates an implementation for each of its roles. These implementations are libraries in pure Java, whose types are under the control of the Choral programmer. Developers can then modularly compose these libraries in their programs, to participate correctly in choreographies. Choral is the first incarnation of choreographic programming offering such modularity, which finally connects more than a decade of research on the paradigm to practical software development.The integration of choreographic and object-oriented programming yields other powerful advantages, where the features of one paradigm benefit the other in ways that go beyond the sum of the parts. On the one hand, the high-level abstractions and static checks from the world of choreographies can be used to write concurrent and distributed object-oriented software more concisely and correctly. On the other hand, we obtain a much more expressive choreographic language from object-oriented abstractions than in previous work. This expressivity allows for writing more reusable and flexible choreographies. For example, object passing makes Choral the first higher-order choreographic programming language, whereby choreographies can be parameterised over other choreographies without any need for central coordination. We also extend method overloading to a new dimension: specialisation based on data location. Together with subtyping and generics, this allows Choral to elegantly support user-defined communication mechanisms and middleware.},
+journal = {ACM Trans. Program. Lang. Syst.},
+month = {jan},
+articleno = {1},
+numpages = {59},
+keywords = {Choreographies, communication, higher-kinded types}
+}
+
+@article{graversen2023polychor,
+title={Alice or Bob?: Process polymorphism in choreographies},
+volume={34},
+doi={10.1017/S0956796823000114},
+author={Eva Graversen and Andrew K. Hirsch and Fabrizio Montesi},
+journal={Journal of Functional Programming},
+year={2024},
+pages={e1}
+}
+
+@article{hirsch2021pirouette,
+author = {Hirsch, Andrew K. and Garg, Deepak},
+title = {Pirouette: higher-order typed functional choreographies},
+year = {2022},
+issue_date = {January 2022},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {6},
+number = {POPL},
+url = {https://doi.org/10.1145/3498684},
+doi = {10.1145/3498684},
+abstract = {We present Pirouette, a language for typed higher-order functional choreographic programming. Pirouette offers programmers the ability to write a centralized functional program and compile it via endpoint projection into programs for each node in a distributed system. Moreover, Pirouette is defined generically over a (local) language of messages, and lifts guarantees about the message type system to its own. Message type soundness also guarantees deadlock freedom. All of our results are verified in Coq.},
+journal = {Proc. ACM Program. Lang.},
+month = jan,
+articleno = {23},
+numpages = {27},
+keywords = {Choreographies, Concurrency, Functional Programming}
+}
+
+@book{hunt1999,
+  title={The Pragmatic Programmer: From Journeyman to Master},
+  author={Hunt, A. and Thomas, D.},
+  isbn={9780132119177},
+  url={https://pragprog.com/titles/tpp20/the-pragmatic-programmer-20th-anniversary-edition/},
+  year={1999},
+  publisher={Pearson Education}
+}
+
+
+@book{jongmans2022predicates,
+title = "A Predicate Transformer for Choreographies (Full Version)",
+abstract = "Abstract. Construction and analysis of distributed systems is difficult; choreographic programming is a deadlock-freedom-by-construction approach to simplify it. In this paper, we present a new theory of choreographic programming. It supports for the first time: construction of distributed systems that require decentralised decision making (i.e., if/ while-statements with multiparty conditions); analysis of distributed systems to provide not only deadlock freedom but also functional correctness (i.e., pre/postcondition reasoning). Both contributions are enabled by a single new technique, namely a predicate transformer for choreographies.",
+author = "Sung-Shik Jongmans and {van den Bos}, Petra",
+year = "2022",
+language = "English",
+series = "OUNL-CS (Technical Reports)",
+publisher = "Open Universiteit Nederland",
+number = "01",
+}
+
+
+@misc{chorus,
+      title={Portable, Efficient, and Practical Library-Level Choreographic Programming}, 
+      author={Shun Kashiwa and Gan Shen and Soroush Zare and Lindsey Kuper},
+      year={2023},
+      eprint={2311.11472},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL}
+}
+
+
+@article{dprio2023,
+author = {Keeler, Dana and Komlo, Chelsea and Lepert, Emily and Veitch, Shannon and He, Xi},
+year = {2023},
+month = {07},
+pages = {375-390},
+title = {DPrio: Efficient Differential Privacy with High Utility for Prio},
+volume = {2023},
+journal = {Proceedings on Privacy Enhancing Technologies},
+doi = {10.56553/popets-2023-0086}
+}
+
+@inproceedings{noonanGDP,
+author = {Noonan, Matt},
+title = {Ghosts of departed proofs (functional pearl)},
+year = {2018},
+isbn = {9781450358354},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://kataskeue.com/gdp.pdf},
+doi = {10.1145/3242744.3242755},
+abstract = {Library authors often are faced with a design choice: should a function with preconditions be implemented as a partial function, or by returning a failure condition on incorrect use? Neither option is ideal. Partial functions lead to frustrating run-time errors. Failure conditions must be checked at the use-site, placing an unfair tax on the users who have ensured that the function's preconditions were correctly met.  In this paper, we introduce an API design concept called ``ghosts of departed proofs'' based on the following observation: sophisticated preconditions can be encoded in Haskell's type system with no run-time overhead, by using proofs that inhabit phantom type parameters attached to newtype wrappers. The user expresses correctness arguments by constructing proofs to inhabit these phantom types. Critically, this technique allows the library user to decide when and how to validate that the API's preconditions are met.  The ``ghosts of departed proofs'' approach to API design can achieve many of the benefits of dependent types and refinement types, yet only requires some minor and well-understood extensions to Haskell 2010. We demonstrate the utility of this approach through a series of case studies, showing how to enforce novel invariants for lists, maps, graphs, shared memory regions, and more.},
+booktitle = {Proceedings of the 11th ACM SIGPLAN International Symposium on Haskell},
+pages = {119–131},
+numpages = {13},
+keywords = {API design, formal methods, higher-rank types, software engineering},
+location = {St. Louis, MO, USA},
+series = {Haskell 2018}
+}
+
+@software{gdp_hackage,
+  author = {Matt Noonan},
+  title = {gdp: Reason about invariants and preconditions with ghosts of departed proofs.},
+  url = {https://hackage.haskell.org/package/gdp-0.0.3.0},
+  version = {0.0.3.0},
+  date = {2019-11-13},
+  year = {2019}
+}
+
+@INPROCEEDINGS{wysteria,
+  author={Rastogi, Aseem and Hammer, Matthew A. and Hicks, Michael},
+  booktitle={2014 IEEE Symposium on Security and Privacy}, 
+  title={Wysteria: A Programming Language for Generic, Mixed-Mode Multiparty Computations}, 
+  year={2014},
+  volume={},
+  number={},
+  pages={655-670},
+  keywords={Wires;Protocols;Cryptography;Semantics;Writing;Educational institutions;Standards;Secure multi-party computation;Functional language;Dependent type system},
+  doi={10.1109/SP.2014.48}}
+
+
+@article{shen-haschor,
+author = {Shen, Gan and Kashiwa, Shun and Kuper, Lindsey},
+title = {HasChor: Functional Choreographic Programming for All (Functional Pearl)},
+year = {2023},
+issue_date = {August 2023},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {7},
+number = {ICFP},
+url = {https://doi.org/10.1145/3607849},
+doi = {10.1145/3607849},
+abstract = {Choreographic programming is an emerging paradigm for programming distributed systems. In choreographic programming, the programmer describes the behavior of the entire system as a single, unified program -- a choreography -- which is then compiled to individual programs that run on each node, via a compilation step called endpoint projection. We present a new model for functional choreographic programming where choreographies are expressed as computations in a monad. Our model supports cutting-edge choreographic programming features that enable modularity and code reuse: in particular, it supports higher-order choreographies, in which a choreography may be passed as an argument to another choreography, and location-polymorphic choreographies, in which a choreography can abstract over nodes. Our model is implemented in a Haskell library, HasChor, which lets programmers write choreographic programs while using the rich Haskell ecosystem at no cost, bringing choreographic programming within reach of everyday Haskellers. Moreover, thanks to Haskell's abstractions, the implementation of the HasChor library itself is concise and understandable, boiling down endpoint projection to its short and simple essence.},
+journal = {Proc. ACM Program. Lang.},
+month = {aug},
+articleno = {207},
+numpages = {25},
+keywords = {Choreographic programming, freer monads}
+}
+
+@misc{haschor-repo,
+author = {Shen, Gan},
+month = {12},
+title = {HasChor},
+url = {https://github.com/gshen42/HasChor/tree/0896f9fdc395bf18c3f82121c0f99b4372ff620a},
+year = {2023}
+}
+
+@article{Sweet_2023,
+   title={Symphony: Expressive Secure Multiparty Computation with Coordination},
+   volume={7},
+   ISSN={2473-7321},
+   url={http://dx.doi.org/10.22152/programming-journal.org/2023/7/14},
+   DOI={10.22152/programming-journal.org/2023/7/14},
+   number={3},
+   journal={The Art, Science, and Engineering of Programming},
+   publisher={Aspect-Oriented Software Association (AOSA)},
+   author={Sweet, Ian and Darais, David and Heath, David and Harris, William and Estes, Ryan and Hicks, Michael},
+   year={2023},
+   month=feb }
+
+
+
+@MISC {stackoverflow2021,
+    TITLE = {Transitive 'Subset' class for type-level-sets},
+    AUTHOR = {dfeuer (https://stackoverflow.com/users/1477667/dfeuer)},
+    HOWPUBLISHED = {Stack Overflow},
+    NOTE = {(version: 2021-11-11)},
+    YEAR = {2021},
+    URL = {https://stackoverflow.com/a/69921623/10135377}
+}
+
+
+
+@inproceedings{bigConcurrent1,
+author = {Beck, Gabrielle and Goel, Aarushi and Hegde, Aditya and Jain, Abhishek and Jin, Zhengzhong and Kaptchuk, Gabriel},
+title = {Scalable Multiparty Garbling},
+year = {2023},
+isbn = {9798400700507},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3576915.3623132},
+doi = {10.1145/3576915.3623132},
+abstract = {Multiparty garbling is the most popular approach for constant-round secure multiparty computation (MPC). Despite being the focus of significant research effort, instantiating prior approaches to multiparty garbling results in constant-round MPC that can not realistically accommodate large numbers of parties. In this work we present the first global-scale multiparty garbling protocol. The per-party communication complexity of our protocol decreases as the number of parties participating in the protocol increases - for the first time matching the asymptotic communication complexity of non-constant round MPC protocols. Our protocol achieves malicious security in the honest-majority setting and relies on the hardness of the Learning Party with Noise assumption.},
+booktitle = {Proceedings of the 2023 ACM SIGSAC Conference on Computer and Communications Security},
+pages = {2158–2172},
+numpages = {15},
+keywords = {constant rounds, garbling, mpc, packed secret sharing},
+location = {Copenhagen, Denmark},
+series = {CCS '23}
+}
+@article{bigConcurrent3,
+  title={SAFA: A semi-asynchronous protocol for fast federated learning with low overhead},
+  author={Wu, Wentai and He, Ligang and Lin, Weiwei and Mao, Rui and Maple, Carsten and Jarvis, Stephen},
+  journal={IEEE Transactions on Computers},
+  volume={70},
+  number={5},
+  pages={655--668},
+  year={2020},
+  publisher={IEEE}
+}
+@inproceedings{bigConcurrent4,
+  title={Practical secure aggregation for privacy-preserving machine learning},
+  author={Bonawitz, Keith and Ivanov, Vladimir and Kreuter, Ben and Marcedone, Antonio and McMahan, H Brendan and Patel, Sarvar and Ramage, Daniel and Segal, Aaron and Seth, Karn},
+  booktitle={proceedings of the 2017 ACM SIGSAC Conference on Computer and Communications Security},
+  pages={1175--1191},
+  year={2017}
+}
+
+@inproceedings{castagna-knowledge-of-choice,
+  author    = {Castagna, Giuseppe
+               and Dezani-Ciancaglini, Mariangiola
+               and Padovani, Luca},
+  editor    = {Bruni, Roberto
+               and Dingel, Juergen},
+  title     = {On Global Types and Multi-party Sessions},
+  booktitle = {Formal Techniques for Distributed Systems},
+  year      = {2011},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {1--28},
+  abstract  = {We present a new, streamlined language of global types equipped with a trace-based semantics and whose features and restrictions are semantically justified. The multi-party sessions obtained projecting our global types enjoy a liveness property in addition to the traditional progress and are shown to be sound and complete with respect to the set of traces of the originating global type. Our notion of completeness is less demanding than the classical ones, allowing a multi-party session to leave out redundant traces from an underspecified global type.},
+  isbn      = {978-3-642-21461-5}
+}
+
+@inproceedings{carbone-cdl-epp-esop,
+  author    = {Carbone, Marco
+               and Honda, Kohei
+               and Yoshida, Nobuko},
+  editor    = {De Nicola, Rocco},
+  title     = {Structured Communication-Centred Programming for Web Services},
+  booktitle = {Programming Languages and Systems},
+  year      = {2007},
+  publisher = {Springer Berlin Heidelberg},
+  address   = {Berlin, Heidelberg},
+  pages     = {2--17},
+  abstract  = {This paper relates two different paradigms of descriptions of communication behaviour, one focussing on global message flows and another on end-point behaviours, using formal calculi based on session types. The global calculus, which originates from a web service description language (W3C WS-CDL), describes an interaction scenario from a vantage viewpoint; the end-point calculus, an applied typed $\pi$-calculus, precisely identifies a local behaviour of each participant. We explore a theory of end-point projection, by which we can map a global description to its end-point counterpart preserving types and dynamics. Three principles of well-structured description and the type structures play a fundamental role in the theory.},
+  isbn      = {978-3-540-71316-6}
+}
+
+@article{carbone-cdl-epp,
+  author     = {Carbone, Marco and Honda, Kohei and Yoshida, Nobuko},
+  title      = {Structured Communication-Centered Programming for Web Services},
+  year       = {2012},
+  issue_date = {June 2012},
+  publisher  = {Association for Computing Machinery},
+  address    = {New York, NY, USA},
+  volume     = {34},
+  number     = {2},
+  issn       = {0164-0925},
+  url        = {https://doi.org/10.1145/2220365.2220367},
+  doi        = {10.1145/2220365.2220367},
+  abstract   = {This article relates two different paradigms of descriptions of communication behavior, one focusing on global message flows and another on end-point behaviors, using formal calculi based on session types. The global calculus, which originates from a Web service description language (W3C WS-CDL), describes an interaction scenario from a vantage viewpoint; the end-point calculus, an applied typed π-calculus, precisely identifies a local behavior of each participant. We explore a theory of end-point projection, by which we can map a global description to its end-point counterparts preserving types and dynamics. Three principles of well-structured description and the type structures play a fundamental role in the theory.},
+  journal    = {ACM Trans. Program. Lang. Syst.},
+  month      = jun,
+  articleno  = {8},
+  numpages   = {78},
+  keywords   = {type system, Communication, web services, choreography, session types, end-point projection, process calculi}
+}
+
+@inproceedings{honda-mpsts,
+  author    = {Honda, Kohei and Yoshida, Nobuko and Carbone, Marco},
+  title     = {Multiparty Asynchronous Session Types},
+  year      = {2008},
+  isbn      = {9781595936899},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  url       = {https://doi.org/10.1145/1328438.1328472},
+  doi       = {10.1145/1328438.1328472},
+  abstract  = {Communication is becoming one of the central elements in software development. As a potential typed foundation for structured communication-centred programming, session types have been studied over the last decade for a wide range of process calculi and programming languages, focussing on binary (two-party) sessions. This work extends the foregoing theories of binary session types to multiparty, asynchronous sessions, which often arise in practical communication-centred applications. Presented as a typed calculus for mobile processes, the theory introduces a new notion of types in which interactions involving multiple peers are directly abstracted as a global scenario. Global types retain a friendly type syntax of binary session types while capturing complex causal chains of multiparty asynchronous interactions. A global type plays the role of a shared agreement among communication peers, and is used as a basis of efficient type checking through its projection onto individual peers. The fundamental properties of the session type discipline such as communication safety, progress and session fidelity are established for generaln-party asynchronous interactions.},
+  booktitle = {Proceedings of the 35th Annual ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages},
+  pages     = {273–284},
+  numpages  = {12},
+  keywords  = {mobile processes, multiparty, causality, structured programming, communications, session types, choreography},
+  location  = {San Francisco, California, USA},
+  series    = {POPL '08}
+}
+
+@misc{klor-github,
+author = {Lugović, Lovro and Jongmans, Sung-Shik},
+title = {Klor: Choreographies in Clojure},
+url = {https://github.com/lovrosdu/klor},
+year = {2024}
+}
+
+@misc{unichorn,
+author = {Kaushik Chakraborty},
+title = {UniChorn},
+url = {https://share.unison-lang.org/@kaychaks/unichorn/},
+year = {2024}
+}
+
+@misc{chorex-github,
+author = {Wiersdorf, Ashton and Greenman, Ben},
+title = {Chorex: Choreographic Programming in Elixir},
+url = {https://github.com/utahplt/chorex},
+year = {2024}
+}
+
+@article{plotkin-2003,
+  title={Algebraic operations and generic effects},
+  author={Plotkin, Gordon and Power, John},
+  journal={Applied categorical structures},
+  volume={11},
+  pages={69--94},
+  year={2003},
+  publisher={Springer},
+  doi={10.1023/A:1023064908962}
+}
+
+@article{plotkin-2013,
+   title={Handling Algebraic Effects},
+   volume={Volume 9, Issue 4},
+   ISSN={1860-5974},
+   url={http://dx.doi.org/10.2168/LMCS-9(4:23)2013},
+   DOI={10.2168/lmcs-9(4:23)2013},
+   journal={Logical Methods in Computer Science},
+   publisher={Centre pour la Communication Scientifique Directe (CCSD)},
+   author={Plotkin, Gordon D and Pretnar, Matija},
+   year={2013},
+   month=dec
+}
+
+@misc{shen-alg-eff-cp,
+      title={Toward Verified Library-Level Choreographic Programming with Algebraic Effects},
+      author={Gan Shen and Lindsey Kuper},
+      year={2024},
+      eprint={2407.06509},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL},
+      url={https://arxiv.org/abs/2407.06509}
+}
+
+@misc{w3c-cdl-primer,
+  title  = {Web Services Choreography Description Language: Primer},
+  author = {The {World Wide Web Consortium}},
+  url    = {https://www.w3.org/TR/ws-cdl-10-primer/},
+  year   = {2006}
+}
+
+@article{SEC-019,
+url = {http://dx.doi.org/10.1561/3300000019},
+year = {2018},
+volume = {2},
+journal = {Foundations and Trends® in Privacy and Security},
+title = {A Pragmatic Introduction to Secure Multi-Party Computation},
+doi = {10.1561/3300000019},
+issn = {2474-1558},
+number = {2-3},
+pages = {70-246},
+author = {David Evans and Vladimir Kolesnikov and Mike Rosulek}
+}
