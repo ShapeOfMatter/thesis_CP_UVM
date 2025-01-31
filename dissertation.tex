@@ -5,29 +5,46 @@
 
 %some other packages I found useful, comment out or remove if you do not need them
 \usepackage{amsmath}
-\usepackage{url}
-\usepackage{subfigure}
-\usepackage[pdftex]{graphicx}
-\usepackage{multirow}
-\usepackage{chapterbib}
 \usepackage{amssymb}
 \usepackage[titletoc,toc,title]{appendix}
-\usepackage{titlesec}
-
+\usepackage{chapterbib}
 \usepackage{cite}
+\usepackage[pdftex]{graphicx}
+\usepackage{mdframed}
+\usepackage{minted}
+\usepackage{multirow}
+\usepackage{pdfcomment}
+\usepackage{subfigure}
 \usepackage{tabularx}
+\usepackage{titlesec}
+\usepackage{url}
+\usepackage{xspace}
+
+% must be loaded after hyperref
+\usepackage{cleveref}
+
+\newcommand{\inlinecode}[2][haskell]{\mintinline[breaklines]{#1}{#2}}
+
+\newcommand{\ChoreographyTS}{ChoreoTS\xspace}
+\newcommand{\chorLambda}{Chor$\lambda$\xspace}
+\newcommand{\Chorus}{ChoRus\xspace}
+\newcommand{\HasChor}{Has\-Chor\xspace}
+\newcommand{\HLSCentral}{$\boldsymbol{\lambda}_{\boldsymbol{C}}$\xspace}
+\newcommand{\HLSLocal}{$\boldsymbol{\lambda}_{\boldsymbol{L}}$\xspace}
+\newcommand{\HLSNet}{$\boldsymbol{\lambda}_{\boldsymbol{N}}$\xspace}
+\newcommand{\MultiChor}{Multi\-Chor\xspace}
 
 \widowpenalty=1000000
 \clubpenalty=1000000
 
 
-\title{A Concrete Work of Abstract Genius}
-\author{John Doe}
-\defensedate{February 26, 2013}
+\title{Choreographic Programming 2: Electric Boogalo}
+\author{Mako Bates}
+\defensedate{June XX, 2025}
 \dissertation                             %% or \dissertation
 \doctorphilosophy                      %% or \doctorphilosophy or \masterarts
 \cs                                 %% this is the only speciality defined.
-\maygrad                            %% or \octgrad or \marchgrad
+\graduatingIn{August}
 \advisor{Bunny Lebowski, Ph.D.}
 \readerone{Walter Sobchak, Ph.D.}
 \readertwo{Carl Hungus, Ph.D.}      %% Optional if MS.
@@ -40,8 +57,9 @@
 \makeacceptance
 
 \begin{abstract}
-This a concrete work of abstract genius, comparable only to G\"odel's second
-incompleteness result, and John Fante's ``1933 Was A Bad Year.''
+Presents both MultiChor (and possibly a distinct variant MiniChor) and a formalism "He Lambda something".
+Shows how this system is more ergonomic than prior work and equally as expressive.
+Expolores the theoretical minimum of choreographic programming, and implications for real use.
 \end{abstract}
 
 \begin{citationspage}

@@ -7,3 +7,5 @@ comment.cut
 *.lof
 *.lot
 *.toc
+*.upb
+*.upa
