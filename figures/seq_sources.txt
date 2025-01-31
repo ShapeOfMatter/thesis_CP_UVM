@@ -1,0 +1,42 @@
+For use with https://sequencediagram.org/
+
+KVS original:
+
+client->server:request
+note over server:handleRequest()
+server->client:response
+
+KVS with backup, broadcast:
+
+client->primary:request
+primary->backup:request'
+primary-#red>client:request'
+note over backup:handleRequest()
+backup-->primary:ack
+note over primary:handleRequest()
+primary->client: response
+
+KVS with enclave:
+
+client->primary:request
+group enclave
+primary->backup:request'
+note over backup:handleRequest()
+backup-->primary:ack
+end
+note over primary:handleRequest()
+primary->client: response
+
+KVS with enclave and error handling:
+
+client->primary:request
+group enclave
+primary->backup:request'
+note over backup:handleRequest()
+backup->primary:maybeErr
+end
+group enclave
+note over backup,primary:handleError()
+end
+note over primary:handleRequest()
+primary->client: response

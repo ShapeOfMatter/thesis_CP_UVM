@@ -1,0 +1,63 @@
+const field = new Field(999983);
+const maxSalt = 2 ^ 18;
+const minSalt = 2 ^ 20;
+
+export const lottery = <SL extends Location, CL extends Location>(
+  serverLocations: SL[], clientLocations: CL[], askQuestion: (query: string) => Promise<string>
+): Choreography<"analyst" | SL | CL, undefined, MultiplyLocated<FiniteField, "analyst">> =>
+  async ({ locally, fanin, fanout, parallel }) => {
+    const secret = await parallel(clientLocations, async () => {
+      const secretStr = await askQuestion("Secret: ");
+      return parseInt(secretStr);
+    });
+
+    const clientShares = await parallel(clientLocations, async (_, unwrap) => {
+      const freeShares = Array.from({ length: serverLocations.length - 1 }, () => field.rand());
+      const lastShare = field.sub(unwrap(secret),
+        freeShares.reduce((a, b) => field.add(a, b), field.zero));
+      const shares = freeShares.concat(lastShare);
+      const serverToShares: Record<string, FiniteField> = {};
+      for (const [index, server] of serverLocations.entries()) {
+        serverToShares[server] = shares[index] as FiniteField
+      }
+      return serverToShares;
+    });
+
+    const serverShares = await fanout(serverLocations, (server) =>
+      async ({ fanin }) => fanin(clientLocations, [server], (client) =>
+        async ({ locally, comm }) => {
+          const share = await locally(client, (unwrap) => unwrap(clientShares)[server]);
+          return comm(client, server, share);
+        })
+    );
+
+    // 1) Each server selects a random number; τ is some multiple of the number of clients.
+    const rho = await parallel(serverLocations, async () => {
+      const tauStr = await askQuestion("Pick a number from 1 to tau:");
+      return parseInt(tauStr);
+    });
+
+    // Salt value
+    const psi = await parallel(serverLocations, async () =>
+      Math.floor(Math.random() * (maxSalt - minSalt + 1)) + minSalt
+    );
+
+    // 2) Each server computes and publishes the hash α = H(ρ, ψ) to serve as a commitment
+    const alpha = await parallel(serverLocations, async (_, unwrap) => {
+      const rhoValue = unwrap(rho);
+      const psiValue = unwrap(psi);
+      return hash(rhoValue, psiValue);
+    });
+
+    const alpha_ = await fanin(serverLocations, serverLocations, (server) =>
+      async ({ multicast }) => multicast(server, serverLocations, alpha)
+    );
+
+    // 3) Every server opens their commitments by publishing their ψ and ρ to each other
+    const psi_ = await fanin(serverLocations, serverLocations, (server) =>
+      async ({ multicast }) => multicast(server, serverLocations, psi)
+    );
+
+    const rho_ = await fanin(serverLocations, serverLocations, (server) =>
+      async ({ multicast }) => multicast(server, serverLocations, rho)
+    );

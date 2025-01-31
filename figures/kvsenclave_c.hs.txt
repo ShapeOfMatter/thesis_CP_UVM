@@ -1,0 +1,16 @@
+servers :: Subset Servers Participants
+servers = primary @@ backup @@ nobody
+
+-- Change to handleBackup: may return an error
+handleBackup  :: Located '["backup"] (IORef State) -> Request 
+  -> Choreo Servers IO (Located servers (Maybe Error))
+
+-- New sub-choreography for error handling
+handleError  :: Error -> Choreo Servers IO ()
+
+-- Change to line 17: save result of sub-choreography and handle error
+maybeErr <- enclave servers $ broadcast (primary, request') >>= 
+                                (handleBackup backupStateRef)
+enclave servers $ naked maybeErr >>= \case
+                                       Nothing -> return ()
+                                       Just err -> handleError err

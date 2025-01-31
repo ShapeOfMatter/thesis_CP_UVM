@@ -1,0 +1,36 @@
+-- | Term-level locations.
+type LocTm = String
+
+-- | Type-level locations.
+type LocTy = Symbol
+
+-- | A term-level proof that a `LocTy` is a member of a `[LocTy]`.
+--   Pattern matching on these values is like pattern matching on a successor-based `Nat`;
+--   in this sense a `Member x xs` is an index into `xs` at which `x` can be found.
+data Member (x :: k) (xs :: [k]) where
+  First :: forall xs x xs'. (xs ~ (x ': xs')) => Member x (x ': xs')
+  Later :: Member x xs -> Member x (y ': xs)
+
+-- | A term level proof that one type-level list represents a subset of another, embodied by a
+--   total function from proof-of-membership in the sublist to proof-of-membership in the superlist.
+newtype Subset xs ys = Subset {
+    inSuper :: forall x. Member x xs -> Member x ys
+  }
+
+-- | The subset relation is reflexive...
+refl :: Subset xs xs
+refl = Subset id
+-- | ...and transitive.
+transitive :: Subset xs ys -> Subset ys zs -> Subset xs zs
+transitive sxy syz = Subset $ inSuper syz . inSuper sxy
+
+-- | The `[]` case of subset proofs. Typically used with `@@`.
+nobody :: Subset '[] ys
+nobody = Subset \case {}
+
+-- | The `:` of subset proofs. Given `alice :: Member "Alice" census`, we can write
+--   >>> proof :: Subset ("Alice" ': '[])  census  = alice @@ nobody
+(@@) :: Member x ys -> Subset xs ys -> Subset (x ': xs) ys
+mxy @@ sxy = Subset \case
+  First -> mxy
+  Later mxxs -> inSuper sxy mxxs

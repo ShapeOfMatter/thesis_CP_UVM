@@ -1,0 +1,20 @@
+// A choreographic operator for performing a local computation on a location
+type Locally<L extends Location> =
+  <L1 extends L, T>(location: L1, callback: (unwrap: Unwrap<L1>) => T) => Located<T, L1>
+// A set of choreographic operators that can be used in a choreography
+type Dependencies<L extends Location> = {
+  locally: Locally<L>;
+  comm: Comm<L>;
+  ... // other operators
+}
+// A choreography is a function that's expressed in terms of the signature of the dependencies
+type Choreography<L extends Location, A, R> = (deps: Dependencies<L>, args: A) => R;
+// EPP is done by executing the choreography function with concrete implementations of the operators
+function epp<L extends Location, T extends L, A, R>(
+  target: T, choreography: Choreography<L, A, R>, args: A
+): R {
+  const locally: Locally<L> = async (location, callback) => {
+    if(location === target) { return await callback(unwrap(target)); }
+  };
+  return choreography({ locally, /* other operators */ }, args);
+}

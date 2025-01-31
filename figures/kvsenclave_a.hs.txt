@@ -1,0 +1,24 @@
+type Servers = ["primary", "backup"]
+
+-- handle a Get or Put request
+handleRequest :: Request -> IORef State -> IO Response
+-- sub-choreography: backup may or may not do anything...
+handleBackup  :: Located '["backup"] (IORef State) -> Request
+  -> Choreo Participants IO ()
+handleBackup state (Get key)       = do return ()  -- no-op.
+handleBackup state (Put key value) = do ...  -- ... and then send ack
+
+kvs :: Located '["client"] Request 
+  -> (Located '["primary"] (IORef State),
+      Located '["backup"] (IORef State)) 
+  -> Choreo Participants IO (Located '["client"] Response)
+kvs request (primaryStateRef, backupStateRef) = do
+  -- send request to the primary node
+  request' <- (client, request) ~> primary @@ nobody
+  -- branch on the request
+  broadcast (primary, request') >>= (handleBackup backupStateRef)
+  -- process request on the primary node
+  response <- primary `locally` \un ->
+    handleRequest (un primary request') (un primary primaryStateRef)
+  -- send response to client
+  (primary, response) ~> client @@ nobody

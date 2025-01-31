@@ -1,0 +1,38 @@
+struct Gather<'a,
+              V,
+              Senders: LocationSet + Subset<Census, SendersPresent>,
+              Receivers: LocationSet + Subset<Census, ReceiversPresent>,
+              Census: LocationSet,
+              SendersPresent,
+              ReceiversPresent>
+{   values: &'a Faceted<V, Senders>,
+    phantom: PhantomData<(Census, SendersPresent, Receivers, ReceiversPresent)>,
+}
+impl<'a,
+     V: Portable + Copy,
+     Senders: LocationSet + Subset<Census, SendersPresent>,
+     Receivers: LocationSet + Subset<Census, ReceiversPresent>,
+     Census: LocationSet,
+     SendersPresent,
+     ReceiversPresent>
+  FanInChoreography<V> for Gather<'a, V, Senders, Receivers, Census, SendersPresent, ReceiversPresent>
+{   type L = Census;
+    type QS = Senders;
+    type RS = Receivers;
+    fn run<Sender: ChoreographyLocation,
+           _SendersPresent, _ReceiversPresent, SenderPresent, SenderInSenders>(
+        &self,
+        op: &impl ChoreoOp<Self::L>,
+    ) -> MultiplyLocated<V, Self::RS>
+    where Self::QS: Subset<Self::L, SendersPresent>,
+          Self::RS: Subset<Self::L, ReceiversPresent>,
+          Sender: Member<Self::L, SenderPresent>,
+          Sender: Member<Self::QS, SenderInSenders>,
+    {   let x = op.locally(Sender::new(), |un| *un.unwrap(self.values));
+        let xx = op.multicast::<Sender, V, Self::RS, SenderPresent, ReceiversPresent>(
+                     Sender::new(),
+                     <Self::RS>::new(),
+                     &x);
+        xx
+    }
+}

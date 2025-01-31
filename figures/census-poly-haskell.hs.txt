@@ -1,0 +1,14 @@
+sequenceP :: forall b (ls :: [Symbol]) m. (KnownSymbols ls, Monad m)
+        => PIndexed ls (Compose m b) -> m (PIndexed ls b)
+
+fanOut :: (KnownSymbols qs)
+       => (forall q. (KnownSymbol q) => Member q qs
+                                     -> Choreo ps m (Located (q ': common) a))
+       -> Choreo ps m (Faceted qs common a)
+
+scatter :: forall census sender recipients a m.
+           (KnownSymbol sender, KnownSymbols recipients, Show a, Read a)
+        => Member sender census
+        -> Subset recipients census
+        -> Located '[sender] (Quire recipients a)
+        -> Choreo census m (Faceted recipients '[sender] a)

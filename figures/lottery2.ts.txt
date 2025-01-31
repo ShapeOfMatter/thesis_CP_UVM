@@ -1,0 +1,28 @@
+    // 4) All servers verify each other's commitment by checking α = H(ρ, ψ)
+    await parallel(serverLocations, async (server, unwrap) => {
+      if (unwrap(alpha_)[server] != hash(unwrap(rho_)[server], unwrap(psi_)[server])) {
+        throw new Error("Commitment failed");
+      }
+    });
+
+    // 5) If all the checks are successful, then sum random values to get the random index.
+    const omega = await parallel(serverLocations, async (_, unwrap) => {
+      const randomValues = Object.values(unwrap(rho_)) as [FiniteField];
+      return randomValues.reduce((a, b) => field.add(a, b), field.zero) % clientLocations.length;
+    });
+
+    const chosenShares = await parallel(serverLocations, async (_, unwrap) =>
+      Object.values(unwrap(serverShares))[unwrap(omega)] as FiniteField
+    );
+
+    // Server sends the chosen shares to the analyst
+    const allShares = await fanin(serverLocations, ["analyst"], (server) =>
+      async ({ locally, comm }) => {
+        const chosenShares_ = await locally(server, (unwrap) => unwrap(chosenShares));
+        return comm(server, "analyst", chosenShares_);
+      });
+
+    return await locally("analyst", (unwrap) =>
+      Object.values(unwrap(allShares) as Record<string, FiniteField>)
+        .reduce((a, b) => field.add(a, b), field.zero));
+  };

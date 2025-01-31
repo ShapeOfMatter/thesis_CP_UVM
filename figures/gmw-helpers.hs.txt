@@ -1,0 +1,59 @@
+secretShare :: forall parties p m. (KnownSymbols parties, KnownSymbol p, MonadIO m)
+            => Member p parties -> Located '[p] Bool -> Choreo parties m (Faceted parties '[] Bool)
+secretShare p value = do
+  shares <- locally p \un -> genShares p (un singleton value)
+  PIndexed fs <- scatter p (allOf @parties) shares
+  return $ PIndexed $ Facet . othersForget (First @@ nobody) . getFacet . fs
+
+genShares :: forall ps p m. (MonadIO m, KnownSymbols ps) => Member p ps -> Bool -> m (Quire ps Bool)
+genShares p x = quorum1 p gs'
+  where gs' :: forall q qs. (KnownSymbol q, KnownSymbols qs) => m (Quire (q ': qs) Bool)
+        gs' = do freeShares <- sequence $ pure $ liftIO randomIO -- generate n-1 random shares
+                 return $ qCons (xor (qCons @q x freeShares)) freeShares
+
+xor :: (Foldable f) => f Bool -> Bool
+xor = foldr1 (/=)
+
+fAnd :: forall parties m.
+        (KnownSymbols parties, MonadIO m, CRT.MonadRandom m)
+     => Faceted parties '[] Bool
+     -> Faceted parties '[] Bool
+     -> Choreo parties (CLI m) (Faceted parties '[] Bool)
+fAnd uShares vShares = do
+  let genBools = sequence $ pure randomIO
+  a_j_s :: Faceted parties '[] (Quire parties Bool) <- _parallel (allOf @parties) genBools
+  bs :: Faceted parties '[] Bool <- fanOut \p_j -> do
+      let p_j_name = toLocTm p_j
+      b_i_s <- fanIn (p_j @@ nobody) \p_i ->
+        if toLocTm p_i == p_j_name
+          then _locally p_j $ pure False
+          else do
+              bb <- locally p_i \un -> let a_ij = getLeaf (viewFacet un p_i a_j_s) p_j
+                                           u_i = viewFacet un p_i uShares
+                                         in pure (xor [u_i, a_ij], a_ij)
+              enclaveTo (p_i @@ p_j @@ nobody) (listedSecond @@ nobody) (ot2 bb $ localize p_j vShares)
+      locally p_j \un -> pure $ xor $ un singleton b_i_s
+  parallel (allOf @parties) \p_i un ->
+    let computeShare u v a_js b = xor $ [u && v, b] ++ toList (qModify p_i (const False) a_js)
+    in pure $ computeShare (viewFacet un p_i uShares) (viewFacet un p_i vShares)
+                           (viewFacet un p_i a_j_s)   (viewFacet un p_i bs)
+
+ot2 :: (KnownSymbol sender, KnownSymbol receiver, MonadIO m, CRT.MonadRandom m) =>
+  Located '[sender] (Bool, Bool) -> Located '[receiver] Bool
+  -> Choreo '[sender, receiver] (CLI m) (Located '[receiver] Bool)
+ot2 bb s = do
+  let sender = listedFirst :: Member sender '[sender, receiver]
+  let receiver = listedSecond :: Member receiver '[sender, receiver]
+
+  keys <- locally receiver  \un -> liftIO $ genKeys $ un singleton s
+  pks <- (receiver, \un -> let (pk1, pk2, _) = un singleton keys
+                           in return (pk1, pk2)) ~~> sender @@ nobody
+  encrypted <- (sender, \un -> let (b1, b2) = un singleton bb
+                               in liftIO $ encryptS (un singleton pks) b1 b2) ~~> receiver @@ nobody
+  locally receiver  \un -> liftIO $ decryptS (un singleton keys)
+                                                           (un singleton s)
+                                                           (un singleton encrypted)
+
+reveal :: forall ps m. (KnownSymbols ps) => Faceted ps '[] Bool -> Choreo ps m Bool
+reveal shares = xor <$> (gather ps ps shares >>= naked ps)
+  where ps = allOf @ps

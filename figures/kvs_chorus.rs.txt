@@ -1,0 +1,54 @@
+struct HandleRequest<Backups, BackupsPresent, BSpine>
+{   request: Located<Request, Server>,
+    _phantoms: PhantomData<(Backups, BackupsPresent, BSpine)>,
+}
+impl<Backups: LocationSet, BackupsPresent, BSpine>
+  Choreography<Located<Response, Server>> for HandleRequest<Backups, BackupsPresent, BSpine>
+where Backups: Subset<HCons<Server, Backups>, BackupsPresent>,
+      Backups: LocationSetFoldable<HCons<Server, Backups>, Backups, BSpine>
+{   type L = HCons<Server, Backups>;
+    fn run(self, op: &impl ChoreoOp<Self::L>) -> Located<Response, Server> {
+        match op.broadcast(Server, self.request) {
+            Request::Put(key, value) => {
+                let oks = op.parallel(Backups::new(), ||{ handle_put(key.clone(), value) });
+                let gathered = op.fanin::<Response, Backups, HCons<Server, HNil>, _, _, _, _>(
+                        Backups::new(),
+                        Gather{values: &oks, phantom: PhantomData}
+                    );
+                op.locally(Server, |un| {
+                  let ok = un.unwrap::<Quire<Response, Backups>, _, _>(&gathered)
+                               .get_map().into_values().all(|response|{response == 0});
+                  if ok {
+                    return handle_put(key.clone(), value)
+                  } else {
+                    return -1
+                  }
+                })
+            }
+            Request::Get(key) => op.locally(Server, |_| { handle_get(key.clone()) })
+        }
+    }
+}
+
+struct KVS<Backups: LocationSet,
+           BackupsPresent,
+           BackupsAreServers,
+           BSpine>
+{   request: Located<Request, Client>,
+    _phantoms: PhantomData<(Backups, BackupsPresent, BackupsAreServers, BSpine)>,
+}
+impl<Backups: LocationSet, BackupsPresent, BackupsAreServers, BSpine>
+  Choreography<Located<Response, Client>> for KVS<Backups, BackupsPresent, BackupsAreServers, BSpine>
+where Backups: Subset<HCons<Client, HCons<Server, Backups>>, BackupsPresent>,
+      Backups: Subset<HCons<Server, Backups>, BackupsAreServers>,
+      Backups: LocationSetFoldable<HCons<Server, Backups>, Backups, BSpine>
+{   type L = HCons<Client, HCons<Server, Backups>>;
+    fn run(self, op: &impl ChoreoOp<Self::L>) -> Located<Response, Client> {
+        let request = op.comm(Client, Server, &self.request);
+        let response = op.enclave(HandleRequest::<Backups, _, _>{
+            request: request,
+            _phantoms: PhantomData
+        }).flatten();
+        op.comm(Server, Client, &response)
+    }
+}

@@ -1,0 +1,27 @@
+pub trait ChoreoOp<ChoreoLS: LocationSet> {
+  fn locally<V, L1: ChoreographyLocation, Index>(
+    &self, location: L1, computation: impl Fn(Unwrapper<L1>) -> V) -> MultiplyLocated<V, LocationSet!(L1)>
+  where L1: Member<ChoreoLS, Index>;
+
+  fn multicast<Sender: ChoreographyLocation, V: Portable, D: LocationSet, Index1, Index2>(
+    &self, src: Sender, destination: D, data: &MultiplyLocated<V, LocationSet!(Sender)>
+  ) -> MultiplyLocated<V, D>
+  where Sender: Member<ChoreoLS, Index1>,
+        D: Subset<ChoreoLS, Index2>;
+
+  fn naked<S: LocationSet, V, Index>(&self, data: MultiplyLocated<V, S>) -> V
+  where ChoreoLS: Subset<S, Index>;
+
+  fn enclave<R, S: LocationSet, C: Choreography<R, L=S>, Index>(&self, choreo: C) -> MultiplyLocated<R, S>
+  where S: Subset<ChoreoLS, Index>;
+
+  fn fanout<V, QS: LocationSet, FOC: FanOutChoreography<V, L=ChoreoLS, QS=QS>, QSSubsetL, QSFoldable>(
+    &self, locations: QS, c: FOC) -> Faceted<V, QS>
+  where QS: Subset<ChoreoLS, QSSubsetL>,
+        QS: LocationSetFoldable<ChoreoLS, QS, QSFoldable>;
+}
+
+pub trait Choreography<R=()> {
+  type L: LocationSet;
+  fn run(self, op: &impl ChoreoOp<Self::L>) -> R;
+}

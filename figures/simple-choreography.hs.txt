@@ -1,0 +1,12 @@
+handleRequest :: Request -> IORef State -> IO Response
+
+kvs :: Request @ "client" -> (IORef State) @ "server" 
+  -> Choreo IO (Response @ "client")
+kvs request stateRef = do
+  -- send the request to the server
+  request' <- (client, request) ~> server
+  -- server handles the request and creates a response
+  response <- locally server \un -> 
+    handleRequest (un server request') (un server stateRef)
+  -- server sends the response back to the client
+  (server, response) ~> client

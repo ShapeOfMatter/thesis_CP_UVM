@@ -1,0 +1,36 @@
+data Located (ls :: [LocTy]) a
+  = Wrap a
+  | Empty
+
+-- | Unwraps values known to the specified party.
+type Unwrap (q :: LocTy) = forall ls a. Member q ls -> Located ls a -> a
+-- | Unwraps values known to the specified list of parties.
+--   Could be dangerous if the list is empty, but the API is designed so that
+--   no value of type `Unwraps '[]` will ever actually get evaluated.
+type Unwraps (qs :: [LocTy]) = forall ls a. Subset qs ls -> Located ls a -> a
+
+-- | Unwrap a `Located` value.
+unwrap :: Unwrap q
+unwrap _ (Wrap a) = a
+unwrap _ Empty    = error "Located: This should never happen for a well-typed choreography."
+
+-- | Perform a local computation at a given location.
+locally :: (KnownSymbol (l :: LocTy))
+        => Member l ps           -- ^ Location performing the local computation.
+        -> (Unwrap l -> m a) -- ^ The local computation given a constrained
+                             --   unwrap funciton.
+        -> Choreo ps m (Located '[lwait, where's the "shared doc?] a)
+infix 4 `locally`
+locally l m = enclave (l @@ nobody) $ locally' m
+
+-- | Un-nest located values.
+flatten :: Subset ls ms -> Subset ls ns -> Located ms (Located ns a) -> Located ls a
+flatten _ _ Empty = Empty
+flatten _ _ (Wrap Empty) = Empty
+flatten _ _ (Wrap (Wrap a)) = Wrap a
+
+-- | Cast a `Located` value to a smaller ownership set;
+--   useful when working with functions whos arguments have explict ownership sets.
+othersForget :: Subset ls owners -> Located owners a -> Located ls a
+othersForget _ Empty = Empty
+othersForget _ (Wrap a) = Wrap a

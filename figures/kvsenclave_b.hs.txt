@@ -1,0 +1,10 @@
+servers :: Subset Servers Participants
+servers = primary @@ backup @@ nobody
+
+-- Change to handleBackup: now a sub-choreography for *servers only*
+handleBackup  :: Located '["backup"] (IORef State) -> Request 
+  -> Choreo Servers IO ()
+
+-- Change to line 17: sub-choreography is *enclaved*
+enclave servers $ broadcast (primary, request') >>= 
+                    (handleBackup backupStateRef)
