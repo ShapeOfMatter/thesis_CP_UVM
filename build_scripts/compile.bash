@@ -14,7 +14,7 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-for auxfile in chapter*.aux
+for auxfile in [0-9][0-9]_*.aux
 do
     bibtex `basename $auxfile .aux`
 done

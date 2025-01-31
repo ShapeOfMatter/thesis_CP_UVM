@@ -12,5 +12,7 @@ do
     fi
 done
 
+rm -rf _minted-dissertation/
+
 exit 0
 
