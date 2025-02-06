@@ -8,11 +8,179 @@ Paper abstract
 
 
 \section{Introduction}
-Here is a different citation \shortcite{keller2020mp}.  
+We should expect this to be a mashup of the original \MultiChor paper and the enclaves paper.
+That said, I'd kinda like to include "MiniChor" (\MultiChor with fancy MLVs, simplified \inlinecode{Locally}, and no \inlinecode{Congruently}),
+either as an aside or as the textbook implementation.
 
-\subsection{More Details}
+\subsection{Implementation Details}
 
-And one more \shortcite{krook2024parti}.
+A random citation as an example \shortcite{krook2024parti}.
+
+During the job interview with Well Typed, they discussed some alternatives to the proof-witness pattern that can probably work.
+I haven't played with it enough to say if it would be \emph{better},
+but I should make sure to understand what they're doing well enough to express an opinion about it here.
+
+\section{Census Polymorphism}
+\label{sec:census-poly}
+
+TODO: This is copy-pasted directly from the enclaves paper; it must be edited/rewritten for this context.
+
+So far, the example choreographies we have discussed have had fixed numbers of participants.
+In all prior CP systems this has been a syntactic constraint:
+even systems that allow polymorphism over the identities of participants require the participants' "roles" to be explicitly defined in-context.
+This is a serious limitation for writing choreographic software;
+modern concurrent systems often use dozens to thousands of participants
+and are defined parametrically over their number of participants~\cite{bigConcurrent1, corrigan2017prio, bigConcurrent3, bigConcurrent4, dprio2023}.
+We assert that such parametric protocol declarations are a required feature for CP to find mainstream use;
+our systems provide it in the form of \emph{census polymorphism}.
+
+By "census polymorphism", we mean that a choreographic expression is polymorphic over its census type-variable,
+including not just the specific identities listed but also the quantity.\footnote{
+    In principle, one can split hairs between census polymorphism and similar polymorphism over other sets of parties, \eg ownership sets.
+    We have not found such distinctions to be useful for describing system capabilities,
+    but they can be relevant when talking about the type of a given expression.
+}
+Naïvely, this is trivial; any \MultiChor expression can easily be written with a type variable as its census
+and the relevant parties (whose exact identities can also be polymorphic) can be guaranteed to be present by taking
+membership proofs as arguments.
+However, this approach has a limitation: Since the number of type variables of a choreography must be fixed
+and there is no way to \emph{explicitly list} an arbitrary number of parties,
+there may be parties not identified by such arguments.
+They'll receive any broadcasts and participate in any active replication that applies to the whole census,
+but there's no way to specify them as the senders of messages, nor is there any way to specify that they should receive a message
+except by sending it to the whole census.
+For this reason, when we speak of "census polymorphism",
+we mean \emph{useful} polymorphism that lets an unspecified quantity of parties actively participate in the choreography.
+For example one might wish to write a \inlinecode{gather} operation
+in which a polymorphic list of participants each send a computed value to a common recipient who aggregates them.
+Figure~\ref{fig:census-poly-example} shows an example \MultiChor choreography for a key-value store with a polymorphic list of backup servers.
+In Appendix~\ref{sec:mpc} we implement the GMW protocol~\cite{goldreich2019play}, a foundational protocol in multi-party cryptography.
+In earlier CP systems it would be necessary to hard-code the number of participants when writing such choreographies.
+In this section we show how our libraries overcome the above limitation and represent census-polymorphic choreographies.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_poly.hs.txt}
+    \caption{
+        A key-value store choreography with an unspecified number of backup servers.
+        The main action happens in \inlinecode{handleRequest},
+        a choreography involving only the servers which is called via \inlinecode{enclave} on line 21.
+        \inlinecode{handleRequest}'s census explicitly includes the primary server, but is polymorphic over the list of backup servers.
+        The primary server broadcasts the request (line~5--12); the backups will update their state and report their health
+        only for a \inlinecode{Put} request.
+        On line 7 the backups call the local IO function \inlinecode{handlePut} in \inlinecode{parallel} using their individual state references;
+        \inlinecode{oks} is therefore a \inlinecode{Faceted backups '[] Response}.
+        (The extra \inlinecode{'[]} denotes that no party yet knows all of the \inlinecode{oks}.)
+        \inlinecode{gather} (line 8) communicates all the \inlinecode{oks} to the primary server
+        where they're stored as a \inlinecode{Quire backups Response}.
+        If all the backups are ok, then the primary server also handles the request (line 10).
+    }
+    \label{fig:census-poly-example}
+    %\Description{23 lines of Haskell code using MultiChor defining a new version of "kvs" that is parametric over the number of backup servers.}
+  \end{mdframed}
+\end{figure*}
+
+The first thing that is necessary is a way to loop over a polymorphic list of parties.
+The second thing is the ability to express and use divergent data known by un-enumerated parties.
+We call such data structures \emph{faceted values}\footnote{
+    The word "faceted" is most commonly used in reference to a cut gemstone,
+    but analogy to the facets of polyhedral playing dice might be more on-the-nose.
+};
+they're basically the same as the faceted values introduced in \cite{austin2012},
+except their public facet is always "$\bot$" and multiple parties have distinct private facets.
+Conceptually, a faceted value is similar to an MLV
+(it projects to an owner as a simple value and to a non-owner as a placeholder),
+but different owners of a faceted value will have different values for it.
+To see the need for faceted values, consider how one would write a census-polymorphic \inlinecode{gather} operation
+using only an appropriately-specialized \inlinecode{for}-loop:
+Each sender would need to generate its value to send \emph{inside} the loop body,
+and the only way for the sent values to be distinct would be by using private local state accessed by \inlinecode{locally}.
+This would hardly be satisfying, and the dual case of \inlinecode{scatter} would be even worse:
+Any use to which the received values were to be put would also have to fit inside the body of the \inlinecode{for}-loop.
+(One couldn't simply append the \inlinecode{scatter}ed values to a list in a typed language
+because \inlinecode{Located} values with different owners have different types.)
+Our implementations provide these needed features in different ways as discussed in \Cref{sec:census-poly-haskell,sec:census-poly-rust}.
+
+In all three of our implementations, census polymorphism can be resolved statically,
+\ie, while one can write choreographies and choreographic functions that are census-polymorphic,
+it is always possible in principal to unroll the top-level choreography
+(that actually gets compiled)
+into a monomorphic form.
+(Therefore, we do not bother with a separate proof of the soundness of census polymorphism.)
+In \MultiChor, this is denoted by \inlinecode{KnownSymbols} constraints in some type signatures.
+We leave any clarity about the prospects of \emph{dynamic} census polymorphism for future work.
+
+
+\subsection{Census Polymorphism in \MultiChor}
+\label{sec:census-poly-haskell}
+
+We leverage the type system of modern Haskell to achieve useful census polymorphism in \MultiChor.
+This behavior is implemented as a layer \textit{on top of} \MultiChor's central monad and data-types;
+from a theory perspective \MultiChor gets census polymorphism "for free" because it's a Haskell library.
+The \MultiChor repository contains over a dozen example choreographies, several of which use census polymorphism.
+In Figure~\ref{fig:census-poly-example} we showcase a key-value store choreography that's polymorphic over the number of backup servers.
+\Cref{sec:mpc} presents a more involved census-polymorphic example.
+
+Key to \MultiChor's strategy is Haskell's ability to express quantified type variables.
+For example, a \inlinecode{Faceted} value is (underneath a little boiler-plate) a function.
+Its argument is a \inlinecode{Member} proof that some party is in the list of owners,
+and it returns a \inlinecode{Located} value known to the party in question.
+Notably, nothing about the type, \inlinecode{Faceted ps cmn x}, indicates who the (type-level!) party indicated by the argument might be.
+(The second type parameter, \inlinecode{cmn}, represents parties who know \emph{all} the contained values;
+it's frequently \inlinecode{'[]}.)
+
+\inlinecode{Faceted ps cmn x} is actually a special case of a more general type,
+\inlinecode{PIndexed ps f}, where \inlinecode{f} can be any \emph{type-level function} from a party to a concrete type.
+A \inlinecode{PIndexed} is effectively a type-indexed vector,
+except that the type of the value retrieved depends on the index\footnote{
+    The case where it does not depend on the index, \ie when \inlinecode{f} is \inlinecode{Const},
+    is sufficiently useful in its own right that we package it as the type \inlinecode{Quire}.
+    "Quire" is pronounced "choir"; it rhymes with "buyer" and means "a stack of sheets of paper, all cut to the same size".
+    Each individual piece of paper is a "leaf".
+}.
+Because of its unusual \inlinecode{kind}, type classes that one would expect to apply to vectors generally do not apply to \inlinecode{PIndexed}.
+What's actually needed for census polymorphism is the ability to \inlinecode{sequence} a \inlinecode{PIndexed} of choreographies.
+Since \inlinecode{PIndexed} is not an instance of \inlinecode{Traversable},
+we implement the needed function \inlinecode{sequenceP}, which is effectively just a \inlinecode{for}-loop
+(in any monad) over type-level lists of parties.
+These loops are not unrolled at compile time;
+the type class \inlinecode{KnownSymbols} affords to the runtime environment sufficient knowledge of the type-level list.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/census-poly-haskell.hs.txt}
+    \caption{
+        Type signatures for \inlinecode{sequenceP}, \inlinecode{fanOut}, and \inlinecode{scatter}.
+    }
+    \label{fig:census-poly-haskell}
+    %\Description{Fourteen lines of Haskell code using the MulitChor library.}
+  \end{mdframed}
+\end{figure*}
+
+We could write a satisfactory \inlinecode{scatter} and \inlinecode{gather} directly using \inlinecode{sequenceP},
+but we find that by defining the intermediary functions \inlinecode{fanOut} and \inlinecode{fanIn}
+we can avoid almost all situations where a programmer might need to use \inlinecode{sequenceP} directly in a choreography.
+\inlinecode{fanOut}'s argument is a choreography that results in a \inlinecode{Located} value at the party identified by the loop variable;
+it aggregates these results as a \inlinecode{Faceted}.
+\inlinecode{fanIn} is almost the same, except that the locations of the resulting values do not vary,
+and they are aggregated in a \inlinecode{Quire} located at some list of recipients.
+\Cref{fig:census-poly-haskell} shows the type signatures for \inlinecode{sequenceP}, \inlinecode{fanOut}, and \inlinecode{scatter}.
+Keen readers may notice that the "\inlinecode{cmn}" parties' views of a \inlinecode{Faceted} are effectively just a \inlinecode{Quire},
+and so wonder at the need for \inlinecode{fanIn}.
+In fact, \inlinecode{fanIn} \emph{is} less often used than \inlinecode{fanOut},
+but it's necessary for expressing choreographic loops that yield values which aren't known to the parties over whom the loop is defined.
+For example, the GMW protocol, which we implement using \MultiChor in \Cref{sec:mpc}, cannot be written using only \inlinecode{fanOut}.
+
+Modern Haskell language features, especially type-variable quantification,
+enable \MultiChor's implementation of census polymorphism to be entirely type-safe and transparent to users.
+This is a flexible system within which users can easily write their own novel and bespoke functions and data structures;
+we will show in the following section that such flexibility is not entirely necessary for census polymorphism.
+
+
+\section{Future Work}
+\label{sec:future-implementation}
+Roughly, summarize some of the open issues from github...
+also maybe anything we're doing with Owen. That kinda thing.
 
 \bibliographystyle{chicago}
 \bibliography{refs}

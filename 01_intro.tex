@@ -8,13 +8,21 @@ Having an abstract for the introduction seems dumb, and I'm not sure I want a mo
 
 \section{Introduction}
 
-We're talking about Choreographic Programming (CP).
+Choreographic programming (CP)
+is a paradigm for implementing distributed systems in which the programmer writes one unified program, called a choreography,
+that describes how the participants of the system interact
+from a third-person-omniscient perspective.~\shortcite{montesi-carbone-dfbd,montesi-dissertation,montesi_book}
+A choreography can be translated into to a collection of executable programs for use in the real world, one for each participant;
+this process is called endpoint projection (EPP).
+The CP approach has benefits both for understandability of distributed system implementations,
+and for strong static guarantees about the deadlock-freedom of the resulting executable code~\cite{montesi-carbone-dfbd}.
 
 \subsection{An illustrative example}
 
 \Cref{fig:kvsenclave} shows an example choreography.
 Probably a KVS variation.
 Here we describe what it does and how to read it.
+We should probably have an explicit comparison to the non-choreographic way of writing the same system...
 
 \begin{figure}[tbhp]\caption{Example Choreography: a key-value store}
   \begin{mdframed}
@@ -81,8 +89,21 @@ a formal model of a CP system with two novel features:
 \emph{multiply-located values} (MLVs)
 and \emph{enclaves}.
 These features combine to allow a compelling new strategy for KoC management.
+In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
+In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
 
 \Cref{sec:multichor} presents our implementation of the enclaves-\&-MLVs paradigm in Haskell.
+The \MultiChor library is already available on Hackage, Haskell's main package management system.
+\MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
+and combines Haskell's Hindley–Milner-based type system with a proof-witness system
+to capture the requisite notion of a well-typed choreography.
+Because \MultiChor is fully embedded in and interoperable with Haskell,
+functional-programming patterns can be applied to the choreographic setting without further theoretical or infrastructural work.
+The most important example of this, which we call "census polymorphism" is the ability to write choreographies
+that are parametric over their set of participants.
+We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
+\Cref{sec:future-implementation} reviews some promising future, both theoretical and at the engineering level,
+that could improve \MultiChor's utility.
 
 
 
@@ -111,8 +132,15 @@ This challenge is referred to as the \emph{knowledge of choice}  (KoC)~\cite{cas
 All choreographic programming languages include a strategy for KoC
 that ensures that relevant parties have enough information to play their part in the program.
 
+\subsection{Endpoint Projection}
+\label{sec:endpoint-projection}
+Maybe this goes before KoC; I haven't decided.
 
 \subsection{Additional Literature}
 \label{sec:modern-work}
 
 Review recent work on CP systems, including other systems that use MLVs.
+
+
+\bibliographystyle{chicago}
+\bibliography{refs}

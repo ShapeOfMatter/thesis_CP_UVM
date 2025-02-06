@@ -13,6 +13,7 @@
 \usepackage{mdframed}
 \usepackage{minted}
 \usepackage{multirow}
+\usepackage{newunicodechar}
 \usepackage{pdfcomment}
 \usepackage{subfigure}
 \usepackage{tabularx}
@@ -23,7 +24,70 @@
 % must be loaded after hyperref
 \usepackage{cleveref}
 
+\usemintedstyle{friendly}
+
+\newunicodechar{⇒}{\ensuremath{\Rightarrow}}
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{λ}{\ifmmode\lambda\else\textlambda\fi}
+\newunicodechar{Θ}{\ifmmode\Theta\else\textTheta\fi}
+\newunicodechar{Γ}{\ifmmode\Gamma\else\textGamma\fi}
+\newunicodechar{μ}{\ifmmode\mu\else\textmu\fi}
+\newunicodechar{η}{\ifmmode\eta\else\texteta\fi}
+\newunicodechar{Π}{\ifmmode\Pi\else\textPi\fi}
+\newunicodechar{𐤄}{\ifmmode{\rotatebox[origin=c]{15}{\textphnc{e}}\hspace{-1pt}}\else{\textphnc{e}}\fi}
+\newunicodechar{⊥}{\ensuremath{\bot}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{⊳}{\ensuremath{\rhd}}
+\newunicodechar{∩}{\ensuremath{\cap}}
+\newunicodechar{∪}{\ensuremath{\cup}}
+\newunicodechar{≠}{\ensuremath{\neq}}
+\newunicodechar{∅}{\ensuremath{\varnothing}}
+\newunicodechar{⊢}{\ensuremath{\vdash}}
+\newunicodechar{△}{\ensuremath{\bigtriangleup}}
+\newunicodechar{≡}{\equiv}
+\newunicodechar{≢}{\not\equiv}
+\newunicodechar{≤}{\ensuremath\leq}
+\newunicodechar{⊕}{\oplus}
+\newunicodechar{⊖}{\ominus}
+\newunicodechar{⟦}{\lBrack}
+\newunicodechar{⟧}{\rBrack}
+\newunicodechar{∖}{\setminus}
+
+\newcommand{\BNF}{\quad\operatorname{::=}\quad}
+\newcommand{\BNFOR}{\quad\operatorname{\big{|}}\quad}
+\newcommand{\CASE}[6]{\langword{case}_{#1}#2\langword{of}\INL #3 ⇒ #4 ; \INR #5 ⇒ #6}
+\newcommand{\CASEm}[6]{\begin{aligned}[t]\langword{case}_{#1}#2\langword{of}&\INL #3 ⇒ #4 ;\\& \INR #5 ⇒ #6\end{aligned}}
+\newcommand{\COMM}[2]{\langword{com}_{#1;#2}}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\DEF}{{\quad\operatorname{\triangleq}\quad}}
+\newcommand{\DEFCASE}{\quad\operatorname{\xRightarrow{△}}\quad}
+\newcommand{\DOT}{\langword{.}}
+\newcommand{\eg}{\textit{e.g.}\xspace}
+\newcommand{\FLR}[1]{\left\lfloor{#1}\right\rfloor}
+\newcommand{\FST}[1]{\langword{fst}_{#1}}
+\newcommand{\FuncLang}[1][small]{$𐤄_{λ\mathrm{#1}}$\xspace}
+\newcommand{\ie}{\textit{i.e.}\xspace}
+\newcommand{\INL}{\langword{Inl}}
 \newcommand{\inlinecode}[2][haskell]{\mintinline[breaklines]{#1}{#2}}
+\newcommand{\INR}{\langword{Inr}}
+\newcommand{\langword}[1]{\operatorname{\mathsf{#1}}}
+\newcommand{\LOOKUP}[2]{\langword{lookup}^{#1}_{#2}}
+\newcommand{\mask}{\ifmmode{\operatorname{⊳}}\else{⊳}\fi\xspace}
+\newcommand{\myference}[3]{\inference[\textsc{#1}]{#2}{#3}}
+\newcommand{\netstep}[2]{\xlongrightarrow{ #1 \ifthenelse{\equal{#1}{}}{}{:} #2 }}
+\newcommand{\nonempty}[1]{{#1^{+}}}
+\newcommand{\noop}[2]{\mathtt{noop}^{\mask #1}\!\!(#2)}
+\newcommand{\PAIR}{\langword{Pair}}
+\newcommand{\prcstep}[2]{\xlongrightarrow{ ⊕#1 ; ⊖#2 }}
+\newcommand{\RECV}[1]{\langword{recv}_{#1}}
+\newcommand{\roles}[1]{\mathtt{roles}(#1)}
+\newcommand{\SEND}[1]{\langword{send}_{#1}}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\SND}[1]{\langword{snd}_{#1}}
+\newcommand{\step}{\operatorname{\longrightarrow}}
+\newcommand{\stepname}[1]{$\mathfrak{#1}$}
+\newcommand{\vdbl}{\\[8pt]}
+\newcommand{\xmark}{{\large $\times$}}%
 
 \newcommand{\ChoreographyTS}{ChoreoTS\xspace}
 \newcommand{\chorLambda}{Chor$\lambda$\xspace}
@@ -114,7 +178,7 @@ the homies that didn't make it.
 %but, for things like the lit review (chapter 1) or an appendix, should use input so it does not get it's own references section
 
 %if not doing a journal format dissertation you can just use input for all chapters, or put text here directly.
-\input{01_intro}
+\include{01_intro}
 \include{02_calculus}
 \include{03_multichor}
 

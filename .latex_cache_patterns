@@ -9,3 +9,5 @@ comment.cut
 *.toc
 *.upb
 *.upa
+*.pyg
+
