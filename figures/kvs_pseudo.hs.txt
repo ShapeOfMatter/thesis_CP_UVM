@@ -1,0 +1,26 @@
+type Participants = ["client", "primary", "backup"]
+type Servers = ["primary", "backup"]
+
+-- handle a Get or Put request
+handleRequest :: Request -> IORef State -> IO Response
+-- sub-choreography: backup may or may not do anything...
+
+kvs :: Located '["client"] Request 
+  -> (Located '["primary"] (IORef State),
+      Located '["backup"] (IORef State)) 
+  -> Choreo Participants IO (Located '["client"] Response)
+kvs request (primaryStateRef, backupStateRef) = do
+  -- send request to the primary node
+  request' <- (client, request) `comm` primary
+  -- branch on the request
+  case request' of
+    Get _ -> pure ()
+    Put _ _ -> do request'' <- (primary, request') `comm` backup
+                  success <- backup `locally` (handleRequest <$> request'' <*> backupStateRef)
+		  ack <- (backup, success) `comm` primary
+		  pure ()
+  -- process request on the primary node
+  response <- primary `locally` (handleRequest <$> request' <*> primaryStateRef)
+  -- send response to client
+  result <- (primary, response) ~> client @@ nobody
+  return result

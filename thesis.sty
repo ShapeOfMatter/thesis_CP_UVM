@@ -78,6 +78,8 @@
 \newcommand\advisor[1]{\gdef\@advisor{#1}}
 \newcommand\readerone[1]{\gdef\@readerone{#1}}
 \newcommand\readertwo[1]{\gdef\@readertwo{#1}}
+\newcommand\readerthree[1]{\gdef\@readerthree{#1}}
+\newcommand\readerfour[1]{\gdef\@readerfour{#1}}
 \newcommand\chair[1]{\gdef\@chair{#1}}
 \newcommand\dean[1]{\gdef\@dean{#1}}
 
@@ -113,10 +115,20 @@
       \ & \ \\
       \cline{1-1} \@readerone & \ \\
       \\ \\ \\
-      \ & \ \\
       \@ifundefined{@readertwo}
         {}
-        {\cline{1-1} \@readertwo & \ \\
+        {\ & \ \\
+	 \cline{1-1} \@readertwo & \ \\
+         \\ \\ \\}
+      \@ifundefined{@readerthree}
+        {}
+        {\ & \ \\
+	 \cline{1-1} \@readerthree & \ \\
+         \\ \\ \\}
+      \@ifundefined{@readerfour}
+        {}
+        {\ & \ \\
+	 \cline{1-1} \@readerfour & \ \\
          \\ \\ \\}
       \ & Chairperson\\
       \cline{1-1} \@chair & \ \\

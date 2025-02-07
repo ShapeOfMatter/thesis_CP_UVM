@@ -19,12 +19,83 @@ and for strong static guarantees about the deadlock-freedom of the resulting exe
 
 \subsection{An illustrative example}
 
-\Cref{fig:kvsenclave} shows an example choreography.
-Probably a KVS variation.
-Here we describe what it does and how to read it.
-We should probably have an explicit comparison to the non-choreographic way of writing the same system...
+Consider the three programs in \Cref{fig:kvspiecewise},
+which are intended to run concurrently and pass messages back and forth between each other.
+The overall effect is an elementary process in which the client makes a \inlinecode{Get} or \inlinecode{Put} request to
+a server (with a backup) that manages a key-value-store (KVS).
+Even this simplified example takes a moment for a reader to make sense of;
+one must read the three programs, infer the correspondence between messages sent and received by the three parties,
+and judge for oneself if the communication protocol implemented is sensical.
+One might even judge that this simple protocol has a bug:
+if the request is a \inlinecode{Get}, the backup server will hang indefinitely!
 
-\begin{figure}[tbhp]\caption{Example Choreography: a key-value store}
+\begin{figure}[tbhp]\caption{A Simple Concurrent Protocol: a key-value store with a backup server}
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{12.5cm}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_client.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{12.5cm}
+  The function to be called by the client process.
+	  They pass in their \inlinecode{Request} object and send it to the server.
+	  Then they receive a response from the server and return it.
+  \end{minipage}\\\\
+  \hline\\
+  \begin{minipage}{12.5cm}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_server.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{12.5cm}
+  The function to be called by the primary server.
+	  They pass in a reverence to their mutable state, and receive a message of type \inlinecode{Request} from the client.
+	  In the case of a \inlinecode{Put} request, they forward it to the backup server and check for the backup's acknowledgement.
+	  In either case, they process the request against their own mutable state and send the response back to the client.
+  \end{minipage}\\\\
+  \hline\\
+  \begin{minipage}{12.5cm}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_server.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{12.5cm}
+  The function to be called by the backup server.
+	  They pass in a reverence to their mutable state, and receive a \inlinecode{Put} message from the primary server.
+	  They process it against their mutable state and send back an acknowledgement message to indicate their success.
+  \end{minipage}
+  \end{tabular}
+  \label{fig:kvspiecewise}
+  \end{mdframed}
+\end{figure}
+
+In \Cref{sec:background} we will mention some intermediate frameworks that have historically been used to facilitate
+writing large and complicated concurrent protocols,
+but here we jump ahead to choreographic programming (CP).
+\Cref{fig:kvspseudo} shows the same protocol as \Cref{fig:kvspiecewise}, but implemented as a choreography.
+In this form there is no cognitive overhead for matching \inlinecode{send} and \inlinecode{recv} operations,
+because matching pairs of them are combined into monolithic \inlinecode{comm} operations.
+The entire protocol can be read at once in a sensical order.
+(The order in which operations are presented in a choreography is not necessarily the order in which they will happen;
+the participants are not guaranteed to all start at the same physical time, or to operate at the same speeds.)
+Re-writing the example KVS system as a choreography does not immediately solve the issue
+of what the backup server should do in the event of a \inlinecode{Get} request,
+but it makes the problem detectable by static analysis.
+In fact, the choreography in \Cref{fig:kvspseudo} cannot compile in any real CP system
+because \inlinecode{"backup"}'s behavior is ambiguous.
+\Cref{fig:kvsenclave} shows two variations of how to realize the KVS behavior in Haskell using our \MultiChor library.
+
+\begin{figure}[tbhp]\caption{A Simple Choreography: a key-value store with a backup server}
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{12.5cm}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_pseudo.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{12.5cm}
+	  A pseudo-code choreographic implementation of the protocol from \Cref{fig:kvspiecewise}.
+  \end{minipage}
+  \end{tabular}
+  \label{fig:kvspseudo}
+  \end{mdframed}
+\end{figure}
+
+
+\begin{figure}[tbhp]\caption{A Real Choreography: a key-value store writing using \MultiChor}
   \begin{mdframed}
   \begin{tabular}{c c}
   \begin{minipage}{8.75cm}
