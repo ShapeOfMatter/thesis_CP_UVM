@@ -1,3 +1,4 @@
--- An implementation of
--- the backup-server's role in
--- a kvs request-handling process.
+kvs_backup :: IORef State -> IO ()
+kvs_backup stateRef = do request@(Put _) <- recv primary  -- receive the request
+			 success <- handleRequest request stateRef  -- process the request locally
+			 success `send` client  -- acknowlege to the primary server that we're done

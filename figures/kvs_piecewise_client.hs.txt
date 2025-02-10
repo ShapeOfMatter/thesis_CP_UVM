@@ -1,3 +1,4 @@
--- An implementation of
--- the client's role in
--- a kvs request-handling process.
+kvs_client :: Request -> IO Response
+kvs_clien = request = do request `send` primary -- send request to the primary node
+			 response <- recv primary  -- receive the response
+			 return response

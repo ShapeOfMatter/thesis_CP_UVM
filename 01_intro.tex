@@ -1,9 +1,12 @@
 \chapter{Introduction and Literature Review}
 
 \begin{quote}
-Chapter abstract goes here.
-I should check if the concept of "Introduction \emph{and} Lit Review" is required.
-Having an abstract for the introduction seems dumb, and I'm not sure I want a monolithic lit review up front.
+Choreographic programming is a language paradigm for writing concurrent software systems of various kinds.
+It's comparatively young; while some of the ideas have existed informally as far back as the 1970s,
+choreographic programming as it's understood today was first formalized in~\shortcite{montesi-carbone-dfbd}.
+In this chapter we describe the central concepts of choreographic programming,
+its advantages and disadvantages,
+and past and ongoing work to push the boundaries of the kinds of systems it can implement.
 \end{quote}
 
 \section{Introduction}
@@ -36,7 +39,7 @@ if the request is a \inlinecode{Get}, the backup server will hang indefinitely!
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_client.hs.txt}
   \end{minipage} \\\\
   \begin{minipage}{12.5cm}
-  The function to be called by the client process.
+	  \textbf{(a)} The function to be called by the client process.
 	  They pass in their \inlinecode{Request} object and send it to the server.
 	  Then they receive a response from the server and return it.
   \end{minipage}\\\\
@@ -46,17 +49,17 @@ if the request is a \inlinecode{Get}, the backup server will hang indefinitely!
   \end{minipage} \\\\
   \begin{minipage}{12.5cm}
   The function to be called by the primary server.
-	  They pass in a reverence to their mutable state, and receive a message of type \inlinecode{Request} from the client.
+	  They pass in a reference to their mutable state, and receive a message of type \inlinecode{Request} from the client.
 	  In the case of a \inlinecode{Put} request, they forward it to the backup server and check for the backup's acknowledgement.
 	  In either case, they process the request against their own mutable state and send the response back to the client.
   \end{minipage}\\\\
   \hline\\
   \begin{minipage}{12.5cm}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_server.hs.txt}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_backup.hs.txt}
   \end{minipage} \\\\
   \begin{minipage}{12.5cm}
   The function to be called by the backup server.
-	  They pass in a reverence to their mutable state, and receive a \inlinecode{Put} message from the primary server.
+	  They pass in a reference to their mutable state, and receive a \inlinecode{Put} message from the primary server.
 	  They process it against their mutable state and send back an acknowledgement message to indicate their success.
   \end{minipage}
   \end{tabular}

@@ -29,6 +29,9 @@
 \setlength{\textwidth}{6in}
 \setlength{\textheight}{8.06in}
 
+\def\finalpresentation{\gdef\@presentationtype{Presented}}
+\def\proposal{\gdef\@presentationtype{Proposed}}
+
 \def\thesis{\gdef\@thesistype{A Thesis}
 	\gdef\@citationthesistype{thesis}
 	\gdef\@acceptancethesistype{Thesis}}
@@ -53,7 +56,7 @@
     \vskip 5em 
     \doublespacing
     {\large
-    \@thesistype\ Presented\\
+    \@thesistype\ \@presentationtype\\
     \vskip 5em     
     by\\
     \@author\\
