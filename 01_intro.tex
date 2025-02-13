@@ -166,15 +166,17 @@ These features combine to allow a compelling new strategy for KoC management.
 In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
 In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
 
-\Cref{sec:multichor} presents our implementation of the enclaves-\&-MLVs paradigm in Haskell.
+\Cref{sec:multichor} presents our second contribution: an implementation of the enclaves-\&-MLVs paradigm in Haskell.
 The \MultiChor library is already available on Hackage, Haskell's main package management system.
 \MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
 and combines Haskell's Hindley–Milner-based type system with a proof-witness system
 to capture the requisite notion of a well-typed choreography.
+
 Because \MultiChor is fully embedded in and interoperable with Haskell,
 functional-programming patterns can be applied to the choreographic setting without further theoretical or infrastructural work.
 The most important example of this, which we call "census polymorphism" is the ability to write choreographies
 that are parametric over their set of participants.
+This capability is novel among CP systems, and the third contribution presented in this work.
 We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
 \Cref{sec:future-implementation} reviews some promising future, both theoretical and at the engineering level,
 that could improve \MultiChor's utility.
@@ -209,6 +211,19 @@ that ensures that relevant parties have enough information to play their part in
 \subsection{Endpoint Projection}
 \label{sec:endpoint-projection}
 Maybe this goes before KoC; I haven't decided.
+
+\subsection{The "Census" typing context}
+\label{sec:census}
+Although it is a hallmark of CP that a user may write actions for various parties in any given place in the program
+without demarcations of who "control" is passing to,
+it is not necessarily the case that every party that exists is eligible to take action at every place in the choreography.
+Some earlier works, \eg \cite{chor-lambda}, have tracked these sets of participants in their type systems,
+and used that typing context to control participation inside of function bodes.
+Such a typing context plays a more active role in this present work, so we coin the term \emph{"census"}
+for a typing context that controls which parties are "present" to participate in any given part of a choreography.
+
+A party not listed in a census should will typically skip evaluating that section of the choreography.
+In terms of EPP, that's done by projecting the entire clause to ⊥ or some similar marker.
 
 \subsection{Additional Literature}
 \label{sec:modern-work}

@@ -8,15 +8,1045 @@ Do chapters really need their own abstracts?
 
 
 \section{Introduction}
-Plan A is to copy-paste large sections of \emph{"We Know I Know You Know"}, with revisions from the enclaves paper etc as needed.
-Iff I make a new formalism, then I'll have to decide how to integrate it here. 
+While the most urgent shortcoming of HasChor's KoC strategy is that it induces extraneous communication costs,
+it has another shortcoming which it shares in common with many select-\&-merge systems like Pirouette:
+Sequential conditional clauses on the same branch-guard (\textit{aka} "scrutinee") require KoC to be \emph{re}communicated.
+We address this issue directly by extending the notion of located values into \emph{multiply located values} (MLVs).
+MLVs allow multiple parties to branch together on a shared guard;
+in addition to recyclability, this alleviates the need for a designated \inlinecode[bash]{select} operator.
+In this section we present a formal model of a higher-order functional CP language that uses MLVs and \emph{census tracking}
+to guarantee proper KoC management entirely by type-checking and without compromising efficiency or expressivity.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \begin{minted}[xleftmargin=10pt,linenos]{bash}
+let choice : ()+()@[alice, bob] = com[alice][alice, bob] alices_choice;
+let query : Query@[alice] = case[alice, bob] choice of
+  Inl _ => com[bob][alice] bobs_query;
+  Inr _ => alices_query;
+let answerer : (Query@[carroll] -> Response@[carroll])@[carroll] = carrolls_func;
+let response = com[carroll][bob, alice] (answerer (com[alice][carroll] query));
+case[alice, bob] choice of
+  Inl _ => bobs_terminal response;
+  Inr _ => alices_terminal response;
+    \end{minted}
+    \caption{A \HLSCentral implementation of a two-client one-server choreography involving sequential branches.
+        Client \inlinecode{bob} may delegate a query against server \inlinecode{carroll},
+        or client \inlinecode{alice} may provide the query herself.}
+    \label{fig:our-client-server}
+    %\Description[A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".]
+    %            {A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".
+    %            "carroll" is acting as a server responding to a request chosen amongst "alice" and "bob".}
+    \end{mdframed}
+\end{figure}
+
+\subsection{Multiply-located values}\label{sec:mlvs}
+Previous choreography languages have featured \emph{located values},
+values annotated with (or implicitly assigned to) their owning party such that EPP to the owner results
+in the value itself and EPP to any other party results in a special
+"missing" value (\eg ⊥).
+\emph{Multiply located values} are exactly the same except they are annotated with a non-empty \emph{set} of parties.
+EPP of a multiply-located value for any of the owning parties results in the same value,
+and projection to any other party yields ⊥.
+Prior works have objects with multiple owners as emergent structures in a language
+(\eg choreographic processes~\cite{choral}, distributed choice types~\cite{chor-lambda-2}),
+but these project to each owner's distinct view of the structure.
+
+Creation of an MLV within an choreographic runtime follows from the fact that
+if Alice sends Bob a number, both Alice and Bob know what number was sent.
+Representing this in the language can be done a few different ways:
+\begin{itemize}
+  \item A \inlinecode{share} operator that updates the type of an MLV-typed variable to include the recipient(s) in the ownership set.
+        This is a poor fit for a functional programming language because it mutates the type of a variable,
+        and additional machinery would be needed to make it work with nested enclaves (see \Cref{sec:enclaves}).
+        \todo{I should mention .CHO here...}
+  \item A \inlinecode{comm} operator that returns a value owned by the original owners and the recipient(s).
+        This is not as straightforward as it sounds; if the communication happens inside a conditional,
+        some of the original owners may not know that the communication happened.
+        Intersecting with the current census is a sound solution,
+        but may be difficult to embed in the type system of existing host languages.
+  \item A \inlinecode{multicast} operator (by whatever name) that returns a value owned by exactly the specified recipients.
+        In practice, users will often list the sender (and possibly any subset of the original owners) among the recipients;
+        an ideal implementation would omit the actual communication to recipients who already have the data.
+  \item A \inlinecode{broadcast} operator that always returns an MLV owned by the entire current census.
+        This is actually equivalent to the above \inlinecode{multicast} operator; the choice is purely ergonomic.
+\end{itemize}
+
+Multiply-located values can also enable concise expression of programs in which multiple parties compute the same thing in parallel,
+a common occurrence when communication is more expensive than computation.
+For example, the \HLSCentral expression $5@\set{p,q,r}+3@\set{p,q,r}$ represents an addition performed in parallel by $p$, $q$, and $r$.
+
+\subsection{Managing KoC with MLVs}
+\label{sec:enclaves}
+
+As discussed in \Cref{sec:census}, prior systems have tracked censuses as attributes of choreographic functions.
+The ChoRus system introduced the \inlinecode{enclave} operator to explicitly limit the census within its argument,
+and showed how this could be used to avoid HasChor's overly broad \inlinecode{broadcasts}.
+An \inlinecode{enclave} operator is a good design choice for an embedded DSL,
+but is not necessary in an abstract or bespoke language where the action of enclaving can be built into relevant constructs like
+functions and conditionals.
+
+The combination of censuses with enclaving and MLVs constitutes a novel KoC strategy,
+on par with state-of-the-art select-\&-merge systems like \chorLambda in terms of communication efficiency
+and more amenable to implementation as an eDSL.
+
+
+\section{A Formal MLVs-\&-Enclaves Language}\label{sec:more-formalism}
+
+\todo{This is little changed from the enclaves paper, which is little changed from "We Know I Know You Know".
+More editing may make it jive better with the broader narrative.}
+\todo{work through at least one example in prose.}
+
+We present the \HLSCentral CP system.
+The syntax of \HLSCentral and our overarching computational model and proof-approach are loosely based on
+Chorλ~\cite{chor-lambda}.
+\HLSCentral is a higher-order choreographic lambda calculus;
+we omit recursion and polymorphism because they are orthogonal to our goals here.
+Specifically, we will show that multiply-located values and enclaving operations are sufficient for a sound
+CP language without further KoC management.
+In Sections~\ref{sec:syntax} through~\ref{sec:semantics}
+we describe the syntax, type system, and semantics of \HLSCentral.
+As in other choreographic languages, the primary semantics describes the intended \emph{meaning} of choreographies
+and can be used to reason about their behavior,
+but is not the "ground truth" of concurrent execution.
+Sections~\ref{sec:local-lang} through~\ref{sec:networks} describe the languages of distributed processes,
+\HLSLocal and \HLSNet,
+and define endpoint projection for \HLSCentral.
+%
+In Section~\ref{sec:deadlock-freedom}, we prove that the behavior of a choreography's projection in \HLSNet
+matches that of the original \HLSCentral choreography, and that \HLSCentral's type system ensures deadlock-freedom.
+
+\subsection{Syntax}\label{sec:syntax}
+The syntax of \HLSCentral is in Figure~\ref{fig:syntax}.
+Location information sufficient for typing, semantics, and EPP is explicit in
+the expression forms.
+We distinguish between "pairs"
+($\PAIR V_1 V_2$, of type $(d_1 × d_2)@\nonempty{p}$)
+and "tuples"
+($(V_1, V_2)$, of type $(T_1, T_2)$)
+so that we can have a distinguishable concept of "data" as "stuff that can be sent";
+we do not believe this to have any theoretic significance.
+
+The superscript-marked identifier $\nonempty{p}$ is a semantic token representing a set of parties;
+an unmarked $p$ is a completely distinct token representing a single party.
+Note the use of a superscript "$+$" to denote sets of parties
+instead of a hat or boldface;
+this denotes that these lists may never be empty.\footnote{
+Later, we'll use an "$\ast$" to denote a possibly-empty set or list,
+and a "$?$" to denote "zero or one".
+}
+The typing and semantic rules will enforce this invariant as needed.
+When referring to a census, or when a set of parties should be understood as a "context"
+rather than an "attribute",
+we write Θ rather than $\nonempty{p}$;
+this is entirely to clarify intent and the distinction has no formal meaning.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{align*}
+M  \BNF   &  V                       && \text{Values.}          \\
+   \BNFOR &  M M                     && \text{Function application.}          \\
+   \BNFOR &  \CASE{\nonempty{p}}{M}{x}{M}{x}{M}    \quad&& \text{Branching on a disjoint-sum value.}          \\
+                                            \\
+V  \BNF   &  x                       && \text{Variables.}          \\
+   \BNFOR &  (λ x:T \DOT M)@\nonempty{p}            && \text{Function literals annotated with participants.}          \\
+   \BNFOR &  ()@\nonempty{p}                      && \text{Multiply-located unit.}          \\
+   \BNFOR &  \INL V                  && \text{Injection to a disjoint-sum.}           \\
+   \BNFOR &  \INR V                  && \text{}           \\
+    \BNFOR &  \PAIR V V               && \text{Construction of data pairs (products).}           \\
+   \BNFOR &  (V, \dots, V)           && \text{Construction of heterogeneous tuples.}           \\
+   \BNFOR &  \FST{\nonempty{p}}      && \text{Projection of data pairs.}           \\
+   \BNFOR &  \SND{\nonempty{p}}      && \text{}           \\
+   \BNFOR &  \LOOKUP{n}{\nonempty{p}}   && \text{Projection of tuples.}           \\
+   \BNFOR &  \COMM{p}{\nonempty{p}}     && \text{Send to one or more recipients.}            \\
+                                            \\
+d  \BNF   &  ()         && \text{We provide a simple algebra of "data" types,}   \\
+   \BNFOR &  d + d                   && \text{which can encode booleans or other finite types}           \\
+   \BNFOR &  d × d                   && \text{and could be extended with natural numbers if desired.}   \\
+                                            \\
+T  \BNF   &  d@\nonempty{p}          && \text{A complete multiply-located data type.}             \\
+    \BNFOR &  (T → T)@\nonempty{p}          && \text{Functions are located at their participants.}             \\
+   \BNFOR &  (T, \dots, T)           && \text{A fixed-length heterogeneous tuple.}  \\
+\end{align*}
+    \caption{The complete syntax of the \HLSCentral language.}
+    \label{fig:syntax}
+    %\Description[A BNF syntax for a choreographic lambda calculus.]
+     %           {A BNF syntax for a choreographic lambda calculus.
+      %          There are three expression-forms M,
+       %         including the V form for values,
+        %        of which there are eleven sub-forms.
+         %       There are also forms for types.
+          %      Both types and expressions have party-annotations.}
+    \end{mdframed}
+\end{figure}
+
+\subsection{The Mask Operator}\label{sec:masking}
+Here we introduce the \mask operator,
+the purpose of which is to allow Theorem~\ref{theorem:preservation}
+(semantic stepping preserves types, Section~\ref{sec:preservation-proof})
+to hold
+without adding sub-typing or polymorphism to \HLSCentral.
+\mask is a partial function defined in Figure~\ref{fig:masking};
+the left-hand argument is either a type (in which case it returns a type)
+or a value (in which case it returns a value).
+The effect of \mask is very similar to EPP,
+except that it projects to a set of parties instead of just one,
+and instead of introducing a ⊥ symbol it is simply undefined in some cases.
+Because it is used during type-checking, errors related to it are caught at that time.
+
+Consider an expression using a "masking identity" function:
+$(λ x:()@\set{p} \DOT x)@\set{p} ()@\set{p,q}$,
+where the lambda is an identity function \emph{application of which}
+turns a multiply-located unit value into one located at just $p$.
+Clearly, the lambda should type as $(()@\set{p} → ()@\set{p})@\set{p}$;
+and so the whole application expression should type as $()@\set{p}$.
+Masking in the typing rules lets this work as expected,
+and similar masking in the semantic rules ensures type preservation.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{gather*}
+\myference{MTData}
+          {\nonempty{p} ∩ Θ ≠ ∅}
+          {d@\nonempty{p} \mask Θ \DEF d@(\nonempty{p} ∩ Θ)}
+          \quad
+\myference{MTFunction}
+          {\nonempty{p} \subseteq Θ}
+          {(T → T')@\nonempty{p} \mask Θ \DEF (T → T')@\nonempty{p}}
+          \vdbl
+\myference{MTVector}
+          {T_1' = T_1 \mask Θ, \quad \dots \quad T_n' = T_n \mask Θ}
+          {(T_1, \dots, T_n) \mask Θ \DEF (T_1', \dots, T_n')}
+          \vdbl
+\myference{MVLambda}
+          {\nonempty{p} \subseteq Θ}
+          {(λ x:T \DOT M)@\nonempty{p} \mask Θ \DEF (λ x:T \DOT M)@\nonempty{p}}
+          \quad
+\myference{MVUnit}
+          {\nonempty{p} ∩ Θ ≠ ∅}
+          {()@\nonempty{p} \mask Θ \DEF ()@(\nonempty{p} ∩ Θ)}
+          \vdbl
+\myference{MVInL}
+          {V' = V \mask Θ}
+          {\INL V \mask Θ \DEF \INL V'}
+          \quad
+\myference{MVInR}
+          {\dots}
+          {\dots}
+          \quad
+\myference{MVProj1}
+          {\nonempty{p} \subseteq Θ}
+          {\FST{\nonempty{p}} \mask Θ \DEF \FST{\nonempty{p}}}
+          \quad
+\myference{MVProj2}
+          {\dots}
+          {\dots}
+          \vdbl
+\myference{MVPair}
+          {V_1' = V_1 \mask Θ \quad V_2' = V_2 \mask Θ}
+          {\PAIR V_1 V_2 \mask Θ \DEF \PAIR V_1' V_2'}
+          \quad
+\myference{MVVector}
+          {V_1' = V_1 \mask Θ \quad \dots \quad V_n' = V_n \mask Θ}
+          {(V_1, \dots, V_n) \mask Θ \DEF (V_1', \dots, V_n')}
+          \vdbl
+\myference{MVProjN}
+          {\nonempty{p} \subseteq Θ}
+          {\LOOKUP{n}{\nonempty{p}} \mask Θ \DEF \LOOKUP{n}{\nonempty{p}}}
+          \quad
+\myference{MVCom}
+          {s \in Θ \quad \nonempty{r} \subseteq Θ}
+          {\COMM{s}{\nonempty{r}} \mask Θ \DEF \COMM{s}{\nonempty{r}}}
+          \quad
+\myference{MVVar}
+          {}
+          {x \mask Θ \DEF x}
+\end{gather*}
+    \caption{Definition of the \mask operator.}
+    \label{fig:masking}
+%    \Description[Inference rules defining a partial function "mask".]
+ %               {Inference rules defining a partial function "mask"
+  %              denoted by a rightward triangle.
+   %             The right-hand argument is a non-empty set of parties,
+    %            and the left-hand argument is either a type or a value.
+     %           It's defined as the left-hand argument re-located
+      %          to the right-hand argument, provided the new locations
+       %         are a subset of the original locations and that the new value
+        %        is still semantically useable.}
+    \end{mdframed}
+\end{figure}
+
+\subsection{Typing Rules}\label{sec:typing}
+The typing rules for \HLSCentral are in Figure~\ref{fig:typing}.
+A judgment $Θ;Γ ⊢ M : T$ says that $M$ has type $T$ in the context
+of a non-empty census Θ
+and a (possibly empty) list of variable bindings $Γ=(x_1:T_1), \dots (x_n:T_n)$.
+In \textsc{TLambda} and \textsc{TProjN} we write preconditions
+$\noop{\nonempty{p}}{T}$ meaning $T = T \mask \nonempty{p}$,
+\ie masking to those parties is a "no-op".
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{gather*}
+\myference{TLambda}
+          {\nonempty{p};Γ,(x:T) ⊢ M : T' \quad
+           \nonempty{p} \subseteq Θ \quad
+           \noop{\nonempty{p}}{T}}
+          {Θ;Γ ⊢ (λ x:T \DOT M)@\nonempty{p} : (T → T')@\nonempty{p}}
+          \quad
+\myference{TVar}
+          {x : T \in Γ \quad T' = T \mask Θ}
+          {Θ;Γ ⊢ x : T' }
+          \vdbl
+\myference{TApp}
+          {Θ;Γ ⊢ M : (T_a → T_r)@\nonempty{p} \quad
+           Θ;Γ ⊢ N : T_a' \quad
+           T_a' \mask \nonempty{p} = T_a}
+          {Θ;Γ ⊢ M N : T_r}
+          \vdbl
+\myference{TCase}
+          {Θ;Γ ⊢ N : T_N \quad
+           (d_l + d_r)@\nonempty{p} = T_N \mask \nonempty{p} \\
+           \nonempty{p};Γ,(x_l:d_l@\nonempty{p}) ⊢ M_l : T \quad
+           \nonempty{p};Γ,(x_r:d_r@\nonempty{p}) ⊢ M_r : T \quad
+           \nonempty{p} \subseteq Θ}
+          {Θ;Γ ⊢ \CASE{\nonempty{p}}{N}{x_l}{M_l}{x_r}{M_r} : T}
+          \vdbl
+\myference{TUnit}
+          {\nonempty{p} \subseteq Θ}
+          {Θ;Γ ⊢ ()@\nonempty{p} : ()@\nonempty{p}}
+          \quad
+\myference{TPair}
+          {Θ;Γ ⊢ V_1 : d_1@\nonempty{p_1} \quad
+           Θ;Γ ⊢ V_2 : d_2@\nonempty{p_2} \quad
+           \nonempty{p_1} ∩ \nonempty{p_2} ≠ ∅}
+          {Θ;Γ ⊢ \PAIR V_1 V_2 : (d_1 × d_2)@(\nonempty{p_1} ∩ \nonempty{p_2})}
+          \vdbl
+\myference{TVec}
+          {Θ;Γ ⊢ V_1 : T_1 \quad \dots \quad Θ;Γ ⊢ V_n : T_n}
+          {Θ;Γ ⊢ (V_1, \dots, V_n) : (T_1, \dots T_n)}
+          \quad
+\myference{TInl}
+          {Θ;Γ ⊢ V : d@\nonempty{p}}
+          {Θ;Γ ⊢ \INL V : (d + d')@\nonempty{p}}
+          \quad
+\myference{TInr}{\dots}{\dots}
+          \vdbl
+\myference{TProjN}
+          {\nonempty{p} \subseteq Θ \quad
+           \noop{\nonempty{p}}{(T_1, \dots, T_n)}}
+          {Θ;Γ ⊢ \LOOKUP{i}{\nonempty{p}} : ((T_1, \dots, T_i, \dots, T_n) → T_i)@\nonempty{p}}
+          \quad
+\myference{TProj2}{\dots}{\dots}
+          \vdbl
+\myference{TProj1}
+          {\nonempty{p} \subseteq Θ}
+          {Θ;Γ ⊢ \FST{\nonempty{p}} : ((d_1 × d_2)@\nonempty{p} → d_1@\nonempty{p})@\nonempty{p}}
+          \vdbl
+\myference{TCom}
+          {s \in \nonempty{s} \quad
+           \nonempty{s}\cup\nonempty{r} \subseteq Θ}
+          {Θ;Γ ⊢ \COMM{s}{\nonempty{r}} : (d@\nonempty{s} → d@\nonempty{r})@(\set{s}\cup\nonempty{r})}
+\end{gather*}
+    \caption{\HLSCentral typing rules.}
+    \label{fig:typing}
+    %\Description[Inference rules for he-lambda-small's type system.]
+     %           {Inference rules for he-lambda-small's type system.
+      %          There are thirteen of them, corresponding to the thirteen
+       %         total expression forms.}
+    \end{mdframed}
+\end{figure}
+
+Examine \textsc{TCase} as the most involved example.
+The actual judgment says that in the context of Θ and Γ,
+the case expression types as $T$.
+The first two preconditions say that
+the guard expression $N$ must type in the parent context
+as some type $T_N$, which masks to the explicit party-set $\nonempty{p}$
+as a sum-type $(d_l + d_r)@\nonempty{p}$.
+The only rule by which it can do that is \textsc{MTData},
+so we can deduce that $T_N = (d_l + d_r)@\nonempty{q}$,
+where $\nonempty{q}$ is some unspecified superset of $\nonempty{p}$.
+The third and forth preconditions say that $M_l$ and $M_r$
+must both type as $T$ with the reduced census $\nonempty{p}$
+and with the respective $x_l$ and $x_r$ bound to the right and left
+data types at $\nonempty{p}$.
+The final precondition says that $\nonempty{p}$ is a subset of Θ,
+\ie everyone who's supposed to be branching is actually present to do so.
+
+The other rules are mostly normal, with similar masking of types and enclaving of censuses as needed.
+In \textsc{TVar}, the census masks the type bindings in Γ.
+In isolation, some expressions such as $\INR ()@\set{p}$
+or the projection operators
+are flexible about their exact types;
+additional annotations could give them monomorphic typing,
+if that was desirable.
+
+\subsection{Masked Substitution}\label{sec:substitution}
+
+For \mask to fulfil its purpose during semantic evaluation,
+it may need to be applied arbitrarily many times with different party-sets
+inside the new expressions, and it may not even be defined for all such
+party-sets.
+Conceptually, this just recapitulates the masking performed in \textsc{TVar}.
+To formalize these subtleties, in Figure~\ref{fig:substitution} we specialize the normal variable-substitution
+notation $M[x:=V]$ to perform location-aware substitution.
+In Section~\ref{sec:substitution-proof} we prove Theorem~\ref{theorem:substitution},
+which shows that this specialized substitution operation
+satisfies the usual concept of substitution.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{align*}
+M[x:=V] \DEF \text{by pattern matching on $M$:}& \\
+y            \DEFCASE & \begin{cases}
+                                        y ≡ x & \DEFCASE  V  \\
+                                        y ≢ x & \DEFCASE  y
+                                        \end {cases} \\
+N_1 N_2     \DEFCASE & N_1[x:=V] N_2[x:=V] \\
+(λ y:T \DOT N)@\nonempty{p}  \DEFCASE & \begin{cases}
+                                        V \mask \nonempty{p} = V'
+                                            & \DEFCASE (λ y:T \DOT N[x:=V'])@\nonempty{p} \\
+                                        \text{otherwise} & \DEFCASE M
+                                        \end{cases} \\
+\CASEm{\nonempty{p}}{N}{x_l}{M_l}{x_r}{M_r} \DEFCASE & \begin{cases}
+                                        V \mask \nonempty{p} = V'
+                                            & \DEFCASE \CASEm{\nonempty{p}}
+                                                            {N[x:=V]}{x_l}{M_l[x:=V']}
+                                                            {x_r}{M_r[x:=V']} \\
+                                        \text{otherwise}
+                                            & \DEFCASE \CASEm{\nonempty{p}}
+                                                            {N[x:=V]}{x_l}{M_l}{x_r}{M_r}
+                                        \end{cases} \\
+\INL V_1    \DEFCASE & \INL V_1[x:=V] \\
+\INR V_2    \DEFCASE & \INR V_2[x:=V] \\
+\PAIR V_1 V_2  \DEFCASE & \PAIR V_1[x:=V] V_2[x:=V] \\
+(V_1, \dots, V_n) \DEFCASE & (V_1[x:=V], \dots, V_n[x:=V]) \\
+\begin{rcases}
+    ()@\nonempty{p}
+    \qquad \FST{\nonempty{p}}
+    \qquad \SND{\nonempty{p}} \\
+    \qquad \LOOKUP{\nonempty{p}}{i}
+    \qquad \COMM{s}{\nonempty{r}}
+\end{rcases}\DEFCASE & M
+\end{align*}
+    \caption{The customised substitution used in \HLSCentral's semantics.}
+    \label{fig:substitution}
+    %\Description[A case-wise definition of variable substitution.]
+     %           {A case-wise definition of variable substitution.
+      %           Most cases are normal; some involve masking
+       %          and when the masking is undefined they revert to a no-op.}
+    \end{mdframed}
+\end{figure}
+
+
+\subsection{Centralized Semantics}\label{sec:semantics}
+
+The semantic stepping rules for evaluating \HLSCentral expressions
+are in Figure~\ref{fig:semantics}.
+In Sections~\ref{sec:local-lang}, \ref{sec:projection}, and \ref{sec:networks}
+we will develop the "ground truth" of the distributed process semantics and show that
+the \HLSCentral's semantics correctly capture distributed behavior.
+
+\HLSCentral is equipped with a substitution-based semantics that,
+after accounting for the \mask operator and the specialized implementation of
+substitution, is quite standard among lambda-calculi.
+In particular, we make no effort here to support the out-of-order execution
+supported by some choreography languages.
+Because the language and corresponding computational model are parsimonious,
+no step-annotations are needed for the centralized semantics.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+\begin{gather*}
+\myference{AppAbs}
+          {V' = V \mask \nonempty{p}}
+          {((λ x:T \DOT M)@\nonempty{p}) V \step M[x := V']}
+          \quad
+\myference{App1}
+          {N \step N'}
+          {V N \step V N'}
+          \quad
+\myference{App2}
+          {M \step M'}
+          {M N \step M' N}
+          \vdbl
+\myference{Case}
+          {N \step N'}
+          {\CASE{\nonempty{p}}{N}{x_l}{M_l}{x_r}{M_r}
+            \step \CASE{\nonempty{p}}{N'}{x_l}{M_l}{x_r}{M_r}}
+          \vdbl
+\myference{CaseL}
+          {V' = V \mask \nonempty{p}}
+          {\CASE{\nonempty{p}}{\INL V}{x_l}{M_l}{x_r}{M_r} \step M_l[x_l := V']}
+          \quad
+\myference{CaseR}
+          {\dots}
+          {\dots}
+          \vdbl
+\myference{Proj1}
+          {V' = V_1 \mask \nonempty{p}}
+          {\FST{\nonempty{p}} (\PAIR V_1 V_2) \step V'}
+          \quad
+\myference{Proj2}
+          {\dots}
+          {\dots}
+          \quad
+\myference{ProjN}
+          {V' = V_i \mask \nonempty{p}}
+          {\LOOKUP{i}{\nonempty{p}} (V_1, \dots, V_i, \dots, V_n) \step V'}
+          \vdbl
+\myference{Com1}
+          {()@\nonempty{p} \mask \set{s} = ()@s}
+          {\COMM{s}{\nonempty{r}} ()@\nonempty{p} \step ()@\nonempty{r}}
+          \quad
+\myference{ComPair}
+          {\COMM{s}{\nonempty{r}} V_1 \step V_1' \quad \COMM{s}{\nonempty{r}} V_2 \step V_2'}
+          {\COMM{s}{\nonempty{r}} (\PAIR V_1 V_2) \step \PAIR V_1' V_2'}
+          \vdbl
+\myference{ComInl}
+          {\COMM{s}{\nonempty{r}} V \step V'}
+          {\COMM{s}{\nonempty{r}} (\INL V) \step \INL V'}
+          \quad
+\myference{ComInr}
+          {\dots}
+          {\dots}
+\end{gather*}
+    \caption{\HLSCentral's semantics.}
+    \label{fig:semantics}
+%    \Description[Infernce rules for the central language.]
+ %               {Thirteen inference rules defining the semantics of
+  %               choreographies.
+   %             Most of them are entirely normal lambda-calculus rules
+    %            except that they use a mask operator and a specialized
+     %           notion of substitution.
+      %          The exceptions are the COM rules, which use each other
+       %         as recursive preconditions to replace the location annotations
+        %        on unit values.}
+    \end{mdframed}
+\end{figure}
+
+The \textsc{Com1} rule simply replaces one location-annotation with another.
+\textsc{ComPair}, \textsc{ComInl}, and \textsc{ComInr} are defined recursively
+amongst each other and \textsc{Com1};
+the effect of this is that "data" values can be sent but other values
+(functions and variables) cannot.
+
+As is typical for a typed lambda calculus, \HLSCentral enjoys preservation and progress.
+We prove these properties in Sections~\ref{sec:preservation-proof} and~\ref{sec:progress-proof} respectively.
+
+
+\subsection{The Local Process Language}\label{sec:local-lang}
+
+In order to define EPP and a "ground truth" for \HLSCentral computation,
+we need a locally-computable language, \HLSLocal, into which it can project.
+\HLSLocal is very similar to \HLSCentral;
+to avoid ambiguity we denote \HLSLocal expressions $B$ (for "behavior")
+instead of $M$ (which denotes a \HLSCentral expression)
+and \HLSLocal values $L$ instead of $V$.
+The syntax is presented in Figure~\ref{fig:local-syntax}.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \begin{align*}
+        B \BNF   & L \BNFOR B B && \text{\small Process expressions.} \\
+          \BNFOR & \CASE{}{B}{x}{B}{x}{B} \\[0.5em]
+        L \BNF   & x \BNFOR () \BNFOR   λ x \DOT B
+                     && \text{\small Process values.} \\
+          \BNFOR & \INL L \BNFOR \INR L \BNFOR  \PAIR L L \\
+          \BNFOR & \FST{} \BNFOR \SND{} \\
+          \BNFOR & (L, \dots, L) \BNFOR \LOOKUP{n}{} && \text{} \\
+          \BNFOR & \RECV{p} \BNFOR \SEND{p^{\ast}}
+                     && \text{\small Receive from one party. Send to many.} \\
+          \BNFOR & \SEND{p^{\ast}}^{\ast}
+                    && \text{\small Send to many \emph{and} keep for oneself.} \\
+          \BNFOR & ⊥                  && \text{\small "Missing" (located someplace else).}
+    \end{align*}
+    \caption{Syntax for the \HLSLocal language.}
+    \label{fig:local-syntax}
+    %\Description[A BNF for a simple lambda calculus with "send" and "receive" operators.]
+     %           {A BNF for a simple lambda calculus with "send" and "receive" operators.
+      %          By design, it's very similar to the central language, just without party annotations
+       %         and with "com" replaced by "send", "send*", and "recv".}
+    \end{mdframed}
+\end{figure}
+
+\HLSLocal differs from \HLSCentral in a few ways.
+It's untyped, and the party-set annotations are mostly missing.
+\HLSCentral's $\COMM{p}{\nonempty{q}}$ operator is replaced by $\SEND{\nonempty{q}}$ and $\RECV{p}$,
+as well as a $\SEND{\nonempty{q}}^{\ast}$, which differs from $\SEND{\nonempty{q}}$ only in that
+the process which calls it keeps a copy of the sent value for itself.
+Syntactically, the recipient lists of $\SEND{}$ and $\SEND{}^{\ast}$ may be empty;
+this keeps semantics consistent in the edge case implied by
+a \HLSCentral expression like $\COMM{s}{\set{s}}$ (which is useless but legal).
+Finally, the value-form ⊥ ("bottom") is a stand-in for parts of the choreography that do not involve the target party.
+In the context of choreographic languages, ⊥ does not denote an error but should instead be read as "unknown"
+or "somebody else's problem".
+
+The behavior of ⊥ during semantic evaluation can be handled a few different ways,
+the pros-and-cons of which are not important in this work.
+We use a ⊥-normalizing "floor" function, defined in Figure~\ref{fig:floor},
+during EPP and semantic stepping to avoid ever handling
+⊥-equivalent expressions like $\PAIR ⊥ ⊥$ or $⊥ ()$.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{align*}
+\FLR{B}                        \DEF      \text{by pattern matching on $B$:}
+  & \qquad\qquad\qquad\qquad  \text{\small{(Observe that floor is idempotent.)}} \\
+B_1 B_2                      \DEFCASE &
+  \begin{cases}
+    \FLR{B_1} = ⊥, \FLR{B_2} = L \DEFCASE & ⊥  \\
+    \text{else}              \DEFCASE & \FLR{B_1} \FLR{B_2}
+  \end{cases}  \\
+\CASE{}{B_G}{x_l}{B_l}{x_r}{B_r} \DEFCASE &
+  \begin{cases}
+    \FLR{B_G} = ⊥                \DEFCASE & ⊥ \\
+    \text{else}      \DEFCASE & \CASE{}{\FLR{B_G}}{x_l}{\FLR{B_l}}{x_r}{\FLR{B_r}}
+  \end{cases}  \\
+λ x \DOT B'                  \DEFCASE & λ x \DOT \FLR{B'} \\
+\INL L                       \DEFCASE & \begin{cases}
+  \FLR{L} = ⊥                \DEFCASE & ⊥ \\
+  \text{else}                \DEFCASE & \INL \FLR{L}
+  \end{cases} &&      \\
+\INR L                       \DEFCASE & \begin{cases}
+  \FLR{L} = ⊥                \DEFCASE & ⊥ \\
+  \text{else}                \DEFCASE & \INR \FLR{L}
+  \end{cases} &&      \\
+\PAIR L_1 L_2                \DEFCASE & \begin{cases}
+  \FLR{L_1} = ⊥ = \FLR{L_2}  \DEFCASE & ⊥ \\
+  \text{else}                \DEFCASE & \PAIR \FLR{L_1} \FLR{L_2}
+  \end{cases} &&         \\
+(L_1, \dots, L_n)            \DEFCASE & \begin{cases}
+  \forall_{i\in[1,n]} \FLR{L_i} = ⊥ \DEFCASE & ⊥ \\
+  \text{else}                \DEFCASE & (\FLR{L_1}, \dots, \FLR{L_n})
+  \end{cases} && \\
+\begin{rcases}
+  x \\
+  () \\
+  \FST{} \\
+  \SND{} \\
+  \LOOKUP{i}{} \\
+  \SEND{p^{\ast}} \\
+  \SEND{p^{\ast}}^{\ast} \\
+  \RECV{p} \\
+  ⊥
+\end{rcases}                 \DEFCASE &  B
+\end{align*}
+    \caption{The "floor" function, which reduces ⊥-based expressions.}
+    \label{fig:floor}
+    %\Description[A casewise definition of a function using the bottom-brackets associated with a real-number "floor" function.]
+     %           {A casewise definition of a function, using the bottom-brackets associated with a real-number "floor" function,
+      %          that takes a local-language expression and returns it with "bottom" values simplified.}
+    \end{mdframed}
+\end{figure}
+
+
+\HLSLocal's semantic stepping rules are given in Figure~\ref{fig:local-semantics}.
+Local steps are labeled with send ($⊕$) and receive ($⊖$) sets, like so:
+$B \prcstep{\set{(p,L_1), (q,L_2)}}{\set{(r, L_3), (s, L_4)}} B'$,
+or $B \prcstep{μ}{η} B'$ when we don't need to inspect the contents of the annotations.
+The floor function is used to keep expressions normalized during evaluation.
+Otherwise, most of the rules are analogous to the corresponding \HLSCentral rules from Figure~\ref{fig:semantics}.
+The \textsc{LSend-} rules are defined recursively, similar to the \textsc{Com-} rules.
+\textsc{LSendSelf} shows that $\SEND{}^{\ast}$ is exactly like $\SEND{}$
+except it locally acts like \inlinecode{id} instead of returning ⊥.
+\textsc{LRecv} shows that the $\RECV{}$ operator ignores its argument and can return
+\emph{anything}, with the only restriction being that the return value must be reflected in the receive-set step-annotation.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{gather*}
+\myference{LAbsApp}
+          {}
+          {(λ x \DOT B) L \prcstep{∅}{∅} \FLR{B[x:=L]}}
+          \quad
+\myference{LApp1}
+          {B \prcstep{μ}{η} B'}
+          {L B \prcstep{μ}{η} \FLR{L B'}}
+          \quad
+\myference{LApp2}
+          {B \prcstep{μ}{η} B'}
+          {B B_2 \prcstep{μ}{η} \FLR{B' B_2}}
+          \vdbl
+\myference{LCase}
+          {B \prcstep{μ}{η} B'}
+          {\CASE{}{B}{x_l}{B_l}{x_r}{B_r} \prcstep{μ}{η}
+           \FLR{\CASE{}{B'}{x_l}{B_l}{x_r}{B_r}}}
+          \vdbl
+\myference{LCaseL}
+          {}
+          {\CASE{}{\INL L}{x_l}{B_l}{x_r}{B_r} \prcstep{∅}{∅} \FLR{B_l[x_l := L]}}
+          \quad
+\myference{LCaseR}
+          {\dots}
+          {\dots}
+          \vdbl
+\myference{LProj1}
+          {}
+          {\FST{} (\PAIR L_1 L_2) \prcstep{∅}{∅} L_1}
+          \quad
+\myference{LProj2}
+          {\dots}
+          {\dots}
+          \quad
+\myference{LProjN}
+          {}
+          {\LOOKUP{i}{} (L_1, \dots, L_i, \dots, L_n) \prcstep{∅}{∅} L_i}
+          \vdbl
+\myference{LSend1}
+          {}
+          {\SEND{p^{\ast}} () \prcstep{\set{(p, ()) \mid p \in p^{\ast}}}{∅} ⊥}
+          \quad
+\myference{LSendPair}
+          {\SEND{p^{\ast}} L_1 \prcstep{μ_1}{∅} ⊥ \quad
+           \SEND{p^{\ast}} L_2 \prcstep{μ_2}{∅} ⊥}
+          {\SEND{p^{\ast}} (\PAIR L_1 L_2)
+           \prcstep{\set{(p, \PAIR L_1 L_2) \mid p \in p^{\ast}}}{∅}
+           ⊥}
+          \vdbl
+\myference{LSendInL}
+          {\SEND{p^{\ast}} L \prcstep{μ}{∅} ⊥}
+          {\SEND{p^{\ast}} (\INL L)
+           \prcstep{\set{(p, \INL L) \mid p \in p^{\ast}}}{∅}
+           ⊥}
+          \quad
+\myference{LSendInR}
+          {\dots}
+          {\dots}
+          \quad
+\myference{LSendSelf}
+          {\SEND{p^{\ast}} L \prcstep{μ}{∅} ⊥}
+          {\SEND{p^{\ast}}^\ast L \prcstep{μ}{∅} L}
+          \vdbl
+\myference{LRecv}
+          {}
+          {\RECV{p} L_0 \prcstep{∅}{\set{(p, L)}} L}
+          \quad
+\end{gather*}
+    \caption{The semantics of \HLSLocal.}
+    \label{fig:local-semantics}
+    %\Description[Fifteen inference rules defining the semantics of the local process language.]
+     %           {Inference rules defining the substitution-based semantic stepping of the local process language.
+      %          There are fifteen rules, roughly corresponding to the similar rules from the choreographic semantics.}
+    \end{mdframed}
+\end{figure}
+
+\subsection{Endpoint Projection}\label{sec:projection}
+Endpoint projection (EPP) is the translation between the choreographic language \HLSCentral
+and the local process language \HLSLocal;
+necessarily it's parameterized by the specific
+local process you're projecting \emph{to}.
+$⟦M⟧_p$ is the projection of $M$ to $p$, as defined in Figure~\ref{fig:eep}.
+It does a few things:
+Most location annotations are removed, some expressions become ⊥,
+⊥-based expressions are normalized by the floor function,
+and $\COMM{s}{\nonempty{r}}$ becomes $\SEND{\nonempty{r}}$, $\SEND{\nonempty{r}}^{\ast}$, or $\RECV{s}$,
+keeping only the identities of the peer parties and not the local party.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{align*}
+⟦M⟧_p                        \DEF      \text{by pattern matching on $M$:}& \\
+N_1 N_2                      \DEFCASE & \FLR{⟦N_1⟧_p ⟦N_2⟧_p} \\
+\CASEm{\nonempty{p}}{N}{x_l}{M_l}{x_r}{M_r} \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & \FLR{
+      \CASE{}{⟦N⟧_p}{x_l}{⟦M_l⟧_p}{x_r}{⟦M_r⟧_p} } \\
+    \text{else}              \DEFCASE & \FLR{
+      \CASE{}{⟦N⟧_p}{x_l}{⊥}{x_r}{⊥} }
+  \end{cases}  \\
+x                            \DEFCASE &  x        \\
+(λ x:T \DOT N)@\nonempty{p}  \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & λ x \DOT ⟦N⟧_p \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}  \\
+()@\nonempty{p}              \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & () \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}  \\
+\INL V                       \DEFCASE & \FLR{\INL ⟦V⟧_p}  &&      \\
+\INR V                       \DEFCASE & \FLR{\INR ⟦V⟧_p}  &&      \\
+\PAIR V_1 V_2                \DEFCASE & \FLR{\PAIR ⟦V_1⟧_p ⟦V_2⟧_p} &&         \\
+(V_1, \dots, V_n)            \DEFCASE & \FLR{(⟦V_1⟧_p, \dots, ⟦V_n⟧_p)} &&       \\
+\FST{\nonempty{p}}           \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & \FST{} \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}  \\
+\SND{\nonempty{p}}           \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & \SND{} \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}  \\
+\LOOKUP{i}{\nonempty{p}}     \DEFCASE &
+  \begin{cases}
+    p \in \nonempty{p}       \DEFCASE & \LOOKUP{i}{} \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}  \\
+\COMM{s}{\nonempty{r}}       \DEFCASE &
+  \begin{cases}
+    p = s, p \in \nonempty{r}      \DEFCASE & \SEND{\nonempty{r} ∖ \set{p}}^\ast \\
+    p = s, p \not\in \nonempty{r}  \DEFCASE & \SEND{\nonempty{r}} \\
+    p \not = s, p \in \nonempty{r} \DEFCASE & \RECV{s} \\
+    \text{else}              \DEFCASE & ⊥
+  \end{cases}
+\end{align*}
+    \caption{EPP from \HLSCentral to \HLSLocal.}
+    \label{fig:eep}
+    %\Description[A casewise definition of a function denoted by double-square-brackets and parameterized by a party-name subscript.]
+     %           {A casewise definition of a function, denoted by enclosing the argument in double-square-brackets,
+      %          parameterized by a party name in subscript,
+       %         that takes a He-Lambda-Small expression and returns the party's view of it in the local process language.}
+    \end{mdframed}
+\end{figure}
+
+\subsection{Process Networks}\label{sec:networks}
+A single party evaluating local code can hardly be considered the ground truth of choreographic computation;
+for a message to be sent it must be received \emph{by} someone (and \textit{visa-versa}).
+Our third "language", \HLSNet, is just concurrent asynchronous threads of \HLSLocal.
+An \HLSNet "network" $\mathcal{N}$
+is a dictionary mapping each party in its domain to a \HLSLocal program representing that party's current place in the execution.
+We express party-lookup as $\mathcal{N}(p) = B$.
+A singleton network, written $\mathcal{N} = p[B]$, has the one party $p$ in its domain and assigns the expression $B$ to it.
+Parallel composition of networks is expressed as $\mathcal{N} \mid \mathcal{N}'$
+(the order doesn't matter).
+Thus, the following statements are basically equivalent:
+\begin{itemize}
+  \item $\mathcal{N}(p) = B$
+  \item $\mathcal{N} = p[B] \mid \mathcal{N}'$
+  \item $p[B] \in \mathcal{N}$
+\end{itemize}
+When many compositions need to be expressed at once, we can write
+$\mathcal{N} = Π_{p \in \nonempty{p}} p[B_p]$.
+Parallel projection of all participants in $M$ is expressed as
+$⟦M⟧ = Π_{p \in \roles{M}} p[⟦M⟧_p]$.
+For example, if $p$ and $q$ are the only parties in $M$, then
+$⟦M⟧ = p[⟦M⟧_p] \mid q[⟦M⟧_q]$.
+
+The rules for \HLSNet semantics are in Figure~\ref{fig:networks}.
+\HLSNet semantic steps are annotated with \emph{incomplete} send actions;
+$\mathcal{N} \netstep{p}{\set{\dots,(q_i, L_i),\dots}} \mathcal{N}'$
+indicates a step in which $p$ sent a respective $L_i$ to each of the listed $q_i$
+and the $q_i$s have \emph{not} been noted as receiving.
+When there are no such incomplete sends and the $p$ doesn't matter,
+it may be omitted
+(\eg $\mathcal{N} \netstep{}{∅} \mathcal{N}'$
+instead of $\mathcal{N} \netstep{p}{∅} \mathcal{N}'$).
+\textbf{Only $∅$-annotated steps are "real";}
+other steps are conceptual justifications used in the semantics's derivation trees.
+In other words, \HLSLocal semantics only elevate to \HLSNet semantics
+when the message-annotations cancel out.
+Rule \textsc{NCom} allows annotations to cancel out.
+For example the network
+$⟦\COMM{s}{\set{p,q}} ()@\set{s}⟧$
+gets to $⟦()@\set{p,q}⟧$
+by a \emph{single} \textsc{NCom} step.
+The derivation tree for that step starts at the top with \textsc{NPro}:
+$s[\SEND{\set{p,q}} ()] \netstep{s}{\set{(p,()),(q,())}} s[⊥]$;
+this justifies two nestings of \textsc{NCom} in which the $p$ step and $q$ step
+(in either order)
+compose with the $s$ step and remove the respective party from the step-annotation.
+
+\begin{figure}[tbhp]
+\footnotesize
+    \begin{mdframed}
+\begin{gather*}
+\myference{NPro}
+          {B \prcstep{μ}{∅} B'}
+          {p[B] \netstep{p}{μ} p[B']}
+          \quad
+\myference{NCom}
+          {\mathcal{N} \netstep{s}{μ∪\set{(r,L)}} \mathcal{N}'
+           \quad B \prcstep{∅}{\set{(s, L)}} B'}
+          {\mathcal{N} \mid r[B] \netstep{s}{μ} \mathcal{N}' \mid r[B']}
+          \quad
+\myference{NPar}
+          {\mathcal{N} \netstep{}{∅} \mathcal{N}'}
+          {\mathcal{N} \mid \mathcal{N}^{+} \netstep{}{∅} \mathcal{N}' \mid \mathcal{N}^{+}}
+\end{gather*}
+    \caption{Semantic rules for \HLSNet.}
+    \label{fig:networks}
+    %\Description[Inference rules for networks of processes, showing when and how the local semantics can actually be applied.]
+     %           {Three inference rules for networks of processes,
+      %          showing when and how the local semantic stepping rules can be applied in the "real world" of communicating processes.}
+    \end{mdframed}
+\end{figure}
+
+
+\subsection{Deadlock Freedom}\label{sec:deadlock-freedom}
+Above we introduced the necessary machinery of EPP and evaluation of a network of communicating processes.
+In Section~\ref{sec:soundness-proof} we prove that EPP is \emph{sound}
+(Theorem~\ref{theorem:soundness}, any behavior possible for the \HLSNet projection of a choreography is also possible in the original \HLSCentral).
+In Section~\ref{sec:completeness-proof} we prove that EPP is \emph{complete}
+(Theorem~\ref{theorem:completeness}, any behavior possible in \HLSCentral is also possible in the \HLSNet projection).
+
+The central promise of choreographic programming is that participants in well-formed choreographies
+will never get stuck waiting for messages they never receive.
+This important property, \textit{"deadlock freedom by design"}, is trivial once our previous theorems are in place.
+
+\begin{corollary}[Deadlock Freedom]\label{theorem:deadlock}
+  If $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}$,
+    then either $\mathcal{N} \netstep{}{∅}^{\ast} \mathcal{N}'$
+    or for every $p\in\roles{M}$, $\mathcal{N}(p)$ is a value.
+
+    This follows from Theorem~\ref{theorem:soundness}, Theorem~\ref{theorem:preservation},
+    Theorem~\ref{theorem:progress}, and Theorem~\ref{theorem:completeness}.
+\end{corollary}
+
+
+
 
 \section{Comparisons with other systems}
 \label{sec:formalism-comparisons}
-In particular, how does E\&M stack up against S\&M?
-This could also just be copy-pasta, or we could expand it with something more like a proof.
 
-A citation might help this compile? \shortcite{shen-alg-eff-cp}
+\todo{summarize the other cases from We Know I Know.}
+
+\subsection{Chorλ}\label{sec:chor-lambda}
+Chorλ~\cite{chor-lambda} is a functional choreographic language.
+The API and communication efficiency are similar to \cite{hirsch2021pirouette} and \cite{giallorenzo-choral},
+but \cite{chor-lambda-2} shows that Chorλ's semantics and typing can additionally support structures called \emph{Distributed Choice Types}.
+A multiply-located \inlinecode{()@[p,q]} is isomorphic to a tuple of singly-located values \inlinecode{(()@p, ()@q)}.
+Distributed Choice Types extend this isomorphism to cover the entire algebra of Unit, Sum, and Product types
+in such a way that \inlinecode{p} and \inlinecode{q} never disagree about the value they each have.
+Specifically a multiply-located \inlinecode{(A + B)@[p,q]} becomes a singly-located \inlinecode{((A@p, A@q)+(B@p, B@q))},
+a type which earlier systems do not support.
+
+Chorλ's "merge" operator supports branching on distributed choice types,
+so Chorλ can always match \HLSCentral's communication efficiency with a similar program structure
+by declaring the needed \inlinecode{multicast[...]} functions.
+The language still needs to support \inlinecode{select}
+(because Chorλ has no other way of implementing the \inlinecode{multicast} functions),
+so well-formed-ness checking still depends on the partial function "merge".
+\todo{But \chorLambda doesn't need \inlinecode{comm}!}
+
+Considering the other direction, \HLSCentral can likewise match the communication efficiency of Chorλ
+and other \inlinecode{select}-based languages.
+Typically, this is as simple as multicasting the branch guard to all parties that would have received a \inlinecode{select}
+(and to oneself, the original branching party).
+Figures~\ref{fig:epp2} and~\ref{fig:epp3} show a simple translation;
+in the \HLSCentral version the guard-boolean is sent to everyone who was (in the Chorλ version) informed of the choice by \inlinecode{select},
+and everyone branches together
+\todo{These were figures 3 and 4 from We Know I Know; they were much earlier in the paper; IDK if we'll want them here or not}.
+In other situations a party might participate in branches without receiving a \inlinecode{select}
+because they don't need to know which one they are in;
+this is handled with the reverse of the transformation we showed between Figures~\ref{fig:our-client-server} and~\ref{fig:pirouette-client-server}
+\todo{this was a reference to the Pirouette subsection; it might be good to have it}.
+
+A fully-general algorithmic translation that never compromises on communication efficiency won't maintain the program's structure.
+The strategy is as follows:
+\begin{itemize}
+    \item An expression $M$ involving a party $p$ who doesn't have KoC gets broken into three parts:
+        \begin{itemize}
+            \item A computation $N_1$ of a cache data structure containing all variables bound up until the first part of $M$ at which $p$ actually does something.
+            \item A sub-expression $N_2$ involving $p$. $p$ might be sending a message, receiving a message, receiving a \inlinecode{select}, or doing local computation.
+            \item A computation $N_3$ that unpacks the cache from $N_1$ and (possibly) the results from $N_2$ and proceeds with the \emph{continuation}, the remainder of $M$.
+                Note that $N_3$ will still need to undergo similar translation.
+        \end{itemize}
+    \item Since there's KoC that $p$ doesn't have, $M$ must be a branch of a \inlinecode{case}.
+        Since the original program was projectable, the other branch must have a similar breakdown
+        \emph{with the same $N_2$ middle part}.
+        $N_1$, wrapped in a respective $\INL$ or $\INR$, replaces $M$ in the case statement.
+        Depending if $N_2$ is to or from $p$, the branches of the new \inlinecode{case} may also have to provide the argument to $N_2$,
+        but this should \emph{not} be wrapped in a Sum Type.
+    \item If $N_2$ is a \inlinecode{select} operation, then it gets translated into a multicast.
+        Its argument, provided by the preceding \inlinecode{case}, will be $\INL ()@\nonempty{q}$ or $\INR ()@\nonempty{q}$ depending on the symbol
+                \inlinecode{select}ed\footnote{Chorλ supports arbitrary symbols for \inlinecode{select},
+                but since we're concerned with bit-level efficiency we assume the only symbols are \inlinecode{L} and \inlinecode{R}.},
+                where $\nonempty{q}$ are the parties who already have KoC.
+        Then $\set{p}∪\nonempty{q}$ branch together on the multicast flag.
+        The $N_3$ continuations will be handled in duplicate in both of the flag-branches;
+        this will often involve dead branches for which applicable caches or behavior do not exist.
+        Since these branches will never be hit, it's safe to populate them with default values of the appropriate type.
+    \item Otherwise, sequencing of $N_2$ after the $N_1$-generating \inlinecode{case} is straightforward.
+    \item To handle the $N_3$ continuations, branch on the cache value (which was wrapped in a Sum Type).
+        In each branch, unpack the cached variables (and bind the results of $N_2$ if needed) and proceed with recursive translation of the continuation.
+\end{itemize}
+Neither \cite{chor-lambda} nor \cite{chor-lambda-2} contain examples requiring such a complicated translation.
+Figure~\ref{fig:chor-lambda-complex} shows a made-up Chorλ choreography;
+translating it into \HLSCentral without compromising communication efficiency is more involved than earlier examples were.
+Figure~\ref{fig:our-complex-human} shows how a human might re-implement that choreography in \HLSCentral.
+Appendix~\ref{sec:translation} contains a more algorithmic translation.
+
+We believe that, while select-\&-merge languages like Chorλ are equivalent
+in expressivity and communication efficiency to enclaves-\&-MLVs languages like \HLSCentral,
+\HLSCentral's syntax and semantics are more user-friendly for most software engineering purposes.
+In the following chapter we present an eDSL implementation of enclave-\&-MLVs choreographic programming,
+and demonstrate its use.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \begin{minted}[xleftmargin=10pt,linenos]{bash}
+case ( first_secret[p] ()@p ) of Inl _ => case ( second_secret[p] ()@p ) of
+                                            Inl _ => let w = com[q][p] n_q1;
+                                                     select[p][q] L;
+                                                     let _ = com[p][q] (w + 1@p);
+                                                     w + 1@p;
+                                            Inr _ => let w = com[q][p] n_q1;
+                                                     let y = 2@p;
+                                                     select[p][q] L;
+                                                     let _ = com[p][q] (w + y);
+                                                     w;
+                                 Inr _ => let w = com[q][p] n_q1;
+                                          case (second_secret[p] ()@p ) of
+                                            Inl s => select[p][q] L;
+                                                     let _ = com[p][q] 5@p;
+                                                     s;
+                                            Inr _ => select[p][q] R;
+                                                     let z = com[q][p] n_q2;
+                                                     w + z;
+    \end{minted}
+    \caption{A contrived Chorλ choreography that is complicated to efficiently translate into \HLSCentral.}
+    \label{fig:chor-lambda-complex}
+    %\Description[An 18-line Chor-Lambda choreography in which there are four parallel branches, only one of which is has special behavior for the second party.]
+     %           {An 18-line Chor-Lambda choreography in which there are four parallel branches
+      %          (a case expression containing a case in each of its two branches).
+       %         Branching is controlled by party "p", and "p" behaves differently in every branch.
+        %        Party "q" has identical behavior in three of the branches, but not the forth.
+         %       In those three branches, "q" is sent the flag "L" via "select", in the forth they are sent "R".
+          %      Thus, although "p" branches on two bits, only one bit needs to be sent to "q" for KoC.}
+    \end{mdframed}
+\end{figure}
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \begin{minted}[xleftmargin=10pt,linenos]{bash}
+let w = com[q][p] n_q1;
+let (cache, flag) = case ( first_secret[p] ()@[p] ) of
+  Inl _ => (Inl (second_secret[p] ()@[p]), Inl ()@[p]);
+  Inr _ => case (second_secret[p] ()@[p]) of
+             Inl s  => (Inr s , Inl ()@[p]);
+             Inr s_ => (Inr s_, Inr ()@[p]);  # s_ doesn't get used
+let flag_ = com[p][p,q] flag;
+case flag_ of Inl _ => let (message, result) = case cache of
+                         Inl cl => case cl of
+                                     Inl _ => (w + 1@[p], w + 1@[p]);
+                                     Inr _ => let y = 2@[p];
+                                              (w + y    , w);
+                         Inr s => (5@[p], s);
+                       let _ = com[p][q] message;
+                       result;
+              Inr _ => let z = com[q][p] n_q2;
+                       w + z
+    \end{minted}
+        \caption{A \HLSCentral re-implementation of the choreography from Figure~\ref{fig:chor-lambda-complex}.}
+    \label{fig:our-complex-human}
+    %\Description[17 lines of He-Lambda-Small code. The program flow from the earlier program largely refactored.]
+     %           {17 lines of He-Lambda-Small code.
+      %          The program flow is greatly different because this is a human translation and
+       %         He-Lambda-Small represents different patterns concisely than Chor-Lambda does.}
+    \end{mdframed}
+\end{figure}
+
 
 \bibliographystyle{chicago}
 \bibliography{refs}

@@ -9,14 +9,19 @@
 \usepackage[titletoc,toc,title]{appendix}
 \usepackage{chapterbib}
 \usepackage{cite}
+\usepackage{hyperref}
 \usepackage[pdftex]{graphicx}
+\usepackage{mathtools}
 \usepackage{mdframed}
 \usepackage{minted}
 \usepackage{multirow}
+\usepackage{newtx}
 \usepackage{newunicodechar}
 \usepackage{pdfcomment}
+\usepackage{semantic}
 \usepackage{subfigure}
 \usepackage{tabularx}
+\usepackage{textgreek}
 \usepackage{titlesec}
 \usepackage{url}
 \usepackage{xspace}
@@ -98,6 +103,14 @@
 \newcommand{\HLSNet}{$\boldsymbol{\lambda}_{\boldsymbol{N}}$\xspace}
 \newcommand{\MultiChor}{Multi\-Chor\xspace}
 
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\newcommand{\todo}[1]
+    {{\color{red} \fbox{\bfseries\sffamily\scriptsize{TODO}}
+    {\small$\blacktriangleright$\textsf{\emph{#1}}$\blacktriangleleft$}}~}
+
 \widowpenalty=1000000
 \clubpenalty=1000000
 
@@ -121,6 +134,7 @@
 \begin{document}
 \maketitle
 \makeacceptance
+
 
 \begin{abstract}
 Presents both MultiChor (and possibly a distinct variant MiniChor) and a formalism "He Lambda something".
