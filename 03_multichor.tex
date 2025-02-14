@@ -687,41 +687,6 @@ This is a flexible system within which users can easily write their own novel an
 we will show in the following section that such flexibility is not entirely necessary for census polymorphism.
 
 
-\section{Future Work}
-\label{sec:future-implementation}
-It is natural to ask why \MultiChor has a "core" API distinct from the ergonomic API afforded to end-users.
-This design pattern makes reasoning about \MultiChor's implementation easier;
-whether there are any performance implications has not been explored\footnote{
-  The need for methods for comparing the performance of CP systems was acknowleged by the community
-  of CP researchers attending PLDI24.
-}.
-In the coming months, we would like to push the simplicity of the core API even further:
-\begin{enumerate}
-  \item The use of a freer monad system is not actually necessary.
-        It facilitates implementation, but it's also an additional "moving part" that can be removed
-        without affecting the system's behavior.
-  \item As mentioned earlier \todo{link}, the functions \inlinecode{flatten} and \inlinecode{othersForget}
-        could be removed from the core API and replaced with derived monadic functions.
-        This would be a step backwards for the ergonomics of \MultiChor,
-        so we do not advocate making such a change to the version published on Hackage.
-  \item Replacing the core operation \inlinecode{congruently'} with \inlinecode{naked}
-        (a monadic operator that unwraps an MLV known to the entire census)
-        may degrade ergonomics.
-        On the other hand, it would allow simplification of \inlinecode{locally'}
-        by obviating the \inlinecode{Unwrap} argument;
-        \ie \inlinecode{locally'}'s argument would no longer be a function at all!
-  \item Having made the above changes, the only remaining place where \inlinecode{Located} values would get unwrapped
-        would be \inlinecode{naked}.
-        We would be able to remove the underlying \inlinecode{Choreo} constructor for \inlinecode{naked}
-        and change the implementation of \inlinecode{Located} to be a \inlinecode{newtype} wrapper for
-        a census-polymorphic choreography yielding the target value.
-        In other words, \inlinecode{naked} would be the field accessor function for \inlinecode{Located}.
-\end{enumerate}
-
-We have already demonstrated the viability of the above changes in a reduced "scratch" environment.
-By finishing that work (porting them back to a fork of \MultiChor and showing that no expressivity is lost),
-we will facilitate subsequent theoretical work on CP, which would benefit from a formal model more closely aligned with
-\MultiChor's API than \HLSCentral is.
 
 \bibliographystyle{chicago}
 \bibliography{refs}

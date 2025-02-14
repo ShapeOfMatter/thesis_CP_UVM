@@ -104,20 +104,20 @@ Chorλ~\cite{chor-lambda}.
 we omit recursion and polymorphism because they are orthogonal to our goals here.
 Specifically, we will show that multiply-located values and enclaving operations are sufficient for a sound
 CP language without further KoC management.
-In Sections~\ref{sec:syntax} through~\ref{sec:semantics}
+In \Crefrange{sec:syntax}{sec:semantics}
 we describe the syntax, type system, and semantics of \HLSCentral.
 As in other choreographic languages, the primary semantics describes the intended \emph{meaning} of choreographies
 and can be used to reason about their behavior,
 but is not the "ground truth" of concurrent execution.
-Sections~\ref{sec:local-lang} through~\ref{sec:networks} describe the languages of distributed processes,
+\Crefrange{sec:local-lang}{sec:networks} describe the languages of distributed processes,
 \HLSLocal and \HLSNet,
 and define endpoint projection for \HLSCentral.
 %
-In Section~\ref{sec:deadlock-freedom}, we prove that the behavior of a choreography's projection in \HLSNet
+In \Cref{sec:deadlock-freedom}, we prove that the behavior of a choreography's projection in \HLSNet
 matches that of the original \HLSCentral choreography, and that \HLSCentral's type system ensures deadlock-freedom.
 
 \subsection{Syntax}\label{sec:syntax}
-The syntax of \HLSCentral is in Figure~\ref{fig:syntax}.
+The syntax of \HLSCentral is in \Cref{fig:syntax}.
 Location information sufficient for typing, semantics, and EPP is explicit in
 the expression forms.
 We distinguish between "pairs"
@@ -183,11 +183,11 @@ T  \BNF   &  d@\nonempty{p}          && \text{A complete multiply-located data t
 
 \subsection{The Mask Operator}\label{sec:masking}
 Here we introduce the \mask operator,
-the purpose of which is to allow Theorem~\ref{theorem:preservation}
-(semantic stepping preserves types, Section~\ref{sec:preservation-proof})
+the purpose of which is to allow \Cref{theorem:preservation}
+(semantic stepping preserves types, \Cref{sec:preservation-proof})
 to hold
 without adding sub-typing or polymorphism to \HLSCentral.
-\mask is a partial function defined in Figure~\ref{fig:masking};
+\mask is a partial function defined in \Cref{fig:masking};
 the left-hand argument is either a type (in which case it returns a type)
 or a value (in which case it returns a value).
 The effect of \mask is very similar to EPP,
@@ -279,7 +279,7 @@ and similar masking in the semantic rules ensures type preservation.
 \end{figure}
 
 \subsection{Typing Rules}\label{sec:typing}
-The typing rules for \HLSCentral are in Figure~\ref{fig:typing}.
+The typing rules for \HLSCentral are in \Cref{fig:typing}.
 A judgment $Θ;Γ ⊢ M : T$ says that $M$ has type $T$ in the context
 of a non-empty census Θ
 and a (possibly empty) list of variable bindings $Γ=(x_1:T_1), \dots (x_n:T_n)$.
@@ -392,9 +392,9 @@ it may need to be applied arbitrarily many times with different party-sets
 inside the new expressions, and it may not even be defined for all such
 party-sets.
 Conceptually, this just recapitulates the masking performed in \textsc{TVar}.
-To formalize these subtleties, in Figure~\ref{fig:substitution} we specialize the normal variable-substitution
+To formalize these subtleties, in \Cref{fig:substitution} we specialize the normal variable-substitution
 notation $M[x:=V]$ to perform location-aware substitution.
-In Section~\ref{sec:substitution-proof} we prove Theorem~\ref{theorem:substitution},
+In \Cref{sec:substitution-proof} we prove \Cref{theorem:substitution},
 which shows that this specialized substitution operation
 satisfies the usual concept of substitution.
 
@@ -447,8 +447,8 @@ N_1 N_2     \DEFCASE & N_1[x:=V] N_2[x:=V] \\
 \subsection{Centralized Semantics}\label{sec:semantics}
 
 The semantic stepping rules for evaluating \HLSCentral expressions
-are in Figure~\ref{fig:semantics}.
-In Sections~\ref{sec:local-lang}, \ref{sec:projection}, and \ref{sec:networks}
+are in \Cref{fig:semantics}.
+In \Cref{sec:local-lang,sec:projection,sec:networks}
 we will develop the "ground truth" of the distributed process semantics and show that
 the \HLSCentral's semantics correctly capture distributed behavior.
 
@@ -537,7 +537,7 @@ the effect of this is that "data" values can be sent but other values
 (functions and variables) cannot.
 
 As is typical for a typed lambda calculus, \HLSCentral enjoys preservation and progress.
-We prove these properties in Sections~\ref{sec:preservation-proof} and~\ref{sec:progress-proof} respectively.
+We prove these properties in \Cref{sec:preservation-proof,sec:progress-proof} respectively.
 
 
 \subsection{The Local Process Language}\label{sec:local-lang}
@@ -548,7 +548,7 @@ we need a locally-computable language, \HLSLocal, into which it can project.
 to avoid ambiguity we denote \HLSLocal expressions $B$ (for "behavior")
 instead of $M$ (which denotes a \HLSCentral expression)
 and \HLSLocal values $L$ instead of $V$.
-The syntax is presented in Figure~\ref{fig:local-syntax}.
+The syntax is presented in \Cref{fig:local-syntax}.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
@@ -589,7 +589,7 @@ or "somebody else's problem".
 
 The behavior of ⊥ during semantic evaluation can be handled a few different ways,
 the pros-and-cons of which are not important in this work.
-We use a ⊥-normalizing "floor" function, defined in Figure~\ref{fig:floor},
+We use a ⊥-normalizing "floor" function, defined in \Cref{fig:floor},
 during EPP and semantic stepping to avoid ever handling
 ⊥-equivalent expressions like $\PAIR ⊥ ⊥$ or $⊥ ()$.
 
@@ -647,12 +647,12 @@ B_1 B_2                      \DEFCASE &
 \end{figure}
 
 
-\HLSLocal's semantic stepping rules are given in Figure~\ref{fig:local-semantics}.
+\HLSLocal's semantic stepping rules are given in \Cref{fig:local-semantics}.
 Local steps are labeled with send ($⊕$) and receive ($⊖$) sets, like so:
 $B \prcstep{\set{(p,L_1), (q,L_2)}}{\set{(r, L_3), (s, L_4)}} B'$,
 or $B \prcstep{μ}{η} B'$ when we don't need to inspect the contents of the annotations.
 The floor function is used to keep expressions normalized during evaluation.
-Otherwise, most of the rules are analogous to the corresponding \HLSCentral rules from Figure~\ref{fig:semantics}.
+Otherwise, most of the rules are analogous to the corresponding \HLSCentral rules from \Cref{fig:semantics}.
 The \textsc{LSend-} rules are defined recursively, similar to the \textsc{Com-} rules.
 \textsc{LSendSelf} shows that $\SEND{}^{\ast}$ is exactly like $\SEND{}$
 except it locally acts like \inlinecode{id} instead of returning ⊥.
@@ -743,7 +743,7 @@ Endpoint projection (EPP) is the translation between the choreographic language 
 and the local process language \HLSLocal;
 necessarily it's parameterized by the specific
 local process you're projecting \emph{to}.
-$⟦M⟧_p$ is the projection of $M$ to $p$, as defined in Figure~\ref{fig:eep}.
+$⟦M⟧_p$ is the projection of $M$ to $p$, as defined in \Cref{fig:eep}.
 It does a few things:
 Most location annotations are removed, some expressions become ⊥,
 ⊥-based expressions are normalized by the floor function,
@@ -833,7 +833,7 @@ $⟦M⟧ = Π_{p \in \roles{M}} p[⟦M⟧_p]$.
 For example, if $p$ and $q$ are the only parties in $M$, then
 $⟦M⟧ = p[⟦M⟧_p] \mid q[⟦M⟧_q]$.
 
-The rules for \HLSNet semantics are in Figure~\ref{fig:networks}.
+The rules for \HLSNet semantics are in \Cref{fig:networks}.
 \HLSNet semantic steps are annotated with \emph{incomplete} send actions;
 $\mathcal{N} \netstep{p}{\set{\dots,(q_i, L_i),\dots}} \mathcal{N}'$
 indicates a step in which $p$ sent a respective $L_i$ to each of the listed $q_i$
@@ -885,10 +885,10 @@ compose with the $s$ step and remove the respective party from the step-annotati
 
 \subsection{Deadlock Freedom}\label{sec:deadlock-freedom}
 Above we introduced the necessary machinery of EPP and evaluation of a network of communicating processes.
-In Section~\ref{sec:soundness-proof} we prove that EPP is \emph{sound}
-(Theorem~\ref{theorem:soundness}, any behavior possible for the \HLSNet projection of a choreography is also possible in the original \HLSCentral).
-In Section~\ref{sec:completeness-proof} we prove that EPP is \emph{complete}
-(Theorem~\ref{theorem:completeness}, any behavior possible in \HLSCentral is also possible in the \HLSNet projection).
+In \Cref{sec:soundness-proof} we prove that EPP is \emph{sound}
+(\Cref{theorem:soundness}, any behavior possible for the \HLSNet projection of a choreography is also possible in the original \HLSCentral).
+In \Cref{sec:completeness-proof} we prove that EPP is \emph{complete}
+(\Cref{theorem:completeness}, any behavior possible in \HLSCentral is also possible in the \HLSNet projection).
 
 The central promise of choreographic programming is that participants in well-formed choreographies
 will never get stuck waiting for messages they never receive.
@@ -899,8 +899,8 @@ This important property, \textit{"deadlock freedom by design"}, is trivial once 
     then either $\mathcal{N} \netstep{}{∅}^{\ast} \mathcal{N}'$
     or for every $p\in\roles{M}$, $\mathcal{N}(p)$ is a value.
 
-    This follows from Theorem~\ref{theorem:soundness}, Theorem~\ref{theorem:preservation},
-    Theorem~\ref{theorem:progress}, and Theorem~\ref{theorem:completeness}.
+    This follows from \Cref{theorem:soundness}, \Cref{theorem:preservation},
+    \Cref{theorem:progress}, and \Cref{theorem:completeness}.
 \end{corollary}
 
 
@@ -933,13 +933,13 @@ Considering the other direction, \HLSCentral can likewise match the communicatio
 and other \inlinecode{select}-based languages.
 Typically, this is as simple as multicasting the branch guard to all parties that would have received a \inlinecode{select}
 (and to oneself, the original branching party).
-Figures~\ref{fig:epp2} and~\ref{fig:epp3} show a simple translation;
+\Cref{fig:epp2,fig:epp3} show a simple translation;
 in the \HLSCentral version the guard-boolean is sent to everyone who was (in the Chorλ version) informed of the choice by \inlinecode{select},
 and everyone branches together
 \todo{These were figures 3 and 4 from We Know I Know; they were much earlier in the paper; IDK if we'll want them here or not}.
 In other situations a party might participate in branches without receiving a \inlinecode{select}
 because they don't need to know which one they are in;
-this is handled with the reverse of the transformation we showed between Figures~\ref{fig:our-client-server} and~\ref{fig:pirouette-client-server}
+this is handled with the reverse of the transformation we showed between \Cref{fig:our-client-server,fig:pirouette-client-server}
 \todo{this was a reference to the Pirouette subsection; it might be good to have it}.
 
 A fully-general algorithmic translation that never compromises on communication efficiency won't maintain the program's structure.
@@ -972,10 +972,10 @@ The strategy is as follows:
         In each branch, unpack the cached variables (and bind the results of $N_2$ if needed) and proceed with recursive translation of the continuation.
 \end{itemize}
 Neither \cite{chor-lambda} nor \cite{chor-lambda-2} contain examples requiring such a complicated translation.
-Figure~\ref{fig:chor-lambda-complex} shows a made-up Chorλ choreography;
+\Cref{fig:chor-lambda-complex} shows a made-up Chorλ choreography;
 translating it into \HLSCentral without compromising communication efficiency is more involved than earlier examples were.
-Figure~\ref{fig:our-complex-human} shows how a human might re-implement that choreography in \HLSCentral.
-Appendix~\ref{sec:translation} contains a more algorithmic translation.
+\Cref{fig:our-complex-human} shows how a human might re-implement that choreography in \HLSCentral.
+\Cref{sec:translation} contains a more algorithmic translation.
 
 We believe that, while select-\&-merge languages like Chorλ are equivalent
 in expressivity and communication efficiency to enclaves-\&-MLVs languages like \HLSCentral,
@@ -1038,7 +1038,7 @@ case flag_ of Inl _ => let (message, result) = case cache of
               Inr _ => let z = com[q][p] n_q2;
                        w + z
     \end{minted}
-        \caption{A \HLSCentral re-implementation of the choreography from Figure~\ref{fig:chor-lambda-complex}.}
+        \caption{A \HLSCentral re-implementation of the choreography from \Cref{fig:chor-lambda-complex}.}
     \label{fig:our-complex-human}
     %\Description[17 lines of He-Lambda-Small code. The program flow from the earlier program largely refactored.]
      %           {17 lines of He-Lambda-Small code.

@@ -1,0 +1,48 @@
+\chapter{Ongoing Work}
+\chaptermark{\MultiChor?} %this is the chapter heading that will show on subsequent pages
+\label{sec:future}
+
+We believe \MultiChor to be the best off-the-shelf system presently available for any real-world applications of CP.
+We are also confident that \HLSCentral and the associated theorems demonstrate the theoretical soundness of the enclaves-\&-MLVs
+CP paradigm.
+That said, it is unsatisfying that the syntactic structures of these two systems are so different from each other.
+Furthermore, it is not clear that these systems as they stand are good foundations for the development of more advanced CP techniques.
+We propose to make changes to one or both systems in the coming months,
+to make them align with each other better
+and to facilitate subsequent work in this area.
+
+\section{"Mini"-Chor}
+\label{sec:future-implementation}
+It is natural to ask why \MultiChor has a "core" API distinct from the ergonomic API afforded to end-users.
+This design pattern makes reasoning about \MultiChor's implementation easier;
+whether there are any performance implications has not been explored\footnote{
+  The need for methods for comparing the performance of CP systems was acknowleged by the community
+  of CP researchers attending PLDI24.
+}.
+In the coming months, we would like to push the simplicity of the core API even further:
+\begin{enumerate}
+  \item The use of a freer monad system is not actually necessary.
+        It facilitates implementation, but it's also an additional "moving part" that can be removed
+        without affecting the system's behavior.
+\item As mentioned in \Cref{sec:multichor}, the functions \inlinecode{flatten} and \inlinecode{othersForget}
+        could be removed from the core API and replaced with derived monadic functions.
+        This would be a step backwards for the ergonomics of \MultiChor,
+        so we do not advocate making such a change to the version published on Hackage.
+  \item Replacing the core operation \inlinecode{congruently'} with \inlinecode{naked}
+        (a monadic operator that unwraps an MLV known to the entire census)
+        may degrade ergonomics.
+        On the other hand, it would also allow simplification of \inlinecode{locally'}
+        by obviating the \inlinecode{Unwrap} argument;
+        \ie \inlinecode{locally'}'s argument would no longer be a function at all!
+  \item Having made the above changes, the only remaining place where \inlinecode{Located} values would get unwrapped
+        would be \inlinecode{naked}.
+        We would be able to remove the underlying \inlinecode{Choreo} constructor for \inlinecode{naked}
+        and change the implementation of \inlinecode{Located} to be a \inlinecode{newtype} wrapper for
+        a census-polymorphic choreography yielding the target value.
+        In other words, \inlinecode{naked} would be the field accessor function for \inlinecode{Located}.
+\end{enumerate}
+
+By making these changes, which we expect to preserve in a clearly labeled fork of \MultiChor,
+we will facilitate subsequent theoretical work on CP.
+In particular, the reduced API would make a good target for a more fully-featured formal model.
+

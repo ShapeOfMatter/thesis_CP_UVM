@@ -97,6 +97,8 @@
 \newcommand{\ChoreographyTS}{ChoreoTS\xspace}
 \newcommand{\chorLambda}{Chor$\lambda$\xspace}
 \newcommand{\Chorus}{ChoRus\xspace}
+\newcommand{\dotcho}{\textsc{\textbf{.}CHO}\xspace}
+\newcommand{\dtsim}{\textsc{DT-SIM}\xspace}
 \newcommand{\HasChor}{Has\-Chor\xspace}
 \newcommand{\HLSCentral}{$\boldsymbol{\lambda}_{\boldsymbol{C}}$\xspace}
 \newcommand{\HLSLocal}{$\boldsymbol{\lambda}_{\boldsymbol{L}}$\xspace}
@@ -154,15 +156,9 @@ Specifically, we will be in the window between rebuttal and final acceptence/rej
 
 \end{citationspage}
 
-\begin{acknowledgements}  %% Optional
-Probably a shout-out to my co-authors to date.
-Do I need to acknolege funding?
-That's probably everything that goes here...
-\end{acknowledgements}
-
 \tableofcontents
 \listoffigures
-\listoftables
+%\listoftables
 
 \mainmatter
 \sloppy
@@ -175,10 +171,11 @@ That's probably everything that goes here...
 \include{01_intro}
 \include{02_calculus}
 \include{03_multichor}
+\include{04_future}
 
 \bibliographystyle{chicago}
 \bibliography{refs}
 
-\input{appendix}
+\input{hls}
 
 \end{document}
