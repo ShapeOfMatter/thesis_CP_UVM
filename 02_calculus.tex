@@ -2,10 +2,6 @@
 \chaptermark{Formalism???} %this is the chapter heading that will show on subsequent pages
 \label{sec:formalism}
 
-\begin{quote}
-Do chapters really need their own abstracts?
-\end{quote}
-
 
 \section{Introduction}
 While the most urgent shortcoming of HasChor's KoC strategy is that it induces extraneous communication costs,
@@ -14,7 +10,8 @@ Sequential conditional clauses on the same branch-guard (\textit{aka} "scrutinee
 We address this issue directly by extending the notion of located values into \emph{multiply located values} (MLVs).
 MLVs allow multiple parties to branch together on a shared guard;
 in addition to recyclability, this alleviates the need for a designated \inlinecode[bash]{select} operator.
-In this section we present a formal model of a higher-order functional CP language that uses MLVs and \emph{census tracking}
+In this section we present \HLSCentral,
+a formal model of a higher-order functional CP language that uses MLVs and \emph{census tracking}
 to guarantee proper KoC management entirely by type-checking and without compromising efficiency or expressivity.
 
 \begin{figure}[tbhp]
@@ -49,7 +46,7 @@ in the value itself and EPP to any other party results in a special
 EPP of a multiply-located value for any of the owning parties results in the same value,
 and projection to any other party yields ⊥.
 Prior works have objects with multiple owners as emergent structures in a language
-(\eg choreographic processes~\cite{choral}, distributed choice types~\cite{chor-lambda-2}),
+(\eg choreographic processes~\cite{giallorenzo-choral}, distributed choice types~\cite{chor-lambda-2}),
 but these project to each owner's distinct view of the structure.
 
 Creation of an MLV within an choreographic runtime follows from the fact that
@@ -81,7 +78,12 @@ For example, the \HLSCentral expression $5@\set{p,q,r}+3@\set{p,q,r}$ represents
 
 As discussed in \Cref{sec:census}, prior systems have tracked censuses as attributes of choreographic functions.
 The ChoRus system introduced the \inlinecode{enclave} operator to explicitly limit the census within its argument,
-and showed how this could be used to avoid HasChor's overly broad \inlinecode{broadcasts}.
+and showed how this could be used to avoid HasChor's overly broad \inlinecode{broadcasts}\footnote{
+	As discussed in \cite{batesenclaves}, ChoRus has since been upgraded to incorporate
+	the innovations discussed in this work.
+	\cite{chorus} is an unpublished pre-print describing their system as it existed without MLVs or census polymorphism.
+
+}.
 An \inlinecode{enclave} operator is a good design choice for an embedded DSL,
 but is not necessary in an abstract or bespoke language where the action of enclaving can be built into relevant constructs like
 functions and conditionals.
@@ -93,8 +95,6 @@ and more amenable to implementation as an eDSL.
 
 \section{A Formal MLVs-\&-Enclaves Language}\label{sec:more-formalism}
 
-\todo{This is little changed from the enclaves paper, which is little changed from "We Know I Know You Know".
-More editing may make it jive better with the broader narrative.}
 \todo{work through at least one example in prose.}
 
 We present the \HLSCentral CP system.
@@ -184,7 +184,7 @@ T  \BNF   &  d@\nonempty{p}          && \text{A complete multiply-located data t
 \subsection{The Mask Operator}\label{sec:masking}
 Here we introduce the \mask operator,
 the purpose of which is to allow \Cref{theorem:preservation}
-(semantic stepping preserves types, \Cref{sec:preservation-proof})
+(semantic stepping preserves types)
 to hold
 without adding sub-typing or polymorphism to \HLSCentral.
 \mask is a partial function defined in \Cref{fig:masking};
@@ -537,6 +537,16 @@ the effect of this is that "data" values can be sent but other values
 (functions and variables) cannot.
 
 As is typical for a typed lambda calculus, \HLSCentral enjoys preservation and progress.
+
+\begin{theorem}[Preservation]\label{theorem:preservation}
+  If $Θ;∅ ⊢ M : T$ and $M \step M'$, then $Θ;∅ ⊢ M' : T$.
+\end{theorem}
+
+\begin{theorem}[Progress]\label{theorem:progress}
+  If $Θ;∅ ⊢ M : T$, then either M is of form $V$ (which cannot step)
+  or their exists $M'$ s.t. $M \step M'$.
+\end{theorem}
+
 We prove these properties in \Cref{sec:preservation-proof,sec:progress-proof} respectively.
 
 
@@ -903,7 +913,7 @@ This important property, \textit{"deadlock freedom by design"}, is trivial once 
     \Cref{theorem:progress}, and \Cref{theorem:completeness}.
 \end{corollary}
 
-
+\todo{mention variable uniqueness}
 
 
 \section{Comparisons with other systems}

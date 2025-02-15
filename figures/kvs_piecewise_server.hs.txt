@@ -2,11 +2,12 @@
 handleRequest :: Request -> IORef State -> IO Response
 
 kvs_primary :: IORef State -> IO ()
-kvs_primary stateRef = do request <- recv client  -- receive the request
-			  case request of         -- branch on the request
-			    Get _ -> pure ()      -- no-op
-			    Put _ _ -> do request `send` backup  -- send request to the backup node
-			                  ack <- recv backup     -- and get back an acknowlegement
-					  pure ()
-			  response <- handleRequest request stateRef  -- process the request locally
-			  response `send` client  -- send response to client
+kvs_primary stateRef = do
+    request <- recv client                      -- receive the request
+    case request of                             -- branch on the request
+      Get _ -> pure ()                          -- no-op
+      Put _ _ -> do request `send` backup       -- send request to the backup node
+                    ack <- recv backup          -- and get back an acknowlegement
+                    pure ()
+    response <- handleRequest request stateRef  -- process the request locally
+    response `send` client                      -- send response to client

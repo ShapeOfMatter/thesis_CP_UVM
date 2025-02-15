@@ -1,3 +1,4 @@
+type Servers = ["primary", "backup"]
 servers :: Subset Servers Participants
 servers = primary @@ backup @@ nobody
 

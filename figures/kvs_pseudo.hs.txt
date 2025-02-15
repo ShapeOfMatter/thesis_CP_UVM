@@ -3,17 +3,16 @@ kvs :: Located '["client"] Request ->
        Located '["backup"] (IORef State) ->
        Choreo Participants IO (Located '["client"] Response)
 kvs request primaryStateRef backupStateRef = do
-  -- send request to the primary node
-  request' <- (client, request) `comm` primary
-  -- branch on the request
-  case request' of
+  request' <- (client, request) `comm` primary  -- send request to the primary node
+  case request' of                              -- branch on the request
     Get _ -> pure ()
-    Put _ _ -> do request'' <- (primary, request') `comm` backup
-                  success <- backup `locally` (handleRequest <$> request'' <*> backupStateRef)
-		  ack <- (backup, success) `comm` primary
-		  pure ()
-  -- process request on the primary node
-  response <- primary `locally` (handleRequest <$> request' <*> primaryStateRef)
-  -- send response to client
-  result <- (primary, response) ~> client @@ nobody
+    Put _ _ -> do
+      request'' <- (primary, request') `comm` backup  -- forward the request to the backup
+      success <- backup `locally`                     -- the backup does local work:
+                   (handleRequest <$> request'' <*> backupStateRef)
+      ack <- (backup, success) `comm` primary
+      pure ()
+  response <- primary `locally`                 -- the primary server does local work:
+                (handleRequest <$> request' <*> primaryStateRef)
+  result <- (primary, response) `comm` client @@ nobody  -- send response to client
   return result

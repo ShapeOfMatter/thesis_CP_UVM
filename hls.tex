@@ -169,9 +169,9 @@ By induction on the typing of $M$.
 
 \subsection{Theorem~\ref{theorem:preservation}}
 
-\begin{theorem}[Preservation]\label{theorem:preservation}
-  If $Θ;∅ ⊢ M : T$ and $M \step M'$, then $Θ;∅ ⊢ M' : T$.
-\end{theorem}
+To repeat: Theorem~\ref{theorem:preservation} says that
+if $Θ;∅ ⊢ M : T$ and $M \step M'$,
+then $Θ;∅ ⊢ M' : T$.
 
 We prove this by induction on typing rules for $M$.
 The eleven base cases (values) fail the assumption that $M$ can step,
@@ -233,10 +233,10 @@ so we consider the recursive cases:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proof of The Progress Theorem}\label{sec:progress-proof}
 
-\begin{theorem}[Progress]\label{theorem:progress}
-  If $Θ;∅ ⊢ M : T$, then either M is of form $V$ (which cannot step)
-  or their exists $M'$ s.t. $M \step M'$.
-\end{theorem}
+\Cref{theorem:progress} says that
+if $Θ;∅ ⊢ M : T$,
+then either M is of form $V$ (which cannot step)
+or their exists $M'$ s.t. $M \step M'$.
 
 The proof is by induction of typing rules.
 There are eleven base cases and two recursive cases.

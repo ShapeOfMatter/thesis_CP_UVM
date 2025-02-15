@@ -1,24 +1,21 @@
 \chapter{Introduction and Literature Review}
 
-\begin{quote}
-Choreographic programming is a language paradigm for writing concurrent software systems of various kinds.
-It's comparatively young; while some of the ideas have existed informally as far back as the 1970s,
-choreographic programming as it's understood today was first formalized in~\shortcite{montesi-carbone-dfbd}.
-In this chapter we describe the central concepts of choreographic programming,
-its advantages and disadvantages,
-and past and ongoing work to push the boundaries of the kinds of systems it can implement.
-\end{quote}
-
 \section{Introduction}
 
 Choreographic programming (CP)
-is a paradigm for implementing distributed systems in which the programmer writes one unified program, called a choreography,
+is a language paradigm for implementing distributed systems in which the programmer writes one unified program, called a choreography,
 that describes how the participants of the system interact
 from a third-person-omniscient perspective.~\shortcite{montesi-carbone-dfbd,montesi-dissertation,montesi_book}
 A choreography can be translated into to a collection of executable programs for use in the real world, one for each participant;
 this process is called endpoint projection (EPP).
 The CP approach has benefits both for understandability of distributed system implementations,
 and for strong static guarantees about the deadlock-freedom of the resulting executable code~\cite{montesi-carbone-dfbd}.
+
+The study of CP is comparatively young; while some of the ideas have existed informally as far back as the 1970s,
+choreographic programming as it's understood today was first formalized in~\shortcite{montesi-carbone-dfbd}.
+In this chapter we describe the central concepts of choreographic programming,
+its advantages and disadvantages,
+and past and ongoing work to push the boundaries of the kinds of systems it can implement.
 
 \subsection{An illustrative example}
 
@@ -32,42 +29,43 @@ and judge for oneself if the communication protocol implemented is sensical.
 One might even judge that this simple protocol has a bug:
 if the request is a \inlinecode{Get}, the backup server will hang indefinitely!
 
-\begin{figure}[tbhp]\caption{A Simple Concurrent Protocol: a key-value store with a backup server}
+\begin{figure}[tbhp]
   \begin{mdframed}
   \begin{tabular}{c}
-  \begin{minipage}{12.5cm}
+  \begin{minipage}{0.95\linewidth}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_client.hs.txt}
   \end{minipage} \\\\
-  \begin{minipage}{12.5cm}
+  \begin{minipage}{0.95\linewidth}
 	  \textbf{(a)} The function to be called by the client process.
 	  They pass in their \inlinecode{Request} object and send it to the server.
 	  Then they receive a response from the server and return it.
   \end{minipage}\\\\
   \hline\\
-  \begin{minipage}{12.5cm}
+  \begin{minipage}{0.95\linewidth}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_server.hs.txt}
   \end{minipage} \\\\
-  \begin{minipage}{12.5cm}
-  The function to be called by the primary server.
+  \begin{minipage}{0.95\linewidth}
+  \textbf{(b)} The function to be called by the primary server.
 	  They pass in a reference to their mutable state, and receive a message of type \inlinecode{Request} from the client.
 	  In the case of a \inlinecode{Put} request, they forward it to the backup server and check for the backup's acknowledgement.
 	  In either case, they process the request against their own mutable state and send the response back to the client.
   \end{minipage}\\\\
   \hline\\
-  \begin{minipage}{12.5cm}
+  \begin{minipage}{0.95\linewidth}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_piecewise_backup.hs.txt}
   \end{minipage} \\\\
-  \begin{minipage}{12.5cm}
-  The function to be called by the backup server.
+  \begin{minipage}{0.95\linewidth}
+  \textbf{(c)} The function to be called by the backup server.
 	  They pass in a reference to their mutable state, and receive a \inlinecode{Put} message from the primary server.
 	  They process it against their mutable state and send back an acknowledgement message to indicate their success.
   \end{minipage}
   \end{tabular}
+  \caption{A Simple Concurrent Protocol: a key-value store with a backup server}
   \label{fig:kvspiecewise}
   \end{mdframed}
 \end{figure}
 
-In \Cref{sec:background} we will mention some intermediate frameworks that have historically been used to facilitate
+In \Cref{sec:history} we will mention some intermediate frameworks that have historically been used to facilitate
 writing large and complicated concurrent protocols,
 but here we jump ahead to choreographic programming (CP).
 \Cref{fig:kvspseudo} shows the same protocol as \Cref{fig:kvspiecewise}, but implemented as a choreography.
@@ -83,33 +81,37 @@ In fact, the choreography in \Cref{fig:kvspseudo} cannot compile in any real CP 
 because \inlinecode{"backup"}'s behavior is ambiguous.
 \Cref{fig:kvsenclave} shows two variations of how to realize the KVS behavior in Haskell using our \MultiChor library.
 
-\begin{figure}[tbhp]\caption{A Simple Choreography: a key-value store with a backup server}
+\begin{figure}[tbhp]
   \begin{mdframed}
   \begin{tabular}{c}
-  \begin{minipage}{12.5cm}
+  \begin{minipage}{0.95\linewidth}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_pseudo.hs.txt}
   \end{minipage} \\\\
-  \begin{minipage}{12.5cm}
-	  A pseudo-code choreographic implementation of the protocol from \Cref{fig:kvspiecewise}.
+  \begin{minipage}{0.95\linewidth}
+	  This pseudo-code choreography implements the protocol from \Cref{fig:kvspiecewise} as a single program.
+	  As written, it is not actually realizable because \inlinecode{backup} doesn't know
+	  whether to expect a message or not.
+	  Real CP systems have ways of detecting and fixing problems like this.
   \end{minipage}
   \end{tabular}
+  \caption{A Simple Choreography: a key-value store with a backup server}
   \label{fig:kvspseudo}
   \end{mdframed}
 \end{figure}
 
 
-\begin{figure}[tbhp]\caption{A Real Choreography: a key-value store writing using \MultiChor}
+\begin{figure}[tbhp]
   \begin{mdframed}
   \begin{tabular}{c c}
-  \begin{minipage}{8.75cm}
+  \begin{minipage}{9.75cm}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsenclave_a.hs.txt}
   \end{minipage}
   &
   \begin{minipage}{3.75cm}
     \includegraphics[width=4cm]{figures/seq2.pdf}
   \end{minipage} \\\\
-  \multicolumn{2}{c}{\begin{minipage}{12.5cm}
-  A key-value store with a backup server, written in \MultiChor.
+  \multicolumn{2}{c}{\begin{minipage}{0.95\linewidth}
+	  \textbf{(a)} A key-value store with a backup server, written in \MultiChor.
            The backup server sends an acknowledgement message \textsf{ack} to the primary server
            if and only if \inlinecode{request} is a \inlinecode{Put}.
            The \inlinecode{broadcast} operator (line 19) ensures KoC
@@ -117,19 +119,20 @@ because \inlinecode{"backup"}'s behavior is ambiguous.
            but it results in redundant communication (shown in red in the sequence diagram).
   \end{minipage}}\\\\
   \hline\\
-  \begin{minipage}{8.75cm}
+  \begin{minipage}{9.75cm}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsenclave_b.hs.txt}
   \end{minipage}
   &
   \begin{minipage}{3.75cm}
      \includegraphics[width=4cm]{figures/seq3.pdf}
   \end{minipage} \\\\
-  \multicolumn{2}{c}{\begin{minipage}{12.5cm}
-  In this variation, the \inlinecode{enclave} operator eliminates the redundant communication.
+  \multicolumn{2}{c}{\begin{minipage}{0.95\linewidth}
+	  \textbf{(b)} In this variation, the \inlinecode{enclave} operator eliminates the redundant communication.
            The enclaved sub-choreography is indicated by a box in the sequence diagram.
-           On line~2, \inlinecode{@@ nobody} is \MultiChor idiom explained in \Cref{sec:membership}.
+           On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \todo{sec:membership}.
   \end{minipage}}
   \end{tabular}
+  \caption{A Real Choreography: a key-value store writing using \MultiChor, two variations.}
   \label{fig:kvsenclave}
     %%\Description{In the top section, twenty four lines of Haskell code using the MultiChor library, with a UML sequence diagram of that program.
 %%	The code defines a choreography called "kvs", and helper-functions "handleRequest" and "handleBackup".
@@ -148,7 +151,6 @@ because \inlinecode{"backup"}'s behavior is ambiguous.
 \end{figure}
 
 
-Here is a citation, \shortcite{li2021model}.
 
 \subsection{Layout and Contributions}
 
@@ -178,15 +180,14 @@ The most important example of this, which we call "census polymorphism" is the a
 that are parametric over their set of participants.
 This capability is novel among CP systems, and the third contribution presented in this work.
 We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
-\Cref{sec:future-implementation} reviews some promising future, both theoretical and at the engineering level,
-that could improve \MultiChor's utility.
+
+\Cref{sec:future} explains a plan for modifications to the \MultiChor system to simplify its core mechanisms
+and facilitate further theoretical work.
 
 
 
 \section{Background}
 \label{sec:background}
-In this section, we give a brief overview of choreographic programming (CP).
-For a comprehensive introduction to the topic, we refer the reader to~\cite{montesi_book}.
 
 Choreographic programming is a paradigm that expresses a distributed system
 as a single, global program describing the behavior and interactions of all parties.
@@ -194,7 +195,20 @@ The global view of the distributed system enables easier reasoning about the sys
 for example choreographic languages can ensure \emph{deadlock freedom}~\cite{montesi-carbone-dfbd}
 and choreographies can be composed modularly like normal single-threaded protocols.
 
+\subsection{History}
+\label{sec:history}
+\todo{write this section.}
 
+\subsection{Endpoint Projection}
+\label{sec:endpoint-projection}
+CP systems necessarily include a means by which a given computer can execute the behavior of a role in the choreography.
+Typically, this takes the form of a function from choreographies to programs in a "local" language
+which the target computer can execute.
+Such a function is parameterized by the target role, and is called \emph{Endpoint Projection} (EPP);
+the roles are "endpoints", \ie surfaces from which and into which messages pass,
+and the choreography is "projected" in the sense that the given endpoint's view of it is extracted.
+
+\todo{example}
 
 \subsection{Knowledge of Choice}
 \label{sec:knowledge-of-choice}
@@ -208,9 +222,12 @@ This challenge is referred to as the \emph{knowledge of choice}  (KoC)~\cite{cas
 All choreographic programming languages include a strategy for KoC
 that ensures that relevant parties have enough information to play their part in the program.
 
-\subsection{Endpoint Projection}
-\label{sec:endpoint-projection}
-Maybe this goes before KoC; I haven't decided.
+The pseudo-code in \Cref{fig:kvspseudo} shows a simple instance of this exact problem:
+\inlinecode{backup} doesn't know whether to expect a message or not,
+because that decision depends on a value (\inlinecode{request'}) that \inlinecode{backup} doesn't have.
+\todo{show how s\&m systems do it.}
+\todo{show how HasChor does it.}
+\todo{describe how predicate transformers would do it.}
 
 \subsection{The "Census" typing context}
 \label{sec:census}
@@ -218,7 +235,7 @@ Although it is a hallmark of CP that a user may write actions for various partie
 without demarcations of who "control" is passing to,
 it is not necessarily the case that every party that exists is eligible to take action at every place in the choreography.
 Some earlier works, \eg \cite{chor-lambda}, have tracked these sets of participants in their type systems,
-and used that typing context to control participation inside of function bodes.
+and used that typing context to control participation inside of function bodies.
 Such a typing context plays a more active role in this present work, so we coin the term \emph{"census"}
 for a typing context that controls which parties are "present" to participate in any given part of a choreography.
 
@@ -228,7 +245,7 @@ In terms of EPP, that's done by projecting the entire clause to ⊥ or some simi
 \subsection{Additional Literature}
 \label{sec:modern-work}
 
-Review recent work on CP systems, including other systems that use MLVs.
+\todo{Review recent work on CP systems, including other systems that use MLVs.}
 
 
 \bibliographystyle{chicago}
