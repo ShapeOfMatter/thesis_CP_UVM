@@ -1,0 +1,10 @@
+(fn request : (PutRequest + GetRequest)@[client] .
+  let request_ = com[client][primary] request;
+  let req = com[primary][primary, backup] request_;
+  let _ = case[primary, backup] req of
+    Inl _put => let _ack = com[backup][primary] (handleRequest@[backup] req);
+                ()@[primary, backup];
+    Inr _get => ()@[primary, backup];
+  let response : Response@[primary] = handleRequest@[primary] request_;
+  com[primary][client] response
+)@[client, primary, backup]

@@ -1,0 +1,13 @@
+kvs :: Request @ "client"
+       -> (IORef State @ "primary", IORef State @ "backup")
+       -> Choreo IO (Response @ "client")
+kvs request (primarySt, bkupSt) = do
+  request' <- (client, request) ~> primary
+  cond (primary, request') \case
+    Put _ _ -> do
+      req <- (primary, request') ~> backup
+      ack <- (backup, \un -> handleRequest (un req) (un bkupSt)) ~~> primary
+      return ()
+    Get _ -> return ()
+  response <- primary `locally` \un -> handleRequest (un request') (un primarySt)
+  (primary, response) ~> client

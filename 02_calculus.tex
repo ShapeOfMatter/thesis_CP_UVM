@@ -14,30 +14,10 @@ In this section we present \HLSCentral,
 a formal model of a higher-order functional CP language that uses MLVs and \emph{census tracking}
 to guarantee proper KoC management entirely by type-checking and without compromising efficiency or expressivity.
 
-\begin{figure}[tbhp]
-    \begin{mdframed}
-    \begin{minted}[xleftmargin=10pt,linenos]{bash}
-let choice : ()+()@[alice, bob] = com[alice][alice, bob] alices_choice;
-let query : Query@[alice] = case[alice, bob] choice of
-  Inl _ => com[bob][alice] bobs_query;
-  Inr _ => alices_query;
-let answerer : (Query@[carroll] -> Response@[carroll])@[carroll] = carrolls_func;
-let response = com[carroll][bob, alice] (answerer (com[alice][carroll] query));
-case[alice, bob] choice of
-  Inl _ => bobs_terminal response;
-  Inr _ => alices_terminal response;
-    \end{minted}
-    \caption{A \HLSCentral implementation of a two-client one-server choreography involving sequential branches.
-        Client \inlinecode{bob} may delegate a query against server \inlinecode{carroll},
-        or client \inlinecode{alice} may provide the query herself.}
-    \label{fig:our-client-server}
-    %\Description[A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".]
-    %            {A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".
-    %            "carroll" is acting as a server responding to a request chosen amongst "alice" and "bob".}
-    \end{mdframed}
-\end{figure}
 
-\subsection{Multiply-located values}\label{sec:mlvs}
+\subsection{Multiply-located values}
+\label{sec:mlvs}
+
 Previous choreography languages have featured \emph{located values},
 values annotated with (or implicitly assigned to) their owning party such that EPP to the owner results
 in the value itself and EPP to any other party results in a special
@@ -397,6 +377,9 @@ notation $M[x:=V]$ to perform location-aware substitution.
 In \Cref{sec:substitution-proof} we prove \Cref{theorem:substitution},
 which shows that this specialized substitution operation
 satisfies the usual concept of substitution.
+(Our various definitons and proofs about them in this work all assume Barendregt’s variable convention.
+Roughly, this says that bound variables are unique.
+\cite{barendregtDiscussion} provide a more detailed discussion.)
 \begin{theorem}[Substitution]\label{theorem:substitution}
   If $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
   then $Θ;Γ ⊢ M[x := V] : T$.
@@ -899,12 +882,27 @@ compose with the $s$ step and remove the respective party from the step-annotati
 
 \subsection{Deadlock Freedom}\label{sec:deadlock-freedom}
 Above we introduced the necessary machinery of EPP and evaluation of a network of communicating processes.
-In \Cref{sec:soundness-proof} we prove that EPP is \emph{sound}
-(\Cref{theorem:soundness}, any behavior possible for the \HLSNet projection of a choreography is also possible in the original \HLSCentral).
-In \Cref{sec:completeness-proof} we prove that EPP is \emph{complete}
-(\Cref{theorem:completeness}, any behavior possible in \HLSCentral is also possible in the \HLSNet projection).
+One of the advantages of choreogrphic programming is that a user can typically ignore this distributed computational setting,
+and just reason about their programs in a single-threaded way, \ie under the centralized semantics of \HLSCentral.
+Such an andvantage only holds water if EPP to \HLSNet is sound and complete with respect to \HLSCentral;
+\Cref{theorem:soundness,theorem:completeness} show that it is.
 
-The central promise of choreographic programming is that participants in well-formed choreographies
+\begin{theorem}[Soundness]\label{theorem:soundness}
+  If $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}_n$,
+  then there exists $M'$ such that
+  $M \step^{\ast} M'$ and $\mathcal{N}_n \netstep{}{∅}^{\ast} ⟦M'⟧$.
+\end{theorem}
+\begin{theorem}[Completeness]\label{theorem:completeness}
+  If $Θ;∅ ⊢ M : T$ and $M \step M'$,
+  then $⟦M⟧ \netstep{}{∅}^{\ast} ⟦M'⟧$.
+\end{theorem}
+
+In \Cref{sec:soundness-proof} we prove \Cref{theorem:soundness},
+which says that any behavior possible for the \HLSNet projection of a choreography is also possible in the original \HLSCentral.
+In \Cref{sec:completeness-proof} we prove \Cref{theorem:completeness},
+which says that any behavior possible in \HLSCentral is also possible in the \HLSNet projection.
+
+A foundational promise of choreographic programming is that participants in well-formed choreographies
 will never get stuck waiting for messages they never receive.
 This important property, \textit{"deadlock freedom by design"}, is trivial once our previous theorems are in place.
 
@@ -913,19 +911,132 @@ This important property, \textit{"deadlock freedom by design"}, is trivial once 
     then either $\mathcal{N} \netstep{}{∅}^{\ast} \mathcal{N}'$
     or for every $p\in\roles{M}$, $\mathcal{N}(p)$ is a value.
 
-    This follows from \Cref{theorem:soundness}, \Cref{theorem:preservation},
-    \Cref{theorem:progress}, and \Cref{theorem:completeness}.
+    This follows from \Cref{theorem:soundness,theorem:preservation,theorem:progress,theorem:completeness}.
 \end{corollary}
-
-\todo{mention variable uniqueness}
 
 
 \section{Comparisons with other systems}
 \label{sec:formalism-comparisons}
 
-\todo{summarize the other cases from We Know I Know.}
+In this section we compare recent choreography languages
+to \HLSCentral, primarily in terms of how their KoC strategies impact communication efficiency.
+By "communication efficiency" we refer to the amount of information sent from each party to each other party
+in a choreography acomplishing some desired global behavior or end state.
+
+For readability, we render \HLSCentral examples in this section as plain-text.
+We use \inlinecode{fn} for λ, \inlinecode{=>} for ⇒, \inlinecode{->} for →, and \inlinecode{*} for ×.
+The annotations on lambdas, unit, and keyword functions
+are given as comma-separated lists in square brackets
+(\eg \inlinecode{lookup[2][p_1,p_2,q]} and \inlinecode{com[s][r_1]}).
+Furthermore, we sugar our syntax with let-binding,
+\eg $(λ var : T \DOT M)@Θ V$ is rendered as \inlinecode{let var : T = V; M},
+and often we'll omit the type annotation \inlinecode{T}.
+We elide declarations of contextual functions and data types in our examples.
+We allow expressions in place of values,
+which can be de-sugared to temp variables.
+Some of the languages we compare against include polymorphic functions
+in their examples;
+we annotate such function names in our comparison code,
+similar to how our built-ins like \inlinecode{fst} get annotated.
+
+\subsection{HasChor}\label{sec:haschor}
+HasChor is a Haskell library for writing choreographies as values
+of a monad \inlinecode[haskell]{Choreo}~\cite{shen-haschor}.
+The implementation is succinct and easy to use.
+HasChor does not have \inlinecode{select} statements;
+KoC is handled by broadcasting branch-guards to all participants in the choreography.
+This is not efficient.
+The choreography in \Cref{fig:kvsenclave}\emph{(a)}
+is a translation into \MultiChor of an example from \cite{shen-haschor},
+and shows explicitly the redundant communication that's implicit in HasChor choreographies.
+\Cref{fig:our-kvs} shows a \HLSCentral version of the amended choreography from \Cref{fig:kvsenclave}\emph{(b)}.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/kvs_hls.txt}
+    \caption{A \HLSCentral choreography implementing the same KVS as in \Cref{fig:kvsenclave}.}
+    \label{fig:our-kvs}
+    %\Description[An anonymous He-Lambda-Small function.]
+     %           {Ten lines of He-Lambda-Small code implementing the interaction between
+      %          a client, a primary server, and a backup server as
+       %         a function from a Request object to a choreography.}
+    \end{mdframed}
+\end{figure}
+
+
+\subsection{Pirouette}\label{pirouette}
+Pirouette~\cite{hirsch2021pirouette} is a functional choreographic language.
+It uses the select-\&-merge KoC strategy formalized in \cite{montesi-carbone-dfbd}:
+a branching party sends flag symbols to peers who need to behave differently depending on the branch.
+These \inlinecode{select} statements are written explicitly by the user and can be quite parsimonious.
+Only if, and not until, the EPPs of the parallel program branches are different for a given user does that user need
+to be sent a \inlinecode{select}.
+EPP of an \inlinecode{if} statement uses a "merge" operation to combine program branches that are not distinguishable to a given party.
+\inlinecode{select} statements project as the \inlinecode{offer} and \inlinecode{choose} operations from multiparty-session-types.
+
+The "merge" function is partial; if needed \inlinecode{select}s are missing from a program
+then EPP can fail because the merge of the EPPs of two paths is undefined.
+Pirouette's type system doesn't detect this; to check if a Pirouette program is well-formed
+one must do all of the relevant endpoint projections.
+(All select-\&-merge systems we've investigated work this way.)
+\cite{hirsch2021pirouette} provide a standalone implementation of Pirouette
+and Coq proofs of their theorems.
+
+\inlinecode{select} gives good communication efficiency because not every choice needs to be communicated,
+but it has a limitation in common with HasChor.
+The \inlinecode{select} flags can't be used as data,
+and the Knowledge of Choice they communicate can't be recycled in subsequent conditionals.
+\Cref{fig:our-client-server} shows a \HLSCentral choreography with sequential branches:
+on lines~2 and~7 \inlinecode{alice} and \inlinecode{bob} branch on their shared MLV \inlinecode{choice}.
+To represent this behavior in Pirouette without redundant messages,
+the sequential conditionals must be combined and Carroll's actions that happen in between (lines~5 and~6)
+must be duplicated in each branch.
+This is shown in \Cref{fig:pirouette-client-server};
+Notice that Carroll is never informed which branch she is in; her actions are the same in each case.
+We believe Pirouette's communication efficiency is as good as \HLSCentral's,
+but scaling the above strategy for combining sequential conditionals across a large codebase
+could be challenging.
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/sequential_hls.txt}
+    \caption{A \HLSCentral implementation of a two-client one-server choreography involving sequential branches.
+        Client \inlinecode{bob} may delegate a query against server \inlinecode{carroll},
+        or client \inlinecode{alice} may provide the query herself.}
+    \label{fig:our-client-server}
+    %\Description[A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".]
+    %            {A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".
+    %            "carroll" is acting as a server responding to a request chosen amongst "alice" and "bob".}
+    \end{mdframed}
+\end{figure}
+
+
+\begin{figure}[tbhp]
+    \begin{mdframed}
+    \begin{minted}[xleftmargin=10pt,linenos]{bash}
+if alice.choice
+  then alice[L] ~> bob;
+       bob.bobs_query ~> alice.query;
+       alice.query ~> carroll.query;
+       carroll.(answerer(query)) ~> bob.response;
+       carroll.(answerer(query)) ~> alice.response;
+       bob.(terminal response)
+  else alice[R] ~> bob;
+       alice.alices_query ~> carroll.query;
+       carroll.(answerer(query)) ~> bob.response;
+       carroll.(answerer(query)) ~> alice.response;
+       alice.(terminal response)
+    \end{minted}
+    \caption{A Pirouette implementation of the client-server-delegation choreography in \Cref{fig:our-client-server}}
+    \label{fig:pirouette-client-server}
+    %\Description[Pirouette code showing a choreography between Alice, Bob, and Carroll.]
+     %           {Pirouette code showing a choreography between Alice, Bob, and Carroll.
+      %          The choreography is almost the same as shown in the previous figure, but re-organized with some repetition.}
+    \end{mdframed}
+\end{figure}
 
 \subsection{Chorλ}\label{sec:chor-lambda}
+
 Chorλ~\cite{chor-lambda} is a functional choreographic language.
 The API and communication efficiency are similar to \cite{hirsch2021pirouette} and \cite{giallorenzo-choral},
 but \cite{chor-lambda-2} shows that Chorλ's semantics and typing can additionally support structures called \emph{Distributed Choice Types}.
@@ -934,27 +1045,26 @@ Distributed Choice Types extend this isomorphism to cover the entire algebra of 
 in such a way that \inlinecode{p} and \inlinecode{q} never disagree about the value they each have.
 Specifically a multiply-located \inlinecode{(A + B)@[p,q]} becomes a singly-located \inlinecode{((A@p, A@q)+(B@p, B@q))},
 a type which earlier systems do not support.
+\footnote{
+  It should not be assumed that Chorλ is the last word in abstract models for the select-\&-merge paradigm.
+  Their \inlinecode{com} operator is defined for arbitrary arguments including functions;
+  depending whether that's an aproperate defintion, \inlinecode{com} itself may not even be necessary.
+}
 
 Chorλ's "merge" operator supports branching on distributed choice types,
 so Chorλ can always match \HLSCentral's communication efficiency with a similar program structure
-by declaring the needed \inlinecode{multicast[...]} functions.
+by declaring the needed \inlinecode{multicast} functions.
 The language still needs to support \inlinecode{select}
-(because Chorλ has no other way of implementing the \inlinecode{multicast} functions),
+(because Chorλ has no other way of implementing \inlinecode{multicast}),
 so well-formed-ness checking still depends on the partial function "merge".
-\todo{But \chorLambda doesn't need \inlinecode{comm}!}
 
 Considering the other direction, \HLSCentral can likewise match the communication efficiency of Chorλ
 and other \inlinecode{select}-based languages.
 Typically, this is as simple as multicasting the branch guard to all parties that would have received a \inlinecode{select}
 (and to oneself, the original branching party).
-\Cref{fig:epp2,fig:epp3} show a simple translation;
-in the \HLSCentral version the guard-boolean is sent to everyone who was (in the Chorλ version) informed of the choice by \inlinecode{select},
-and everyone branches together
-\todo{These were figures 3 and 4 from We Know I Know; they were much earlier in the paper; IDK if we'll want them here or not}.
 In other situations a party might participate in branches without receiving a \inlinecode{select}
 because they don't need to know which one they are in;
 this is handled with the reverse of the transformation we showed between \Cref{fig:our-client-server,fig:pirouette-client-server}
-\todo{this was a reference to the Pirouette subsection; it might be good to have it}.
 
 A fully-general algorithmic translation that never compromises on communication efficiency won't maintain the program's structure.
 The strategy is as follows:
@@ -988,8 +1098,9 @@ The strategy is as follows:
 Neither \cite{chor-lambda} nor \cite{chor-lambda-2} contain examples requiring such a complicated translation.
 \Cref{fig:chor-lambda-complex} shows a made-up Chorλ choreography;
 translating it into \HLSCentral without compromising communication efficiency is more involved than earlier examples were.
-\Cref{fig:our-complex-human} shows how a human might re-implement that choreography in \HLSCentral.
-\Cref{sec:translation} contains a more algorithmic translation.
+\Cref{fig:our-complex} shows it's translation via the steps described above;
+the code is intermediate in verbosity between an actual machine-generated translation
+and a thoughtful human reimplementation.
 
 We believe that, while select-\&-merge languages like Chorλ are equivalent
 in expressivity and communication efficiency to enclaves-\&-MLVs languages like \HLSCentral,
@@ -999,26 +1110,7 @@ and demonstrate its use.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \begin{minted}[xleftmargin=10pt,linenos]{bash}
-case ( first_secret[p] ()@p ) of Inl _ => case ( second_secret[p] ()@p ) of
-                                            Inl _ => let w = com[q][p] n_q1;
-                                                     select[p][q] L;
-                                                     let _ = com[p][q] (w + 1@p);
-                                                     w + 1@p;
-                                            Inr _ => let w = com[q][p] n_q1;
-                                                     let y = 2@p;
-                                                     select[p][q] L;
-                                                     let _ = com[p][q] (w + y);
-                                                     w;
-                                 Inr _ => let w = com[q][p] n_q1;
-                                          case (second_secret[p] ()@p ) of
-                                            Inl s => select[p][q] L;
-                                                     let _ = com[p][q] 5@p;
-                                                     s;
-                                            Inr _ => select[p][q] R;
-                                                     let z = com[q][p] n_q2;
-                                                     w + z;
-    \end{minted}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/contrived_lc.txt}
     \caption{A contrived Chorλ choreography that is complicated to efficiently translate into \HLSCentral.}
     \label{fig:chor-lambda-complex}
     %\Description[An 18-line Chor-Lambda choreography in which there are four parallel branches, only one of which is has special behavior for the second party.]
@@ -1033,31 +1125,13 @@ case ( first_secret[p] ()@p ) of Inl _ => case ( second_secret[p] ()@p ) of
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \begin{minted}[xleftmargin=10pt,linenos]{bash}
-let w = com[q][p] n_q1;
-let (cache, flag) = case ( first_secret[p] ()@[p] ) of
-  Inl _ => (Inl (second_secret[p] ()@[p]), Inl ()@[p]);
-  Inr _ => case (second_secret[p] ()@[p]) of
-             Inl s  => (Inr s , Inl ()@[p]);
-             Inr s_ => (Inr s_, Inr ()@[p]);  # s_ doesn't get used
-let flag_ = com[p][p,q] flag;
-case flag_ of Inl _ => let (message, result) = case cache of
-                         Inl cl => case cl of
-                                     Inl _ => (w + 1@[p], w + 1@[p]);
-                                     Inr _ => let y = 2@[p];
-                                              (w + y    , w);
-                         Inr s => (5@[p], s);
-                       let _ = com[p][q] message;
-                       result;
-              Inr _ => let z = com[q][p] n_q2;
-                       w + z
-    \end{minted}
-        \caption{A \HLSCentral re-implementation of the choreography from \Cref{fig:chor-lambda-complex}.}
-    \label{fig:our-complex-human}
-    %\Description[17 lines of He-Lambda-Small code. The program flow from the earlier program largely refactored.]
-     %           {17 lines of He-Lambda-Small code.
-      %          The program flow is greatly different because this is a human translation and
-       %         He-Lambda-Small represents different patterns concisely than Chor-Lambda does.}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/contrived_hls.txt}
+    \caption{An algorithmic \HLSCentral translation of the choreography from Figure~\ref{fig:chor-lambda-complex}.}
+    \label{fig:our-complex}
+    %\Description[46 lines of He-Lambda-Small code. The program flow from the earlier program is still present, but hard to see.]
+     %           {46 lines of He-Lambda-Small code.
+      %          The program flow from the earlier program is still present,
+       %         but hard to see because of all the temporary variables as execution jumps in and out of sequential and nested case expressions.}
     \end{mdframed}
 \end{figure}
 

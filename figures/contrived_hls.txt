@@ -1,0 +1,46 @@
+let m1 = com[q][p] n_q1;
+let (cache1, flag1) = case ( first_secret[p] ()@[p] ) of
+  Inl _ => let (c1_, f1_) = case ( second_secret[p] ()@[p] ) of
+             Inl _ => let w = m1;
+                      (Inl w, Inl ()@[p]);
+             Inr _ => let w = m1;
+                      let y = 2@p;
+                      (Inr (Pair w y), Inl ()@[p]);
+           (Inl c1_, f1_);
+  Inr _ => let (c1_, f1_) = let w = m1;
+                            case ( second_secret[p] ()@[p] ) of
+                              Inl s => (Inl (Pair w s), Inl ()@[p]);
+                              Inr _ => (Inr w, Inr ()@[p]);
+           (Inr c1_, f1_);
+let f1_ = com[p][p,q] flag1;
+case f1_ of Inl _ => let (cache2, m2) = case cache1 of
+                        Inl c1l => let (c2_, m2_) = case c1l of
+                                     Inl c1ll => let w = c1ll;
+                                                 (Inl w, w + 1@[p]);
+                                     Inr c1lr => let (Pair w y) = c1lr;
+                                                 (Inr (Pair w y), w + y);
+                                   (Inl c2_, m2_);
+                        Inr c1r => let (c2_, m2_) = case c1r of
+                                     Inl c1rl => let (Pair w s) = c1rl;
+                                                 (Pair w s, 5@[p]);
+                                     Inr c1rr => (DEFAULT, DEFAULT); # DEAD BRANCH
+                                   (Inr c2_, m2_);
+                     let _ = com[p][q] m2;
+                     case cache2 of
+                       Inl c2l => case c2l of
+                         Inl c2ll => let w = c2ll;
+                                     w + 1@[p];
+                         Inr c2lr => let (Pair w y) = c2lr;
+                                     w;
+                       Inr c2r => let (Pair w s) = c2r;
+                                  s;
+            Inr _ =>  let cache2 = case cache1 of
+                        Inl c1l => DEFAULT; # DEAD BRANCH
+                        Inr c1r => case c1r of
+                          Inl c1rl => DEFAULT; # DEAD BRANCH
+                          Inr c1rr => let w = c1rr;
+                                      w;
+                      let m2 = com[q][p] n_q2;
+                      let w = cache2;
+                      let z = m2;
+                      w + z

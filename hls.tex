@@ -414,11 +414,10 @@ so they can just combine via \textsc{NPar} to get the needed step in the respect
 $\mathcal{N}_1$ and $\mathcal{N}_2$.
 
 \subsection{Theorem~\ref{theorem:soundness}}
-\begin{theorem}[Soundness]\label{theorem:soundness}
-  If $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}_n$,
+\Cref{theorem:soundness} says that
+  if $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}_n$,
   then there exists $M'$ such that
   $M \step^{\ast} M'$ and $\mathcal{N}_n \netstep{}{∅}^{\ast} ⟦M'⟧$.
-\end{theorem}
 
 Declare the predicate $\mathsf{sound}(\mathcal{N})$ to mean that
 there exists some $M_{\mathcal{N}}$ such that
@@ -819,10 +818,9 @@ We proceed with induction on the form of $M \step M'$:
 \end{itemize}
 
 \subsection{Theorem~\ref{theorem:completeness}}
-\begin{theorem}[Completeness]\label{theorem:completeness}
-  If $Θ;∅ ⊢ M : T$ and $M \step M'$,
+\Cref{theorem:completeness} says that
+  if $Θ;∅ ⊢ M : T$ and $M \step M'$,
   then $⟦M⟧ \netstep{}{∅}^{\ast} ⟦M'⟧$.
-\end{theorem}
 
 The proof is by case analysis on the semantic step $M \step M'$:
 \begin{itemize}

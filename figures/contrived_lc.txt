@@ -1,0 +1,19 @@
+case ( first_secret[p] ()@p ) of
+  Inl _ => case ( second_secret[p] ()@p ) of
+             Inl _ => let w = com[q][p] n_q1;
+                      select[p][q] L;
+                      let _ = com[p][q] (w + 1@p);
+                      w + 1@p;
+             Inr _ => let w = com[q][p] n_q1;
+                      let y = 2@p;
+                      select[p][q] L;
+                      let _ = com[p][q] (w + y);
+                      w;
+  Inr _ => let w = com[q][p] n_q1;
+           case (second_secret[p] ()@p ) of
+             Inl s => select[p][q] L;
+                      let _ = com[p][q] 5@p;
+                      s;
+             Inr _ => select[p][q] R;
+                      let z = com[q][p] n_q2;
+                      w + z;
