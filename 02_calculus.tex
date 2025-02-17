@@ -397,6 +397,10 @@ notation $M[x:=V]$ to perform location-aware substitution.
 In \Cref{sec:substitution-proof} we prove \Cref{theorem:substitution},
 which shows that this specialized substitution operation
 satisfies the usual concept of substitution.
+\begin{theorem}[Substitution]\label{theorem:substitution}
+  If $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
+  then $Θ;Γ ⊢ M[x := V] : T$.
+\end{theorem}
 
 \begin{figure}[tbhp]
 \footnotesize

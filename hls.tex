@@ -64,10 +64,9 @@ There are no non-trivial cases.
 
 \subsection{Theorem~\ref{theorem:substitution}}
 
-\begin{theorem}[Substitution]\label{theorem:substitution}
-  If $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
+\Cref{theorem:substitution} says that
+  if $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
   then $Θ;Γ ⊢ M[x := V] : T$.
-\end{theorem}
 
 The proof is in 13 cases.
 \textsc{TProjN}, \textsc{TProj1}, \textsc{TProj2}, \textsc{TCom}, and \textsc{TUnit}
