@@ -2,10 +2,6 @@
 \chaptermark{\MultiChor?} %this is the chapter heading that will show on subsequent pages
 \label{sec:multichor}
 
-\begin{quote}
-Paper abstract
-\end{quote}
-
 
 \section{Introduction}
 In this chapter we demonstrate the practicality of enclaves-\&-MLVs choreographic programming
@@ -142,327 +138,50 @@ and so more convenient.
   \end{mdframed}
 \end{figure*}
 
-\todo{BEYOND HERE IS STRAIGHT COPY-PASTA FROM THE OLD MULTICHOR PAPER.}
 
-\paragraph{Reasoning about location-sets}
-\todo{Probably mostly replace this with the version from the enclaves paper.}
-To illuminate point 5 above, consider the program in Figure~\ref{fig:example-transitive},
-a choreography with a polymorphic census \inlinecode{census}.
-For this to be a well-formed choreography, all of the following must be true
-(to support the parenthesized statements):
-\begin{itemize}
-    \item \inlinecode{clique} must be a subset of \inlinecode{census}.
-          (\inlinecode{enclave} on line~3)
-    \item \inlinecode{bob} must be a member of \inlinecode{census}.
-          (\inlinecode{~>} ("send") on line~4)
-    \item \inlinecode{bob} must be a member of \inlinecode{clique}.
-          (\inlinecode{~>} on line~6, as well as \inlinecode{~>} on line~4 so they can use \inlinecode{theirFoo})
-\end{itemize}
-Notice that one of these prerequisites is redundant:
-if Bob is a member of \inlinecode{clique}, and \inlinecode{clique} is a subset of \inlinecode{census},
-then \emph{it follows} that Bob is a member of \inlinecode{census}.
-When all the sets of parties are explicitly listed out, memberships and subsets can simply be observed,
-but reasoning about polymorphic sets is difficult for Haskell's type system.
-Leveraging the transitivity of subset relations is especially difficult~\cite{stackoverflow2021},
-and without such reasoning it's difficult to write reuseable code.
-We overcome this challenge using Ghosts of Departed Proofs~\cite{noonanGDP};
-the proof-objects do double-duty in \MultiChor as both proofs that operations are legal \emph{and}
-as \inlinecode{Proxy}-like identifiers for type-level parties and lists of parties.
+\subsection{Membership Constraints}
+\label{sec:membership}
 
-\begin{figure*}[tbhp]
-    \begin{mdframed}
-\begin{minted}[xleftmargin=10pt,linenos,fontsize=\small]{haskell}
-exampleChor :: Choreo census m (Located '["carroll"] Int)  -- The inner monad m is not used here.
-exampleChor = do
-    theirFoo <- clique `enclave` foo  -- Lift a Choreo of "clique" into a Choreo of "census".
-    (bob, theirFoo) ~> carroll @@ nobody  -- Bob sends `theirFoo` to Carroll (and nobody else).
-  where foo = do
-          aliceFoo <- (bob, bobFoo) ~> alice @@ nobody  -- Bob sends his value `bobFoo` to Alice.
-          broadcast (alice, aliceFoo)  -- Alice sends it to the census of `foo`,
-                                       -- _not_ the census of `exampleChor`.
-\end{minted}
-    \caption{An example choreography, written with \MultiChor, in which an \inlinecode{Int},
-             originating at a party \inlinecode{bob}, is passed back and forth.
-             Ultimately, a version of that value owned only by \inlinecode{carroll} is returned.
-             Part of the choreography takes place in an \inlinecode{enclave}
-             involving some collection of parties specified by \inlinecode{clique}.}
-    \label{fig:example-transitive}
-    %\Description{Eight lines of haskell code describing a choreography called "exampleChor".}
-    \end{mdframed}
-\end{figure*}
+It is not trivial for Haskell's type-checker (a component of GHC, the compiler) to judge if
+a particular participant owns a multiply-located value or is present in a particular census
+when the party or the set are polymorphic.
+Declaring membership and subset relations as class constraints can work in some situations,
+but this strategy has serious limitations which we find unacceptable.
+For example, a rule as obvious as
+$(p \in ps_1 \land ps1 \subseteq ps_2) \to p \in ps_2$,
+represented in Haskell as
+\inlinecode{instance ( IsMember p ps1, IsSubset ps1 ps2) => IsMember p ps2},
+would be impossible to use because the compiler has no way of guessing which set \inlinecode{ps1}
+it should be checking \inlinecode{p}'s membership in
+(and even if it could \emph{guess}, it wouldn't backtrack and try a different guess if its first try didn't work).
 
-\paragraph{Congruent computation}
-One of the attractive features of multiply-located values is that they allow concise expression of
-congruent computations.
-A \emph{congruent} computation is one that is performed in parallel by multiple parties
-deterministically on \emph{the same} values, such that all parties arrive at the same result
-(\textit{e.g.} Figure~\ref{fig:lottery} line~37).
-This is distinct from a \emph{parallel} computation
-(\textit{e.g.} Figure~\ref{fig:lottery} line~26), whose distributed versions are expressed
-by the same possibly-branching algorithm but might be operating on different data
-and arrive at different results.
-Parallel computation is more heavily studied and more widely used;
-congruent computation is desirable when communication is more expensive (slower)
-than local computation.
-We believe a choreography library should support both congruent and parallel computation
-as part of type-safe use of located values.
+To work around such limitations, \MultiChor uses a strategy of \emph{proof witnesses}
+like those described by \cite{noonanGDP}.
+These are vacuous runtime values with specially crafted types,
+such that the existence of a value of the given type guarentees the truth of some logical assertion.
+We do not actually use the \inlinecode{gdp}\footnote{
+    "Ghosts of Departed Proofs"~\cite{gdp_hackage}
+} package; we found that writing our own purpose-specific system had a few advantages.
+First, we were able to write everything we needed without hand-waving any foundations as \inlinecode{axiom}s.
+Second, pattern matching against the constructors of \inlinecode{Member l ls} suffices to convince GHC that \inlinecode{ls} is not empty,
+which is sometimes useful.
+Finally, the implicit paradigm of "memberships as indices \& subsets as functions" was qualitatively easier to work with
+when we were building the census-polymorphism tools described in Section~\ref{sec:census-poly}.
 
-
-\subsection{Location-set and census polymorphism}\label{sec:located-faceted}
-
-Being a proof-of-concept lambda calculus, \HLSCentral doesn't support polymorphism of data-types
-or of locations.
-\HasChor has a blunter API for writing choreographies, but as an eDSL it can apply
-Haskell's polymorphism "for free".
-\MultiChor is a similar eDSL, with some of \HasChor's skeleton intact at its heart,
-and can similarly apply Haskell's polymorphism to its \emph{lists} of parties.
-(In addition to polymorphism over a census, \MultiChor expressions
-can also be polymorphic over lists of data-owners;
-it's rarely important to distinguish between these features.)
-Without complementary features this would be
-unsatisfying---the only way an unidentified and variable mass of parties in a census could actually
-participate is as recipients of broadcasts.
-
-The first step toward \emph{useful} location-set polymorphism is a data type analogous to
-multiply-located values (\inlinecode{Located (ps::[LocTy]) a} in \MultiChor)
-but without the guarantee that the parties' respective values will all the the same.
-We call such structures \inlinecode{Faceted}, after the many facets that form
-the surface of a cut gem-stone.
-This language feature immediately enables an operation similar to \HasChor's \inlinecode{locally},
-except that \MultiChor's \inlinecode{parallel} is evaluated by a list of locations.
-The block in Figure~\ref{fig:card-game} lines~13--16 has type 
-\inlinecode{Choreo ... (Faceted players Bool)}
-and yields a single "value" that \emph{represents} the likely-different booleans read from
-\inlinecode[text]{stdin} by the (polymorphic) parties \inlinecode{players}.
-\inlinecode{Faceted} values can be multicast by their owners
-and used in future \inlinecode{parallel} blocks
-just like \inlinecode{Located} values.
-
-\paragraph{Fan-Out and Fan-In}
-\inlinecode{Faceted} values are still insufficient for two tasks we believe a location-set polymorphic
-choreography library should support:
-\begin{enumerate}%[leftmargin=12pt, itemsep=0pt]
-  \item A party should be able to send each member of a polymorphic list a \emph{distinct} value.
-  \item The members of a polymorphic list should be able to \emph{send} messages.
-\end{enumerate}
-We accomplish these with two subtly different primitives:
-\inlinecode{fanOut} and \inlinecode{fanIn}.
-Both take as an argument a choreography with a single-location parameter,
-and instantiate the choreography with each member of the specified location set,
-like a \inlinecode[text]{foreach} loop.
-In the case of \inlinecode{fanOut}, the loop-body is required to return a value at the subject 
-location;
-these values get packaged together as a \inlinecode{Faceted}.
-For \inlinecode{fanIn}, the return value must be located at a \emph{consistent} set of recipients;
-the values get packaged as a \inlinecode{Located recipients [value]}.
-Both of these operations are used in Figure~\ref{fig:card-game}.
-
-
-\subsection{The Core API}\label{sec:monad}
-
-The \MultiChor API features seven primitive monadic operations,
-from which a collection of utilities can be built.
-Additionally, there's a suite of pure operations for handing membership and subset proofs,
-and some limited operations which can manipulate \inlinecode{Located}
-and \inlinecode{Faceted} values.
-
-\paragraph{Pure operations for proofs}
-\MultiChor's API uses proof objects both to identify parties and sets of parties,
-and as assurance that those parties will be able to perform the described actions at runtime.
-In all cases, these are proofs that the identified party is a member of some set
-or that the identified set is a subset of some other set.
-The suite of operations for building such proofs is founded on four uses of
-\inlinecode[text]{gdp}'s \inlinecode{Logic.Proof.axiom}
-and instances for \inlinecode{Subset} of \inlinecode{Logic.Classes.Reflexive}
-(which affords the proof \inlinecode{refl})
-and \inlinecode{Transitive} (which affords the proof \inlinecode{transitive})~\cite{gdp_hackage}.
-In situations where the census and all identities are known explicitly,
-the proofs \inlinecode{explicitMember} and \inlinecode{explicitSubset} may be used indiscriminately.
-(These rely on respective type classes \inlinecode{ExplicitMember}/\inlinecode{ExplicitSubset},
-the limitations of which are part of the motivation for using
-\inlinecode[text]{gdp}.)
-A Template Haskell helper \inlinecode{mkLoc} specializes \inlinecode{explicitMember} for a given 
-symbol, allowing easy, clear, and precise reference to monomorphic parties.
-
-Specifying a list of parties via subset proof can be finicky.
-To facilitate, the API offers aliases of two of the axioms
-than can be used analogously to the empty-list and list-cons constructors:
-%
-\begin{minted}[xleftmargin=10pt,fontsize=\small]{haskell}
-nobody :: Subset '[] ys
-(@@) :: Member x ys -> Subset xs ys
-     -> Subset (x ': xs) ys
-\end{minted}
-%
-For example, in Figure~\ref{fig:card-game} line~18, the first argument to the
-\inlinecode{enclaveTo}
-says that the census of the enclave is
-\inlinecode{"dealer"} and \inlinecode{player} and nobody else.
-
-\paragraph{Pure operations for located values}
-\inlinecode{Located} and \inlinecode{Faceted} are both instances of \inlinecode{Wrapped},
-indicating that these values can be \inlinecode{un}-wrapped in an appropriate context.
-Almost every operation on \inlinecode{Located} and \inlinecode{Faceted} values is dependent
-on a relevant census, and so must be performed as part of the \inlinecode{Choreo} monad.
-Exceptions pertain to reinterpreting the wrapper-type itself, not the contained data.
-Most of these are uninteresting,
-but \inlinecode{flatten} is indispensable and must be considered part of the core API.
-%
-\begin{minted}[xleftmargin=10pt,fontsize=\small]{haskell}
-flatten :: Subset ls ms -> Subset ls ns
-        -> Located ms (Located ns a) -> Located ls a
-\end{minted}
-%
-\inlinecode{flatten} un-nests \inlinecode{Located} layers to parties listed in both layers.
-In practice, its primary use is inside the helper-function \inlinecode{enclaveTo};
-in Figure~\ref{fig:card-game} line~18 the second argument says
-"the second party listed in the census (\inlinecode{player}) knows the return value",
-and gets passed to \inlinecode{flatten} so that the result of the enclaved choreography
-isn't doubly-\inlinecode{Located}.
-(An alternative API, in which \inlinecode{enclave} didn't add a layer of wrapping but
-required it's return to be located, would be less expressive.)
-
-\paragraph{Monadic primitives}
-The \inlinecode{Choreo} monad is implemented as a freer monad with an explicit census
-and an inner-monad type parameter representing
-the local computational model of all parties individually.
-The underlying data-type has seven constructors, each exposed as a function;
-Figure~\ref{fig:monad-api} shows their types and describes their arguments.
-\begin{itemize}%[leftmargin=12pt, topsep=2pt]
-    \item \inlinecode{parallel} runs a local monadic computation in parallel across a list of parties.
-          This computation can depend on the identity of the party in question,
-          and can use a provided function to unwrap \inlinecode{Located} and \inlinecode{Faceted}
-          values.
-          The return type is \inlinecode{Faceted} across the relevant parties.
-    \item \inlinecode{congruently} runs a pure computation congruently across a list of parties;
-          since the values represented by a \inlinecode{Faceted} aren't congruent,
-          \inlinecode{congruently} can't use them.
-          Since the returned values are congruent,
-          \inlinecode{congruently} returns a \inlinecode{Located} value at all of the listed parties.
-    \item \inlinecode{comm} is the communication operator;
-          it multicasts from a single sender to a list of recipients.
-          The result is \inlinecode{Located}.
-          See Section~\ref{sec:helpers} for the more user-friendly \inlinecode{~>}.
-    \item \inlinecode{enclave} embeds a choreography with a smaller census inside one whom's
-          census is a superset.
-          In addition to facilitating code-reuse, this is important when one wants to encode
-          at the type level that certain parties are not involved in some sub-operation,
-          and it interacts with \inlinecode{naked}.
-    \item \inlinecode{naked} unwraps a single value that's known to the entire census.
-          Monadic binding of \inlinecode{naked} with a continuation gives the same behavior
-          as \HasChor's \inlinecode{cond} operation, except that instead of hiding an implicit
-          broadcast it requires that any needed communication have already happened.
-          Frequently, \inlinecode{naked} will be called inside \inlinecode{enclave};
-          this gives the behavior of \HLSCentral's auto-enclaving "case" expressions.
-    \item \inlinecode{fanOut} performs a given action parameterized by a party
-          for each party in the given subset of the census.
-          Unlike \inlinecode{parallel}, which describes actions in the local monad,
-          \inlinecode{fanOut}'s body is a choreography over the complete census.
-          Arbitrary choreographic behavior can happen inside \inlinecode{fanOut},
-          including branching based on the parameter identity,
-          so long as the returned value is known to that party and has the given type.
-          The return values form a new \inlinecode{Faceted}.
-    \item \inlinecode{fanIn} is similar to \inlinecode{fanOut}, but represents \emph{convergence}.
-          The return value must be \inlinecode{Located} at a given set of "recipients"
-          that do \emph{not} depend on the parameter identity.
-          This doesn't necessarily imply any \inlinecode{~>} operations,
-          but the obvious use-case is that each \inlinecode{q} in \inlinecode{qs}
-          multicasts to \inlinecode{rs}.
-          The likely-different return values are combined as a simple \inlinecode{Located} list;
-          any other scheme for combining them can be implemented
-          in a subsequent \inlinecode{congruently}.
-\end{itemize}
-
-
-\begin{figure*}[tbhp]
-    \begin{mdframed}
-\begin{minted}[xleftmargin=10pt,linenos,fontsize=\small]{haskell}
--- | Access to the inner "local" monad.
-parallel :: Subset ls ps  -- A set of parties who will all perform the action(s) in parallel.
-         -> (forall l. Member l ls -- The "loop variable", a party l in ls.
-                    -> Unwrap l    -- A function for unwrapping Located or Faceted values
-                                   --  known to l.
-                    -> m a)  -- The local action(s).
-         -> Choreo ps m (Faceted ls a)
-
--- | Congrunet computation.
-congruently :: Subset ls ps  -- The set of parties who will perform the computation.
-            -> (Unwraps ls -> a)  -- The computation does not depend on who's performing it.
-                                  -- Unwraps doesn't work on Faceted values, unlike Unwrap.
-            -> Choreo ps m (Located ls a)
-
--- | Communication between a sender and some receivers.
-comm :: (Show a, Read a, Wrapped w)  -- Both Located and Faceted are instances of Wrapped.
-                                     -- Show and Read are the ad-hoc serializaiton system.
-     => Member l ps            -- ^ The sender, who is present in the census.
-     -> (Member l ls, w ls a)  -- ^ Proof the sender knows the value, the value.
-     -> Subset ls' ps          -- ^ The recipients, who are present in the census.
-     -> Choreo ps m (Located ls' a)
-
--- | Lift a choreography of involving fewer parties into the larger party space.
-enclave :: Subset ls ps  -- The sub-choreography's census must be in the outer census.
-        -> Choreo ls m a  -- The sub-choreography.
-        -> Choreo ps m (Located ls a)
-
--- | Un-locates a value known to the entire census.
-naked :: Subset ps qs  -- Proof that everyone knows the value.
-      -> Located qs a  --  The value.
-      -> Choreo ps m a
-
--- | Perform a choreographic action for each of several parties,
---   gathering their return values as a `Faceted`.
-fanOut :: (Wrapped w)
-       => Subset qs ps  -- The parties to loop over.
-       -> (forall q. Member q qs  -- The "loop variable", a party q in qs.
-                  -> Choreo ps m (w '[q] a))  -- The "loop body", returns a value at q.
-       -> Choreo ps m (Faceted qs a)
-
--- | Perform a given choreography for each of several parties;
---   the return values are aggregated as a list located at the invariant recipients.
-fanIn :: Subset qs ps  -- The parties who are fanning-in, or over whom we're looping.
-      -> Subset rs ps  -- The recipients, the parties who know the results.
-      -> (forall q. Member q qs  -- The "loop variable", a party q in qs.
-                 -> Choreo ps m (Located rs a))  -- The "loop body", returns a value at rs.
-      -> Choreo ps m (Located rs [a])
-\end{minted}
-    \caption{The monadic functions for constructing \inlinecode{Choreo} expressions.}
-    \label{fig:monad-api}
-    %\Description{Forty-seven lines of haskell code, giving type signatures for seven functions.}
-    \end{mdframed}
-\end{figure*}
-
-
-\subsection{Derived functions}\label{sec:helpers}
-We aim for minimalism in engineering \MultiChor's core API to facilitate reasoning about
-(and implementing) the freer monad handlers for the centralized semantics and for EPP.
-At the same time, we aim for \MultiChor to be used in the wild,
-and based on our experience writing examples
-we believe that a suite of helper functions is in order.
-Appendix~\ref{sec:extra-helpers} lists all the functions used in examples in this paper.
-A few are especially common in practice:
-\begin{itemize}%[leftmargin=12pt, topsep=2pt]
-    \item \inlinecode{~>} wraps \inlinecode{comm}.
-          In addition to being a convenient infix operator,
-          it uses a dedicated class to accept different structures as its first argument.
-          When explicit membership can be inferred by the type system,
-          it suffices to identify the sender with a \inlinecode{Member sender census}.
-          When all owners of the message are present in the census,
-          one can use a \inlinecode{Subset owners census} and a \inlinecode{Member sender owners}.
-          Otherwise, the usual proofs of presence and ownership will work.
-    \item \inlinecode{~~>} sends the result of a local computation directly to recipients
-          without binding it to an intermediary variable.
-    \item \inlinecode{broadcast} takes the same argument options as \inlinecode{~>}
-          and sends the message to the entire census;
-          the received value is unwrapped by \inlinecode{naked}.
-    \item \inlinecode{locally} wraps \inlinecode{parallel} for use on a single party;
-          since there's only one actor, the return value can be \inlinecode{Located}
-          instead of \inlinecode{Faceted}.
-          Both \inlinecode{locally} and \inlinecode{parallel} have underscore-prefixed
-          variants for when the action-lambdas would ignore their arguments,
-          and underscore-suffixed variants for discarding \inlinecode{Located ps ()} results.
-    \item \inlinecode{singleton} is a polymorphic proof that a party is a member of a list
-          containing just themselves. 
-\end{itemize}
+In \MultiChor, locations are identified by type-level strings, uninhabited types with "kind" \inlinecode{Symbol}.
+A values of type \inlinecode{Member p ps} can be used both
+as proof that \inlinecode{p} is eligible to take some action (because of their membership in \inlinecode{ps})
+and as a term-level identifier for the party \inlinecode{p}.
+It's actual form will be that of an index in the type-level list \inlinecode{ps} at which \inlinecode{p} appears.
+Subset relations are expressed and used similarly.
+A value of type \inlinecode{Subset ps qs} has the underlying form of a function
+from \inlinecode{Member p ps} to \inlinecode{Member p qs},
+\emph{universally quantified over \inlinecode{p}}.
+Because these logical structures can be built from scratch inside Haskell's type system,
+all of the machinery we use to do so can safely be exposed to end-users so that they can write their own proofs, as needed, inside choreographies.
+In practice however, they will usually use higher-level operators.
+For example, the pattern \inlinecode{p @@ nobody}, read as \emph{"\inlinecode{p} and nobody else"},
+makes a \inlinecode{Subset '[p] ps} out of a \inlinecode{Member p ps}.
 
 
 
