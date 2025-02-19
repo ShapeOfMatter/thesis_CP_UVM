@@ -60,7 +60,7 @@ to attest that \inlinecode{player} is present in the census.
 \end{figure*}
 
 
-\subsection{Censuses, Enclaves, and MLVs in Haskell}
+\section{Censuses, Enclaves, and MLVs in Haskell}
 \label{sec:implementation}
 
 \MultiChor uses the same free-monad approach as \HasChor~\cite{shen-haschor} to implement choreographic programming, EPP,
@@ -79,6 +79,19 @@ Its kind is \inlinecode{[Symbol]},
 which is to say that the census is a type-level list of parties and parties are type-level strings.
 \inlinecode{Choreo} is \emph{not} an \emph{indexed} monad (that is, executing a monadic operation doesn't change the census),
 but monadic operations can take choreographies with smaller censuses as arguments.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/operators-multichor.hs.txt}
+    \caption{
+        The fundamental operators for writing expressions in \MultiChor's \inlinecode{Choreo} monad.
+        Of these four operators, \inlinecode{enclave} is the only one users will usually call directly;
+        the other three can combine with each other (and with \inlinecode{enclave}) to make more user-friendly alternatives.
+    }
+    \label{fig:operators-multichor}
+    %\Description{Four type signatures for Haskell functions using the MultiChor library.}
+  \end{mdframed}
+\end{figure*}
 
 The fundamental operations of \MultiChor's \inlinecode{Choreo} monad are
 \inlinecode{enclave}, \inlinecode{broadcast'}, \inlinecode{locally'}, and \inlinecode{congruently'}.
@@ -125,21 +138,8 @@ they could be written using \inlinecode{congruently},
 but by implementing them in the core module where they can pattern-match \inlinecode{Located} values we are able to make them not-monadic,
 and so more convenient.
 
-\begin{figure*}[tbhp]
-  \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/operators-multichor.hs.txt}
-    \caption{
-        The fundamental operators for writing expressions in \MultiChor's \inlinecode{Choreo} monad.
-        Of these four operators, \inlinecode{enclave} is the only one users will usually call directly;
-        the other three can combine with each other (and with \inlinecode{enclave}) to make more user-friendly alternatives.
-    }
-    \label{fig:operators-multichor}
-    %\Description{Four type signatures for Haskell functions using the MultiChor library.}
-  \end{mdframed}
-\end{figure*}
 
-
-\subsection{Membership Constraints}
+\section{Membership Constraints}
 \label{sec:membership}
 
 It is not trivial for Haskell's type-checker (a component of GHC, the compiler) to judge if
@@ -158,7 +158,7 @@ it should be checking \inlinecode{p}'s membership in
 To work around such limitations, \MultiChor uses a strategy of \emph{proof witnesses}
 like those described by \cite{noonanGDP}.
 These are vacuous runtime values with specially crafted types,
-such that the existence of a value of the given type guarentees the truth of some logical assertion.
+such that the existence of a value of the given type guarantees the truth of some logical assertion.
 We do not actually use the \inlinecode{gdp}\footnote{
     "Ghosts of Departed Proofs"~\cite{gdp_hackage}
 } package; we found that writing our own purpose-specific system had a few advantages.
@@ -184,75 +184,8 @@ For example, the pattern \inlinecode{p @@ nobody}, read as \emph{"\inlinecode{p}
 makes a \inlinecode{Subset '[p] ps} out of a \inlinecode{Member p ps}.
 
 
-
-\begin{figure*}
-\begin{mdframed}
-\begin{minted}[xleftmargin=10pt,linenos,fontsize=\small]{haskell}
-kvs :: (KnownSymbol client) => ReplicationStrategy ps (CLI m) -> Member client ps -> Choreo ps (CLI m) ()
-kvs ReplicationStrategy{setup, primary, handle} client = do
-  rigging <- setup
-  let go = do request <- (client, readRequest) -~> primary @@ nobody
-              response <- handle rigging singleton request
-              case response of Stopped -> return ()
-                               _ -> do client `_locally_` putOutput "Recieved:" response
-                                       go
-  go
-
-naryReplicationStrategy :: (KnownSymbol primary, KnownSymbols backups, KnownSymbols ps, MonadIO m)
-                        => Member primary ps -> Subset backups ps -> ReplicationStrategy ps m
-naryReplicationStrategy primary backups = ReplicationStrategy{
-      primary
-    , setup = servers `_parallel` newIORef (Map.empty :: State)
-    , handle = \stateRef pHas request -> do
-          request' <- (primary, (pHas, request)) ~> servers
-          localResponse <- servers `parallel` \server un ->
-              handleRequest (un server stateRef) (un server request')
-          responses <- fanIn servers (primary @@ nobody) \server ->
-              (server, servers, localResponse) ~> primary @@ nobody
-          response <- (primary @@ nobody) `congruently` \un ->
-              case nub (un refl responses) of [r] -> r
-                                              rs -> Desynchronization rs
-          broadcast (primary, response)   }
-  where servers = primary @@ backups
-
-data ReplicationStrategy ps m = forall primary rigging. (KnownSymbol primary) =>
-  ReplicationStrategy { primary :: Member primary ps
-                      , setup :: Choreo ps m rigging
-                      , handle :: forall starts w. (Wrapped w)
-                               => rigging -> Member primary starts -> w starts Request
-                               -> Choreo ps m Response  }
-
-data Request = Put String String  | Get String  | Stop  deriving (Eq, Ord, Read, Show)
-
-data Response = Found String  | NotFound  | Stopped  | Desynchronization [Response]
-                deriving (Eq, Ord, Read, Show)
-
--- | PUT returns the old stored value; GET returns whatever was stored.
-handleRequest :: (MonadIO m) => IORef State -> Request -> m Response
-handleRequest stateRef (Put key value) = mlookup key <$> modifyIORef stateRef (Map.insert key value)
-handleRequest stateRef (Get key) = mlookup key <$> readIORef stateRef
-handleRequest _         Stop = return Stopped
-
-mlookup :: String -> State -> Response
-mlookup key = maybe NotFound Found . Map.lookup key
-
-type State = Map String String
-\end{minted}
-\caption{A system for building key-value-store choreographies,
-         including an example backup strategy that's polymorphic on the number of backup servers.}
-\label{fig:kvs}
-%\Description{Forty-nine lines of haskell code defining functions "kvs", "naryReplicationStrategy", "handleRequest", and "mlookup", and associated data types.}
-\end{mdframed}
-\end{figure*}
-
-During the job interview with Well Typed, they discussed some alternatives to the proof-witness pattern that can probably work.
-I haven't played with it enough to say if it would be \emph{better},
-but I should make sure to understand what they're doing well enough to express an opinion about it here.
-
 \section{Census Polymorphism}
 \label{sec:census-poly}
-
-TODO: This is copy-pasted directly from the enclaves paper; it must be edited/rewritten for this context.
 
 So far, the example choreographies we have discussed have had fixed numbers of participants.
 In all prior CP systems this has been a syntactic constraint:
@@ -273,19 +206,20 @@ Naïvely, this is trivial; any \MultiChor expression can easily be written with 
 and the relevant parties (whose exact identities can also be polymorphic) can be guaranteed to be present by taking
 membership proofs as arguments.
 However, this approach has a limitation: Since the number of type variables of a choreography must be fixed
-and there is no way to \emph{explicitly list} an arbitrary number of parties,
-there may be parties not identified by such arguments.
-They'll receive any broadcasts and participate in any active replication that applies to the whole census,
+and there is no way to \emph{explicitly list} a variable number of parties,
+it follows that there may be parties in the census who are not identified by the proof arguments.
+Such un-enumerated parties will receive any broadcasts and participate in any active replication that applies to the whole census,
 but there's no way to specify them as the senders of messages, nor is there any way to specify that they should receive a message
-except by sending it to the whole census.
+except by broadcasting it.
 For this reason, when we speak of "census polymorphism",
 we mean \emph{useful} polymorphism that lets an unspecified quantity of parties actively participate in the choreography.
 For example one might wish to write a \inlinecode{gather} operation
 in which a polymorphic list of participants each send a computed value to a common recipient who aggregates them.
-Figure~\ref{fig:census-poly-example} shows an example \MultiChor choreography for a key-value store with a polymorphic list of backup servers.
-In Appendix~\ref{sec:mpc} we implement the GMW protocol~\cite{goldreich2019play}, a foundational protocol in multi-party cryptography.
-In earlier CP systems it would be necessary to hard-code the number of participants when writing such choreographies.
-In this section we show how our libraries overcome the above limitation and represent census-polymorphic choreographies.
+\Cref{fig:census-poly-example} shows an example \MultiChor choreography for a key-value store with a polymorphic list of backup servers.
+In \Cref{sec:mpc} we implement the GMW protocol~\cite{goldreich2019play}, a foundational protocol in multi-party cryptography.
+In earlier CP systems it would have been necessary to hard-code the number of participants when writing such choreographies;
+Census polymorphism is precisely the absence of such a restriction.
+Census polymorphism is achieved in \MultiChor library by type-level programming in modern Haskell.
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
@@ -309,36 +243,62 @@ In this section we show how our libraries overcome the above limitation and repr
   \end{mdframed}
 \end{figure*}
 
+\subsection{Loops, Facets, and Quires}
+\label{sec:census-poly-requirements}
+
 The first thing that is necessary is a way to loop over a polymorphic list of parties.
-The second thing is the ability to express and use divergent data known by un-enumerated parties.
+Census polymorphism as discussed in this work is \emph{static},
+\ie, while one can write choreographies and choreographic functions that are census-polymorphic,
+it is always possible in principal to unroll the top-level choreography
+(that actually gets compiled)
+into a monomorphic form before you actually run anything.
+In \Cref{sec:census-poly-haskell} we discuss \MultiChor's \inlinecode{sequenceP},
+a runtime loop over statically-defined type level lists.
+
+Less flexible options would still be viable.
+The most recent versions of ChoRus and ChoreoTS lack constructs analogous to \inlinecode{sequenceP},
+and instead offer the pair of functions \inlinecode[rust]{fanOut} and \inlinecode[rust]{fanIn}\cite{batesenclaves}.
+These are both "for loops" over parties;
+\inlinecode[rust]{fanOut}'s return type is a heterogeneous structure of the returned values for each looped-over party
+(see next paragraph)
+and \inlinecode[rust]{fanIn} works similarly except the owners of the aggregated data do not vary over the loop.
+It's an open question whether the additional flexibility of \MultiChor's approach has any real-world use!
+We also conjecture that even more restricted implementations would suffice for a majority of use-cases,
+specifically by offering the three operations \inlinecode{scatter}, \inlinecode{gather}, and \inlinecode{parallel}.
+\inlinecode{scatter} is multi-cast operation in which a distinct value is sent to each recipient, and \inlinecode{gather} is its dual.
+\inlinecode{parallel} is exactly like \inlinecode{locally}, except a list of parties execute the local computation in parallel.
+In \MultiChor, these are derived operations, and we use them frequently in our case studies.
+
+The second thing required for useful census polymorphism is the ability to express and use divergent data known by un-enumerated parties.
 We call such data structures \emph{faceted values}\footnote{
     The word "faceted" is most commonly used in reference to a cut gemstone,
     but analogy to the facets of polyhedral playing dice might be more on-the-nose.
-};
-they're basically the same as the faceted values introduced in \cite{austin2012},
-except their public facet is always "$\bot$" and multiple parties have distinct private facets.
-Conceptually, a faceted value is similar to an MLV
-(it projects to an owner as a simple value and to a non-owner as a placeholder),
+}.
+(They're basically the same as the faceted values introduced in \cite{austin2012},
+except their public facet is always "$\bot$" and multiple parties have distinct private facets.)
+Conceptually, a faceted value is similar to an MLV,
+in that
+it projects to an owner as a simple value and to a non-owner as a placeholder,
 but different owners of a faceted value will have different values for it.
-To see the need for faceted values, consider how one would write a census-polymorphic \inlinecode{gather} operation
-using only an appropriately-specialized \inlinecode{for}-loop:
+To see the need for faceted values, consider how one would express a census-polymorphic \inlinecode{gather} operation
+using only a type-level \inlinecode{for}-loop:
+The argument couldn't simply be a list,
+because \inlinecode{Located} values with different owners have different types.
 Each sender would need to generate its value to send \emph{inside} the loop body,
 and the only way for the sent values to be distinct would be by using private local state accessed by \inlinecode{locally}.
 This would hardly be satisfying, and the dual case of \inlinecode{scatter} would be even worse:
 Any use to which the received values were to be put would also have to fit inside the body of the \inlinecode{for}-loop.
-(One couldn't simply append the \inlinecode{scatter}ed values to a list in a typed language
-because \inlinecode{Located} values with different owners have different types.)
-Our implementations provide these needed features in different ways as discussed in \Cref{sec:census-poly-haskell,sec:census-poly-rust}.
+Again, one couldn't simply append the \inlinecode{scatter}ed values to a list and return it
+because (in Haskell) all the values in a list must have the same type.
 
-In all three of our implementations, census polymorphism can be resolved statically,
-\ie, while one can write choreographies and choreographic functions that are census-polymorphic,
-it is always possible in principal to unroll the top-level choreography
-(that actually gets compiled)
-into a monomorphic form.
-(Therefore, we do not bother with a separate proof of the soundness of census polymorphism.)
-In \MultiChor, this is denoted by \inlinecode{KnownSymbols} constraints in some type signatures.
-We leave any clarity about the prospects of \emph{dynamic} census polymorphism for future work.
-
+The dual of a faceted value is a "quire"\footnote{
+    "Quire" is pronounced "choir"; it rhymes with "buyer" and means "a stack of sheets of paper, all cut to the same size".
+    Each individual piece of paper is a "leaf".
+},
+a vector of values indexed by type-level parties.
+Quires are not inherently located, but they can be located the same way as any other data structure.
+For example, the return type of \inlinecode{gather} is
+\inlinecode{Located recipients (Quire senders a)}.
 
 \subsection{Census Polymorphism in \MultiChor}
 \label{sec:census-poly-haskell}
@@ -346,6 +306,7 @@ We leave any clarity about the prospects of \emph{dynamic} census polymorphism f
 We leverage the type system of modern Haskell to achieve useful census polymorphism in \MultiChor.
 This behavior is implemented as a layer \textit{on top of} \MultiChor's central monad and data-types;
 from a theory perspective \MultiChor gets census polymorphism "for free" because it's a Haskell library.
+(Therefore, we do not bother with a separate proof of the soundness of census polymorphism.)
 The \MultiChor repository contains over a dozen example choreographies, several of which use census polymorphism.
 In Figure~\ref{fig:census-poly-example} we showcase a key-value store choreography that's polymorphic over the number of backup servers.
 \Cref{sec:mpc} presents a more involved census-polymorphic example.
@@ -360,13 +321,10 @@ it's frequently \inlinecode{'[]}.)
 
 \inlinecode{Faceted ps cmn x} is actually a special case of a more general type,
 \inlinecode{PIndexed ps f}, where \inlinecode{f} can be any \emph{type-level function} from a party to a concrete type.
-A \inlinecode{PIndexed} is effectively a type-indexed vector,
-except that the type of the value retrieved depends on the index\footnote{
-    The case where it does not depend on the index, \ie when \inlinecode{f} is \inlinecode{Const},
-    is sufficiently useful in its own right that we package it as the type \inlinecode{Quire}.
-    "Quire" is pronounced "choir"; it rhymes with "buyer" and means "a stack of sheets of paper, all cut to the same size".
-    Each individual piece of paper is a "leaf".
-}.
+A \inlinecode{PIndexed} is like a type-indexed vector,
+except that the type of the value retrieved depends on the index.
+(The case where it does not depend on the index, \ie when \inlinecode{f} is \inlinecode{Const},
+is precisely \inlinecode{Quire}.)
 Because of its unusual \inlinecode{kind}, type classes that one would expect to apply to vectors generally do not apply to \inlinecode{PIndexed}.
 What's actually needed for census polymorphism is the ability to \inlinecode{sequence} a \inlinecode{PIndexed} of choreographies.
 Since \inlinecode{PIndexed} is not an instance of \inlinecode{Traversable},
@@ -386,9 +344,10 @@ the type class \inlinecode{KnownSymbols} affords to the runtime environment suff
   \end{mdframed}
 \end{figure*}
 
-We could write a satisfactory \inlinecode{scatter} and \inlinecode{gather} directly using \inlinecode{sequenceP},
-but we find that by defining the intermediary functions \inlinecode{fanOut} and \inlinecode{fanIn}
-we can avoid almost all situations where a programmer might need to use \inlinecode{sequenceP} directly in a choreography.
+The type-level programming necessary to use \inlinecode{sequenceP} and \inlinecode{PIndexed} directly
+can involve some boilerplate.
+We provide the derived functions \inlinecode{fanOut} and \inlinecode{fanIn}
+which suffice for every situation studied so far.
 \inlinecode{fanOut}'s argument is a choreography that results in a \inlinecode{Located} value at the party identified by the loop variable;
 it aggregates these results as a \inlinecode{Faceted}.
 \inlinecode{fanIn} is almost the same, except that the locations of the resulting values do not vary,
@@ -402,10 +361,77 @@ For example, the GMW protocol, which we implement using \MultiChor in \Cref{sec:
 
 Modern Haskell language features, especially type-variable quantification,
 enable \MultiChor's implementation of census polymorphism to be entirely type-safe and transparent to users.
-This is a flexible system within which users can easily write their own novel and bespoke functions and data structures;
-we will show in the following section that such flexibility is not entirely necessary for census polymorphism.
+This is a flexible system within which users can easily write their own novel and bespoke functions and data structures.
 
 
+\section{The GMW Protocol in MultiChor}
+\label{sec:mpc}
+
+\emph{Secure multiparty computation}~\cite{evans2018pragmatic} (MPC) is a family of techniques that allow a group of parties to jointly compute an agreed-upon function of their distributed data without revealing the data or any intermediate results to the other parties. We consider an MPC protocol named Goldreich-Micali-Widgerson (GMW)~\cite{goldreich2019play} after its authors. The GMW protocol requires the function to be computed to be specified as a binary circuit, and each of the parties who participates in the protocol may provide zero or more inputs to the circuit. At the conclusion of the protocol, all participating parties learn the circuit's output.
+
+The GMW protocol is based on two important building blocks: \emph{additive secret sharing}, a method for encrypting distributed data that still allows computing on it, and \emph{oblivious transfer} (OT)~\cite{naor2001efficient}, a building-block protocol in applied cryptography. The GMW protocol starts by asking each party to secret share its input values for the circuit. Then, the parties iteratively evaluate the gates of the circuit while keeping the intermediate values secret shared. Oblivious transfer is used to evaluate AND gates. When evaluation finishes, the parties reveal their secret shares of the output to decrypt the final result.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{Haskell}{figures/gmw.hs.txt}
+    \caption{A choreography for the GMW protocol. The choreography works for an arbitrary number of parties.
+      \Cref{fig:gmw-helpers-multichor-example} contains the \inlinecode{xor} function to compute the OR gate,
+      the \inlinecode{secretShare} choreography to handle an INPUT,
+      and the \inlinecode{fAnd} choreography to compute the result of an AND gate.
+	  \inlinecode{mpc} uses \inlinecode{gmw} protocol as well as \inlinecode{reveal}
+	  (also in \Cref{fig:gmw-helpers-multichor-example}, and prints the resulting bit at each party.}
+    \label{fig:gmw-multichor-example}
+  \end{mdframed}
+    %\Description{Thirty one lines of Haskell code using the MultiChor library.
+%	This code defines a recursive choreographic function "gmw" and a top-level function "mpc".}
+\end{figure*}
+
+\begin{figure*}
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{Haskell}{figures/gmw-helpers.hs.txt}
+    \caption{Various helpers for the GMW protocol.
+      \inlinecode{fANd} computes the result of an AND gate on secret-shared inputs using pairwise oblivious transfer. The choreography works for an arbitrary number of parties, and leverages the 1 out of 2 OT defined earlier.
+      \inlinecode{xor} computes the result of an OR gate as a standard non-choreographic function.
+      \inlinecode{secretShare} handles Input gate secret sharing \inlinecode{p}'s secret value among \inlinecode{parties}
+         and for revealing a secret-shared value.
+      \inlinecode{ot} performs 1 out of 2 oblivious transfer (OT) using RSA public-key encryption. The choreography involves exactly two parties, \inlinecode{sender} and \inlinecode{receiver}.
+      \inlinecode{genShares} uses \inlinecode{Quire} to map each member \inlinecode{p} in \inlinecode{ps} to a generated secret share \inlinecode{Bool}.
+      \inlinecode{encryptS} \inlinecode{decryptS} which are omitted for brevity use the cryptonite library for encryption and decryption.
+    }
+    \label{fig:gmw-helpers-multichor-example}
+  \end{mdframed}
+    %\Description{Fifty nine lines of Haskell code using the MultiChor library.
+%	This code defines functions "secretShare", "genShares", "xor", "fAnd", "ot2", and "reveal".}
+\end{figure*}
+
+\paragraph{Additive secret sharing}
+We begin by describing additive secret sharing, a common building block in MPC protocols. A secret bit $x$ can be \emph{secret shared} by generating $n$ random \emph{shares} $s_1, \dots, s_n$ such that $x = \sum_{i=1}^n s_i$. If $n-1$ of the shares are generated uniformly and independently randomly, and the final share is chosen to satisfy the property above, then the shares can be safely distributed to the $n$ parties without revealing $x$---recovering $x$ requires access to all $n$ shares. Importantly, secret shares are \emph{additively homomorphic}---adding together shares of secrets $x$ and $y$ produces a share of $x+y$.
+
+\MultiChor choreographies for performing secret sharing in the arithmetic field of booleans appear in Figure~\ref{fig:gmw-helpers-multichor-example}. The function \inlinecode{secretShare} takes a single secret bit located at party \inlinecode{p}, generates \inlinecode{shares},
+a \inlinecode{Quire} which maps each member in \inlinecode{parties} to a share,
+and then uses \inlinecode{scatter} to send the assigned share to each member.
+However \inlinecode{scatter} would return a \inlinecode{Faceted parties '[p] Bool} since by default it includes the sender.
+The choreographic function \inlinecode{gmw} expects shares of wires to be secret,
+so we must return a \inlinecode{Faceted parties '[] Bool}.
+We accomplish this by deconstructing and reconstructing via \inlinecode{PIndexed},
+and using \inlinecode{othersForget (First @@ nobody)}.
+The resulting \inlinecode{Faceted} "bit" actually represents the differing values located at all parties;
+the bits held by the parties sum up to the original secret.
+\inlinecode{reveal} takes exactly such a shared value and broadcasts
+all the shares so everyone can reconstruct the plain-text.
+
+\paragraph{Oblivious transfer}
+The other important building block of the GMW protocol is oblivious transfer (OT)~\cite{naor2001efficient}. OT is a 2-party protocol between a \emph{sender} and a \emph{receiver}. In the simplest variant (\emph{1 out of 2} OT, used in GMW), the sender inputs two secret bits $b_1$ and $b_2$, and the receiver inputs a single secret \emph{select bit} $s$. If $s=0$, then the receiver receives $b_1$. If $s=1$, then the receiver receives $b_2$. Importantly, the sender does \emph{not} learn which of $b_1$ or $b_2$ has been selected, and the receiver does \emph{not} learn the non-selected value.
+
+Importantly, oblivious transfer is a \emph{two-party protocol}, it would be a type-error for any third-parties to be involved in the implementation. \MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of enclaved sub-protocols within arbitrarily large censuses make it possible to embed the use of pairwise oblivious transfer between parties in a general version of multi-party GMW.
+
+\paragraph{The GMW protocol}
+The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate. Our implementation as a \MultiChor choreography appears in Figure~\ref{fig:gmw-multichor-example}, defined as a recursive function over the structure of the circuit. The choreography returns a \inlinecode{Faceted} value, representing the secret-shared output of the circuit. For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in Figure~\ref{fig:gmw-helpers-multichor-example} to distribute shares of the secret value. For XOR gates (lines~16--18) Figure ~\ref{fig:gmw-multichor-example}, the parties recursively run the GMW protocol to compute the two inputs to the gate and then each party computes one share of the gate's output by XORing their shares of the inputs. This approach leverages the additive homomorphism of additive secret shares. For AND gates (lines~13--15) Figure ~\ref{fig:gmw-multichor-example}, the parties compute shares of the gate's inputs, then use the \inlinecode{fAnd} protocol to perform multiplication of the two inputs. This implements the protocol as described in  Section 3.2.1 of \cite{evans2018pragmatic} namely the \emph{Generalization to more than two parties} case. Since additive secret shares are not multiplicatively homomorphic, this operation leverages the oblivious transfer protocol to perform the multiplication.
+
+\paragraph{Computing secret-shared AND via OT}
+To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values, then use the results to derive shares of the gate's output. The \inlinecode{fAnd} choreography (Figure~\ref{fig:gmw-helpers-multichor-example} lines~17--39) takes \inlinecode{Faceted} values holding the parties' shares of the input values, and returns a \inlinecode{Faceted} value representing each party's share of the output. On line~25, the parties perform a \inlinecode{fanOut} to begin the pairwise computation; the \inlinecode{fanIn} on line~27 completes the pairing for each computation, and uses \inlinecode{enclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+
+Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values and utilities for type-safe parallel, enclaved, and pairwise choreographies to build a fully-general implementation of the protocol that works for an arbitrary number of parties.
 
 \bibliographystyle{chicago}
 \bibliography{refs}
