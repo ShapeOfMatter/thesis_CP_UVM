@@ -421,17 +421,49 @@ the bits held by the parties sum up to the original secret.
 all the shares so everyone can reconstruct the plain-text.
 
 \paragraph{Oblivious transfer}
-The other important building block of the GMW protocol is oblivious transfer (OT)~\cite{naor2001efficient}. OT is a 2-party protocol between a \emph{sender} and a \emph{receiver}. In the simplest variant (\emph{1 out of 2} OT, used in GMW), the sender inputs two secret bits $b_1$ and $b_2$, and the receiver inputs a single secret \emph{select bit} $s$. If $s=0$, then the receiver receives $b_1$. If $s=1$, then the receiver receives $b_2$. Importantly, the sender does \emph{not} learn which of $b_1$ or $b_2$ has been selected, and the receiver does \emph{not} learn the non-selected value.
+The other important building block of the GMW protocol is oblivious transfer (OT)~\cite{naor2001efficient}.
+OT is a 2-party protocol between a \emph{sender} and a \emph{receiver}.
+In the simplest variant (\emph{1 out of 2} OT, used in GMW), the sender inputs two secret bits $b_1$ and $b_2$,
+and the receiver inputs a single secret \emph{select bit} $s$.
+If $s=0$, then the receiver receives $b_1$; if $s=1$, then the receiver receives $b_2$.
+Importantly, the sender does \emph{not} learn which of $b_1$ or $b_2$ has been selected,
+and the receiver does \emph{not} learn the non-selected value.
 
-Importantly, oblivious transfer is a \emph{two-party protocol}, it would be a type-error for any third-parties to be involved in the implementation. \MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of enclaved sub-protocols within arbitrarily large censuses make it possible to embed the use of pairwise oblivious transfer between parties in a general version of multi-party GMW.
-
-\paragraph{The GMW protocol}
-The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate. Our implementation as a \MultiChor choreography appears in Figure~\ref{fig:gmw-multichor-example}, defined as a recursive function over the structure of the circuit. The choreography returns a \inlinecode{Faceted} value, representing the secret-shared output of the circuit. For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in Figure~\ref{fig:gmw-helpers-multichor-example} to distribute shares of the secret value. For XOR gates (lines~16--18) Figure ~\ref{fig:gmw-multichor-example}, the parties recursively run the GMW protocol to compute the two inputs to the gate and then each party computes one share of the gate's output by XORing their shares of the inputs. This approach leverages the additive homomorphism of additive secret shares. For AND gates (lines~13--15) Figure ~\ref{fig:gmw-multichor-example}, the parties compute shares of the gate's inputs, then use the \inlinecode{fAnd} protocol to perform multiplication of the two inputs. This implements the protocol as described in  Section 3.2.1 of \cite{evans2018pragmatic} namely the \emph{Generalization to more than two parties} case. Since additive secret shares are not multiplicatively homomorphic, this operation leverages the oblivious transfer protocol to perform the multiplication.
+Oblivious transfer is a \emph{two-party protocol}; it would be erroneous for any third-parties to be involved in the implementation.
+\MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of enclaved sub-protocols within larger censuses
+make it possible to embed the use of pairwise oblivious transfer between parties in a general version of multi-party GMW.
 
 \paragraph{Computing secret-shared AND via OT}
-To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values, then use the results to derive shares of the gate's output. The \inlinecode{fAnd} choreography (Figure~\ref{fig:gmw-helpers-multichor-example} lines~17--39) takes \inlinecode{Faceted} values holding the parties' shares of the input values, and returns a \inlinecode{Faceted} value representing each party's share of the output. On line~25, the parties perform a \inlinecode{fanOut} to begin the pairwise computation; the \inlinecode{fanIn} on line~27 completes the pairing for each computation, and uses \inlinecode{enclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values,
+then use the results to derive shares of the gate's output.
+The \inlinecode{fAnd} choreography (Figure~\ref{fig:gmw-helpers-multichor-example} lines~17--39)
+takes \inlinecode{Faceted} values holding the parties' shares of the input values,
+and returns a \inlinecode{Faceted} value representing each party's share of the output.
+On line~25, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
+the \inlinecode{fanIn} on line~27 completes the pairing,
+and uses \inlinecode{enclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
 
-Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values and utilities for type-safe parallel, enclaved, and pairwise choreographies to build a fully-general implementation of the protocol that works for an arbitrary number of parties.
+\paragraph{The GMW protocol}
+The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.
+Our implementation as a \MultiChor choreography appears in Figure~\ref{fig:gmw-multichor-example},
+defined as a recursive function over the structure of the circuit.
+The choreography returns a \inlinecode{Faceted} value, representing the secret-shared output of the circuit.
+For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in Figure~\ref{fig:gmw-helpers-multichor-example}
+to distribute shares of the secret value.
+For XOR gates (lines~16--18) Figure ~\ref{fig:gmw-multichor-example},
+the parties recursively run the GMW protocol to compute the two inputs to the gate
+and then each party computes one share of the gate's output by XORing their shares of the inputs.
+This approach leverages the additive homomorphism of additive secret shares.
+For AND gates (lines~13--15) Figure ~\ref{fig:gmw-multichor-example}, the parties compute shares of the gate's inputs,
+then use the \inlinecode{fAnd} protocol to perform multiplication of the two inputs.
+This implements the protocol as described in  Section 3.2.1 of \cite{evans2018pragmatic},
+namely the \emph{Generalization to more than two parties} case.
+Since additive secret shares are not multiplicatively homomorphic,
+this operation leverages the oblivious transfer protocol to perform the multiplication.
+
+Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values
+and utilities for type-safe parallel, enclaved, and pairwise choreographies to build a fully-general implementation
+of the protocol that works for an arbitrary number of parties.
 
 \bibliographystyle{chicago}
 \bibliography{refs}

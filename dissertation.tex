@@ -59,6 +59,8 @@
 \newunicodechar{⟧}{\rBrack}
 \newunicodechar{∖}{\setminus}
 
+\definecolor{myBGblue}{rgb}{0.94, 0.97, 1.0}
+
 \newcommand{\BNF}{\quad\operatorname{::=}\quad}
 \newcommand{\BNFOR}{\quad\operatorname{\big{|}}\quad}
 \newcommand{\CASE}[6]{\langword{case}_{#1}#2\langword{of}\INL #3 ⇒ #4 ; \INR #5 ⇒ #6}
@@ -74,7 +76,7 @@
 \newcommand{\FuncLang}[1][small]{$𐤄_{λ\mathrm{#1}}$\xspace}
 \newcommand{\ie}{\textit{i.e.}\xspace}
 \newcommand{\INL}{\langword{Inl}}
-\newcommand{\inlinecode}[2][haskell]{\mintinline[breaklines]{#1}{#2}}
+\newcommand{\inlinecode}[2][haskell]{\mintinline[breaklines,bgcolor=myBGblue,fontsize=\small]{#1}{#2}}
 \newcommand{\INR}{\langword{Inr}}
 \newcommand{\langword}[1]{\operatorname{\mathsf{#1}}}
 \newcommand{\LOOKUP}[2]{\langword{lookup}^{#1}_{#2}}
