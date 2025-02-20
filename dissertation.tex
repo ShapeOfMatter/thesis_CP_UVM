@@ -142,21 +142,54 @@
 
 
 \begin{abstract}
-Presents both MultiChor (and possibly a distinct variant MiniChor) and a formalism "He Lambda something".
-Shows how this system is more ergonomic than prior work and equally as expressive.
-Expolores the theoretical minimum of choreographic programming, and implications for real use.
+  Choreographic programming (CP) is a paradigm for implementing
+  distributed systems that uses a single global program to define the
+  actions and interactions of all participants.
+  %
+  Library-level CP implementations, which enable choreographic programming in mainstream programming languages,
+  can facilitate real-world use of CP, but existing implementations like HasChor have limitations:
+  Their conditionals require extra communication,
+  and they lack support for programming patterns that are essential for implementing
+  realistic distributed applications.
+
+  We make three contributions to library-level CP to specifically
+  address these challenges. First, we propose and formalize
+  \emph{enclaves} and \emph{multiply-located values}, which enable
+  efficient conditionals in library-level CP without redundant
+  communication.
+  Second, we implement this "enclaves-\&-MLVs" paradigm in Haskell as the \MultiChor library.
+  \MultiChor is available to end-users now,
+  and contains solutions to key engineering problems.
+  Third, we propose
+  \emph{census polymorphism}, a technique for abstracting over the
+  number of participants in a choreography.
 \end{abstract}
 
 \begin{citationspage}
 \vskip 2em
-Material from this dissertation has been submitted for publication in {\it PLDI} on 06/216/2025 in the following form:\\
+Material from this proposal has been submitted for publication in {\it PLDI} on 06/16/2025 in the following form:\\
 \vskip 2em 
 \noindent Mako Bates and Shun Kashiwa and Syed Jafri and Gan Shen and Lindsey Kuper and Joseph P. Near.
 	  (2025). Efficient, Portable, Census-Polymorphic Choreographic Programming. {\it PLDI25}.
-\vskip 2em 
-\textit{NB:} This will still be in a state of uncertainty when I defend the proposal.
-Specifically, we will have responded to the first round of reviews and be awaiting subsequent decision.
-
+\vskip 1em 
+(\textit{NB:} This will still be in a state of uncertainty when I defend the proposal.
+Specifically, we will have responded to the first round of reviews and be awaiting subsequent decision.)
+\vskip 2em
+Material from this proposal was presented to the choreographic programming research committee on 06/24/2024 in the following form:\\
+\vskip 2em
+\noindent Mako Bates and Joseph P. Near.
+          (2024). We Know I Know You Know; Choreographic Programming With Multicast and Multiply Located Values. {\it CP24}
+	  \url{https://youtu.be/mnjhUZM4krU?si=Whx7l1F_UZUdDN2h}
+\vskip 2em
+Material from this proposal is additionally available as archived pre-prints in the following forms:
+\vskip 2em
+\noindent Bates, Mako, and Joseph P. Near. ‘We Know I Know You Know; Choreographic Programming With Multicast and Multiply Located Values’. arXiv [Cs.PL], 2024. arXiv. \url{http://arxiv.org/abs/2403.05417}.
+\vskip 2em
+\noindent Bates, Mako, Syed Jafri, and Joseph P. Near. ‘MultiChor: Census Polymorphic Choreographic Programming with Multiply Located Values’. arXiv [Cs.PL], 2024. arXiv. \url{http://arxiv.org/abs/2406.13716}.
+\vskip 2em
+Tools described in this proposal are availibe for use in the following from:
+\vskip 2em
+\noindent Mako Bates. 2024. MultiChor: Type-safe and efficient choreographies with location-set polymorphism. \url{https://hackage.haskell.org/package/MultiChor-1.0.1.1}
 \end{citationspage}
 
 \tableofcontents
