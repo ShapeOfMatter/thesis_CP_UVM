@@ -36,7 +36,6 @@ Representing this in the language can be done a few different ways:
   \item A \inlinecode{share} operator that updates the type of an MLV-typed variable to include the recipient(s) in the ownership set.
         This is a poor fit for a functional programming language because it mutates the type of a variable,
         and additional machinery would be needed to make it work with nested enclaves (see \Cref{sec:enclaves}).
-        \todo{I should mention .CHO here...}
   \item A \inlinecode{comm} operator that returns a value owned by the original owners and the recipient(s).
         This is not as straightforward as it sounds; if the communication happens inside a conditional,
         some of the original owners may not know that the communication happened.
@@ -75,8 +74,6 @@ and more amenable to implementation as an eDSL.
 
 \section{A Formal MLVs-\&-Enclaves Language}\label{sec:more-formalism}
 
-\todo{work through at least one example in prose.}
-
 We present the \HLSCentral CP system.
 The syntax of \HLSCentral and our overarching computational model and proof-approach are loosely based on
 Chorλ~\cite{chor-lambda}.
@@ -95,6 +92,8 @@ and define endpoint projection for \HLSCentral.
 %
 In \Cref{sec:deadlock-freedom}, we prove that the behavior of a choreography's projection in \HLSNet
 matches that of the original \HLSCentral choreography, and that \HLSCentral's type system ensures deadlock-freedom.
+In \Cref{sec:formalism-comparisons} we provide some example choreographies in (a plain-text rendering of) \HLSCentral.
+For example, \Cref{fig:our-kvs} implements the KVS example from \Cref{sec:introduction}.
 
 \subsection{Syntax}\label{sec:syntax}
 The syntax of \HLSCentral is in \Cref{fig:syntax}.
@@ -954,6 +953,19 @@ and shows explicitly the redundant communication that's implicit in HasChor chor
 \begin{figure}[tbhp]
     \begin{mdframed}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/kvs_hls.txt}
+  \begin{minipage}{0.95\linewidth}
+    This choreography is represented as a function from a Sum-Type located at \inlinecode{client}
+    (\inlinecode{request} on line~1)
+    to some unspecified "response" type also located at \inlinecode{client}
+    (the return type of \inlinecode{com[_][client]}, line~9).
+    The census annotation follows the function body (line~10).
+    \inlinecode{request}, \inlinecode{request_}, and \inlinecode{req} all contain the same data,
+    but have different owners (respectively, \inlinecode{[client]}, \inlinecode{[primary]}, and \inlinecode{[primary,backup]}).
+    The \inlinecode{case} expression (line~4) explicitly enclaves to the sub-census \inlinecode{[primary,backup]}.
+    Although the choreography looks (and in practice would execute) very much like the \MultiChor version in \Cref{fig:kvsenclave}\emph{(b)},
+    the actual semantics does not use a monad;
+    this representation would de-sugar to a nesting of lambda abstractions and applications.
+  \end{minipage}
     \caption{A \HLSCentral choreography implementing the same KVS as in \Cref{fig:kvsenclave}.}
     \label{fig:our-kvs}
     %\Description[An anonymous He-Lambda-Small function.]
