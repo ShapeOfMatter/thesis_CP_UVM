@@ -78,7 +78,7 @@ Re-writing the example KVS system as a choreography does not immediately solve t
 of what the backup server should do in the event of a \inlinecode{Get} request,
 but it makes the problem detectable by static analysis.
 In fact, the choreography in \Cref{fig:kvspseudo} cannot compile in any real CP system
-because \inlinecode{"backup"}'s behavior is ambiguous.
+because \inlinecode{"backup"}'s behavior is ambiguous!
 \Cref{fig:kvsenclave} shows two variations of how to realize the KVS behavior in Haskell using our \MultiChor library.
 
 \begin{figure}[tbhp]
@@ -129,7 +129,7 @@ because \inlinecode{"backup"}'s behavior is ambiguous.
   \multicolumn{2}{c}{\begin{minipage}{0.95\linewidth}
 	  \textbf{(b)} In this variation, the \inlinecode{enclave} operator eliminates the redundant communication.
            The enclaved sub-choreography is indicated by a box in the sequence diagram.
-           On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \todo{sec:membership}.
+           On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \Cref{sec:membership}.
   \end{minipage}}
   \end{tabular}
   \caption{A Real Choreography: a key-value store writing using \MultiChor, two variations.}
@@ -197,7 +197,25 @@ and choreographies can be composed modularly like normal single-threaded protoco
 
 \subsection{History}
 \label{sec:history}
-\todo{write this section.}
+Although in this present work we use the noun "choreography" to refer to actual programs written in CP systems,
+the word was already in use before the invention of choreographic programming \textit{per se}.
+The broader sense of the word is any unified 3rd-person description of or plan for interaction between two or more participating systems.
+Pseudo-code diagrams featuring a unified communication operator "→"
+were being used to describe cryptographic protocols at least as early as 1978 \cite{needham_schroeder_1978}.
+\cite{w3c2005} presented the \emph{"Web Services Choreography Description Language"}
+in which a user could specify the interaction, the sequence of communications, between parties.
+This was a specification language; implementations compatible with a given specification needed to be written separately.
+Later tools were to developed to statically check if a specification was actually implement\emph{able},
+whether a provided implementation was faithful to a specification,
+and whether the specification had other desired properties.
+In particular, \emph{multiparty session types} are a system in which a communication plan is specified as a "global type";
+the global type is \emph{projected} to a single party,
+resulting in a "local type" against which an implementation of that party's role can type-check
+\cite{honda-mpsts}.
+Multiparty session types also provided communication safety (\eg a party never misinterprets received data as being of the wrong type)
+and a form of deadlock freedom.
+One way to think about choreographic programming is as the extension of multiparty session types to include
+both the communication plan and the implementation of the computation each party is doing.
 
 \subsection{Endpoint Projection}
 \label{sec:endpoint-projection}
@@ -208,7 +226,10 @@ Such a function is parameterized by the target role, and is called \emph{Endpoin
 the roles are "endpoints", \ie surfaces from which and into which messages pass,
 and the choreography is "projected" in the sense that the given endpoint's view of it is extracted.
 
-\todo{example}
+For example, EPP of the choreography in \Cref{fig:kvsenclave}\emph{(b)} to each of the three participants
+would yield respective programs very similar to the ones in \Cref{fig:kvspiecewise},
+except that the primary server would always send the request to the backup server
+(and therefor the backup server would know how to proceed).
 
 \subsection{Knowledge of Choice}
 \label{sec:knowledge-of-choice}
@@ -225,9 +246,60 @@ that ensures that relevant parties have enough information to play their part in
 The pseudo-code in \Cref{fig:kvspseudo} shows a simple instance of this exact problem:
 \inlinecode{backup} doesn't know whether to expect a message or not,
 because that decision depends on a value (\inlinecode{request'}) that \inlinecode{backup} doesn't have.
-\todo{show how s\&m systems do it.}
-\todo{show how HasChor does it.}
-\todo{describe how predicate transformers would do it.}
+\Cref{fig:kvsenclave}\emph{(a)} implements HasChor's KoC strategy: the branch guard is broadcast to everyone.
+HasChor's authors knew this to be an inefficient (but expedient) solution.
+As we show in \Cref{fig:kvsenclave}\emph{(b)}, \MultiChor can do better.
+
+A more traditional approach,
+which we refer to as \emph{select-\&-merge},
+is to include in one's language a special operator just for communicating KoC.
+This operator is called "\inlinecode[bash]{select}"; it sends a statically-declared flag
+to the recipient to select which of that party's possible behaviors should be activated.
+For example, \Cref{fig:kvs_snm} shows how our KVS choreography might be expressed in a select-\&-merge system.
+Under both the centralized semantics and type analysis, \inlinecode[bash]{select} is a no-op!
+During EPP, \inlinecode[bash]{select} results in "offer" and "choose" actions at the receiver and sender, respectively.
+Because \inlinecode[bash]{select} doesn't affect typing,
+in \Cref{fig:kvs_snm} it would not be possible to encode the need for the lines~9 and~12 in Haskell's type system.
+Instead, such CP systems enforce KoC requirements in their "merge" operator, which is applied during EPP.
+Any party besides the owner of a branch guard will replace the entire conditional expression with the merge of their projections of the branches.
+The merge of two "offer" expressions is an offer of the union of the possible continuations;
+merges of any other combinations of expressions are only defined when the two expressions are the same.
+Thus, if lines~9 and~12 were omitted from \Cref{fig:kvs_snm}, the error would be detected during EPP to \inlinecode{backup}
+when the system tried to merge \inlinecode{{}} with
+\begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
+{ request'' <- recv primary;
+  success <- handleRequest request'' backupStateRef;
+  send success primary  }
+\end{minted}
+A substantial body of research has explored the soundness select-\&-merge
+and its fundamentals, implementation, and extensions
+\cite{montesi-carbone-dfbd,core_choreographies,giallorenzo-choral,robust_choreographies}.
+That said, HasChor, \MultiChor, ChoRus, and ChoreoTS all do EPP at runtime\cite{batesenclaves},
+so using EPP to detect KoC problems would not be a satisfactory solution for them.
+
+\begin{figure}[tbhp]
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_snm.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  This pseudo-code choreography implements the protocol from \Cref{fig:kvsenclave}\emph{(b)}
+	  using "select-\&-merge" syntax.
+	  Attempting to engineer a real select-\&-merge CP eDSL in the style of \MultiChor
+	  would result in a system that could not detect KoC errors until runtime.
+  \end{minipage}
+  \end{tabular}
+  \caption{A Select-\&-Merge Choreography: a key-value store with a backup server}
+  \label{fig:kvs_snm}
+  \end{mdframed}
+\end{figure}
+
+Yet another KoC strategy was proposed by \cite{jongmans2022predicates}.
+Their approach requires writing distinct guards for every
+participant in a conditional expression; they show how to use predicate transformers to check that
+such distributed decisions are unanimous.
+This system is verbose, but at least as expressive as the one we describe in this work.
 
 \subsection{The "Census" typing context}
 \label{sec:census}
@@ -245,7 +317,40 @@ In terms of EPP, that's done by projecting the entire clause to ⊥ or some simi
 \subsection{Additional Literature}
 \label{sec:modern-work}
 
-\todo{Review recent work on CP systems, including other systems that use MLVs.}
+Research and development of CP systems seems to have accelerated since approximately 2022.
+Pirouette~\cite{hirsch2021pirouette}, Chorλ~\cite{chor-lambda},
+and  PolyChorλ~\cite{graversen2023polychor}
+are (higher order) functional languages for writing select-\&-merge choreographies;
+PolChorλ additionally introduces polymorphism over identities of parties.
+Choral~\cite{choral} is a choreographic language implementing the select-\&-merge paradigm
+and targeting industrial use;
+it runs on the JVM and can easily import local Java code.
+
+Excitingly, CP libraries for a variety of general purpose languages have recently appeared on the scene.
+These include UniChorn~\cite{unichorn}, Chorex~\cite{chorex-github}, and Klor~\cite{klor-github}.
+All three are under development; here we report on their state toward the end of 2024.
+UniChorn is a port of HasChor into the Unison programming language.
+To implement EPP, it uses the Unison feature of \emph{abilities}, better known in the literature as algebraic effects~\cite{plotkin-2003,plotkin-2013}.
+This implementation approach, which was also recently proposed by~\cite{shen-alg-eff-cp},
+can be thought of as a generalization of the free(r)-monad approach.
+As a direct port of HasChor, UniChorn does not support enclaves, MLVs, or census polymorphism.
+Chorex is a CP system for Elixir, and Klor is a CP system for Clojure;
+both Chorex and Klor leverage the powerful macro systems of their respective host languages to carry out EPP.
+Chorex uses the select-\&-merge KoC strategy, and unprojectable choreographies can be detected at macro expansion time.
+Klor, on the other hand, is effectively an enclaves-\&-MLVs system, but their API differs from the implementations we present here,
+and the authors have not yet shown what safety guarantees it does or does not offer.
+Neither Chorex nor Klor support census polymorphism.
+
+Wysteria~\cite{wysteria} and Symphony~\cite{Sweet_2023} are domain-specific languages for \emph{secure multiparty computation}.
+Programs in these languages can exhibit census polymorphism,
+but they have homomorphic encryption baked into their
+semantics for communication,
+and they are not intended for general-purpose choreographic programming.
+Wysteria has a \inlinecode{par} language construct, used for evaluating an expression at a set of locations,
+that is somewhat similar in spirit to our enclaves.
+However, applying the enclave concept to choreographic programming, and to the choreographic knowledge-of-choice problem in particular,
+is to our knowledge a novel contribution of this paper.
+Symphony does not support conditionals, and therefore KoC propagation is a moot point for them.
 
 
 \bibliographystyle{chicago}

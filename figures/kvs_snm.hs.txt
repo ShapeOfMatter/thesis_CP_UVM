@@ -1,0 +1,21 @@
+kvs :: Located '["client"] Request ->
+       Located '["primary"] (IORef State) ->
+       Located '["backup"] (IORef State) ->
+       Choreo Participants IO (Located '["client"] Response)
+kvs request primaryStateRef backupStateRef = do
+  request' <- (client, request) `comm` primary  -- send request to the primary node
+  case request' of                              -- branch on the request
+    Get _ -> do
+      select primary backup LEFT
+      pure ()
+    Put _ _ -> do
+      select primary backup RIGHT
+      request'' <- (primary, request') `comm` backup  -- forward the request to the backup
+      success <- backup `locally`                     -- the backup does local work:
+                   (handleRequest <$> request'' <*> backupStateRef)
+      ack <- (backup, success) `comm` primary
+      pure ()
+  response <- primary `locally`                 -- the primary server does local work:
+                (handleRequest <$> request' <*> primaryStateRef)
+  result <- (primary, response) `comm` client @@ nobody  -- send response to client
+  return result
