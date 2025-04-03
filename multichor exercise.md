@@ -1,5 +1,5 @@
 ---
-geometry: "left=5cm,right=5cm,top=1.5cm,bottom=1.5cm"
+geometry: "left=3.5cm,right=3.5cm,top=1.5cm,bottom=1.5cm"
 ---
 
 # MultiChor Demo Exercise
@@ -14,15 +14,24 @@ git clone -b auction-demo git@github.com:ShapeOfMatter/MultiChor.git
 
 Enter its dir and check that you're at the HEAD of the `auction-demo` branch.
 
-Run the (reduced) unit tests to confirm you're set up. This will also build the whole project, so it may take a little while the first time.
+Run the (reduced) unit tests to confirm you're set up.
 
 ```bash
 cabal test -f test
 ```
 
+This will also build the whole project, so it may take a little while the first time.
+One more likely source of problems is your GHC version;
+version 9.10.1 is preferred.
+
 Open `examples/Auction.hs`.
 Observe that there's an example choreography `auction` on line 33.
 You'll be editing this to correctly implement the below protocol.
+
+The goal here is to find specific short-comings of MultiChor as a library that people might actually use.
+The goal is _not_ to test your own skill, or acquire a perfect implementation of the below protocol.
+Set yourself a timer for two hours, and quit when it goes off.
+Ask Mako questions, including about how to do particular things, at any point.
 
 
 ## Exercise
@@ -51,6 +60,9 @@ Here is the specific protocol:
 
 ## _Nota bene_
 
+- [The Hackage documentation](https://hackage.haskell.org/package/MultiChor) may be easier to navigate than the source code in `src/`,
+  but it may be a little out of date.
+  In particular, we used to use the word "enclave" instead of "conclave".
 - If you need a `KnownSymbol` or `KnownSymbols` constraint, you can usually just add it wherever you need it.
 - If you need to work with a `Quire`, notice that its instances for `Functor` _etc_ don't give you access to the party names;
   you can use `stackLeaves` to make a new `Quire` and `toLocTm` to get the term-level name of a party.
