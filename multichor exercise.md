@@ -73,3 +73,6 @@ Here is the specific protocol:
   Should you want to turn them all back on, change `examples/Tests.hs` line 41.
 - Effectively calling `main` via `cabal run...` would require coordinating seven open shells; I don't suggest you bother.
 
+
+
+![sequence diagram](exercise.pdf)
