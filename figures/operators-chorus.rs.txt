@@ -12,7 +12,7 @@ pub trait ChoreoOp<ChoreoLS: LocationSet> {
   fn naked<S: LocationSet, V, Index>(&self, data: MultiplyLocated<V, S>) -> V
   where ChoreoLS: Subset<S, Index>;
 
-  fn enclave<R, S: LocationSet, C: Choreography<R, L=S>, Index>(&self, choreo: C) -> MultiplyLocated<R, S>
+  fn conclave<R, S: LocationSet, C: Choreography<R, L=S>, Index>(&self, choreo: C) -> MultiplyLocated<R, S>
   where S: Subset<ChoreoLS, Index>;
 
   fn fanout<V, QS: LocationSet, FOC: FanOutChoreography<V, L=ChoreoLS, QS=QS>, QSSubsetL, QSFoldable>(

@@ -80,7 +80,7 @@ of what the backup server should do in the event of a \inlinecode{Get} request,
 but it makes the problem detectable by static analysis.
 In fact, the choreography in \Cref{fig:kvspseudo} cannot compile in any real CP system
 because \inlinecode{"backup"}'s behavior is ambiguous!
-\Cref{fig:kvsenclave} shows two variations of how to realize the KVS behavior in Haskell using our \MultiChor library.
+\Cref{fig:kvsconclave} shows two variations of how to realize the KVS behavior in Haskell using our \MultiChor library.
 
 \begin{figure}[tbhp]
   \begin{mdframed}
@@ -105,7 +105,7 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
   \begin{mdframed}
   \begin{tabular}{c c}
   \begin{minipage}{9.75cm}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsenclave_a.hs.txt}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsconclave_a.hs.txt}
   \end{minipage}
   &
   \begin{minipage}{3.75cm}
@@ -121,20 +121,21 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
   \end{minipage}}\\\\
   \hline\\
   \begin{minipage}{9.75cm}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsenclave_b.hs.txt}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvsconclave_b.hs.txt}
   \end{minipage}
   &
   \begin{minipage}{3.75cm}
      \includegraphics[width=4cm]{figures/seq3.pdf}
   \end{minipage} \\\\
   \multicolumn{2}{c}{\begin{minipage}{0.95\linewidth}
-	  \textbf{(b)} In this variation, the \inlinecode{enclave} operator eliminates the redundant communication.
-           The enclaved sub-choreography is indicated by a box in the sequence diagram.
+	  \textbf{(b)} In this variation, the \inlinecode{conclave} operator eliminates the redundant communication.
+           The conclaved sub-choreography is indicated by a box in the sequence diagram.
            On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \Cref{sec:membership}.
+	   \todo{fix terminology}
   \end{minipage}}
   \end{tabular}
   \caption{A Real Choreography: a key-value store writing using \MultiChor, two variations.}
-  \label{fig:kvsenclave}
+  \label{fig:kvsconclave}
     %%\Description{In the top section, twenty four lines of Haskell code using the MultiChor library, with a UML sequence diagram of that program.
 %%	The code defines a choreography called "kvs", and helper-functions "handleRequest" and "handleBackup".
 %%	In the sequence diagram, first "client" sends "request" to "server",
@@ -145,7 +146,7 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
 %%	  then server sends "response" to "client.
 %%	The bottom sections shows changes to the code in the top section.
 %%	In particular, the return type of "handleBackup" is changed to exclude "client".
-%%	In the updated sequence diagram, the part of the protocol representing "handleBackup" is in a box named "enclave",
+%%	In the updated sequence diagram, the part of the protocol representing "handleBackup" is in a box named "conclave",
 %%	  and the spurious transmission of "request-prime" from "server" to "client" is omitted.
 %%	  }
   \end{mdframed}
@@ -164,12 +165,12 @@ and a number of strategies that have been used to solve it.
 \Cref{sec:formalism} presents our first contribution:
 a formal model of a CP system with two novel features:
 \emph{multiply-located values} (MLVs)
-and \emph{enclaves}.
+and \emph{conclaves}.
 These features combine to allow a compelling new strategy for KoC management.
 In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
 In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
 
-\Cref{sec:multichor} presents our second contribution: an implementation of the enclaves-\&-MLVs paradigm in Haskell.
+\Cref{sec:multichor} presents our second contribution: an implementation of the conclaves-\&-MLVs paradigm in Haskell.
 The \MultiChor library is already available on Hackage, Haskell's main package management system.
 \MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
 and combines Haskell's Hindley–Milner-based type system with a proof-witness system
@@ -227,7 +228,7 @@ Such a function is parameterized by the target role, and is called \emph{Endpoin
 the roles are "endpoints", \ie surfaces from which and into which messages pass,
 and the choreography is "projected" in the sense that the given endpoint's view of it is extracted.
 
-For example, EPP of the choreography in \Cref{fig:kvsenclave}\emph{(b)} to each of the three participants
+For example, EPP of the choreography in \Cref{fig:kvsconclave}\emph{(b)} to each of the three participants
 would yield respective programs very similar to the ones in \Cref{fig:kvspiecewise},
 except that the primary server would always send the request to the backup server
 (and therefor the backup server would know how to proceed).
@@ -247,9 +248,9 @@ that ensures that relevant parties have enough information to play their part in
 The pseudo-code in \Cref{fig:kvspseudo} shows a simple instance of this exact problem:
 \inlinecode{backup} doesn't know whether to expect a message or not,
 because that decision depends on a value (\inlinecode{request'}) that \inlinecode{backup} doesn't have.
-\Cref{fig:kvsenclave}\emph{(a)} implements HasChor's KoC strategy: the branch guard is broadcast to everyone.
+\Cref{fig:kvsconclave}\emph{(a)} implements HasChor's KoC strategy: the branch guard is broadcast to everyone.
 HasChor's authors knew this to be an inefficient (but expedient) solution.
-As we show in \Cref{fig:kvsenclave}\emph{(b)}, \MultiChor can do better.
+As we show in \Cref{fig:kvsconclave}\emph{(b)}, \MultiChor can do better.
 
 A more traditional approach,
 which we refer to as \emph{select-\&-merge},
@@ -285,7 +286,7 @@ so using EPP to detect KoC problems would not be a satisfactory solution for the
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_snm.hs.txt}
   \end{minipage} \\\\
   \begin{minipage}{0.95\linewidth}
-	  This pseudo-code choreography implements the protocol from \Cref{fig:kvsenclave}\emph{(b)}
+	  This pseudo-code choreography implements the protocol from \Cref{fig:kvsconclave}\emph{(b)}
 	  using "select-\&-merge" syntax.
 	  Attempting to engineer a real select-\&-merge CP eDSL in the style of \MultiChor
 	  would result in a system that could not detect KoC errors until runtime.
@@ -334,11 +335,11 @@ UniChorn is a port of HasChor into the Unison programming language.
 To implement EPP, it uses the Unison feature of \emph{abilities}, better known in the literature as algebraic effects~\cite{plotkin-2003,plotkin-2013}.
 This implementation approach, which was also recently proposed by~\cite{shen-alg-eff-cp},
 can be thought of as a generalization of the free(r)-monad approach.
-As a direct port of HasChor, UniChorn does not support enclaves, MLVs, or census polymorphism.
+As a direct port of HasChor, UniChorn does not support conclaves, MLVs, or census polymorphism.
 Chorex is a CP system for Elixir, and Klor is a CP system for Clojure;
 both Chorex and Klor leverage the powerful macro systems of their respective host languages to carry out EPP.
 Chorex uses the select-\&-merge KoC strategy, and unprojectable choreographies can be detected at macro expansion time.
-Klor, on the other hand, is effectively an enclaves-\&-MLVs system, but their API differs from the implementations we present here,
+Klor, on the other hand, is effectively an conclaves-\&-MLVs system, but their API differs from the implementations we present here,
 and the authors have not yet shown what safety guarantees it does or does not offer.
 Neither Chorex nor Klor support census polymorphism.
 
@@ -348,8 +349,8 @@ but they have homomorphic encryption baked into their
 semantics for communication,
 and they are not intended for general-purpose choreographic programming.
 Wysteria has a \inlinecode{par} language construct, used for evaluating an expression at a set of locations,
-that is somewhat similar in spirit to our enclaves.
-However, applying the enclave concept to choreographic programming, and to the choreographic knowledge-of-choice problem in particular,
+that is somewhat similar in spirit to our conclaves.
+However, applying the conclave concept to choreographic programming, and to the choreographic knowledge-of-choice problem in particular,
 is to our knowledge a novel contribution of this paper.
 Symphony does not support conditionals, and therefore KoC propagation is a moot point for them.
 

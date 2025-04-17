@@ -45,7 +45,7 @@ where Backups: Subset<HCons<Client, HCons<Server, Backups>>, BackupsPresent>,
 {   type L = HCons<Client, HCons<Server, Backups>>;
     fn run(self, op: &impl ChoreoOp<Self::L>) -> Located<Response, Client> {
         let request = op.comm(Client, Server, &self.request);
-        let response = op.enclave(HandleRequest::<Backups, _, _>{
+        let response = op.conclave(HandleRequest::<Backups, _, _>{
             request: request,
             _phantoms: PhantomData
         }).flatten();

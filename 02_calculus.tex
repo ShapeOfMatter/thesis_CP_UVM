@@ -35,7 +35,7 @@ Representing this in the language can be done a few different ways:
 \begin{itemize}
   \item A \inlinecode{share} operator that updates the type of an MLV-typed variable to include the recipient(s) in the ownership set.
         This is a poor fit for a functional programming language because it mutates the type of a variable,
-        and additional machinery would be needed to make it work with nested enclaves (see \Cref{sec:enclaves}).
+        and additional machinery would be needed to make it work with nested conclaves (see \Cref{sec:conclaves}).
   \item A \inlinecode{comm} operator that returns a value owned by the original owners and the recipient(s).
         This is not as straightforward as it sounds; if the communication happens inside a conditional,
         some of the original owners may not know that the communication happened.
@@ -53,33 +53,33 @@ a common occurrence when communication is more expensive than computation.
 For example, the \HLSCentral expression $5@\set{p,q,r}+3@\set{p,q,r}$ represents an addition performed in parallel by $p$, $q$, and $r$.
 
 \subsection{Managing KoC with MLVs}
-\label{sec:enclaves}
+\label{sec:conclaves}
 
 As discussed in \Cref{sec:census}, prior systems have tracked censuses as attributes of choreographic functions.
-The ChoRus system introduced the \inlinecode{enclave} operator to explicitly limit the census within its argument,
+The ChoRus system introduced the \inlinecode{conclave} operator to explicitly limit the census within its argument,
 and showed how this could be used to avoid HasChor's overly broad \inlinecode{broadcasts}\footnote{
 	As discussed in \cite{batesenclaves}, ChoRus has since been upgraded to incorporate
 	the innovations discussed in this work.
 	\cite{chorus} is an unpublished pre-print describing their system as it existed without MLVs or census polymorphism.
-
+  It uses the now-deprecated term \emph{"enclave"} instead of \emph{"conclave"}.
 }.
-An \inlinecode{enclave} operator is a good design choice for an embedded DSL,
-but is not necessary in an abstract or bespoke language where the action of enclaving can be built into relevant constructs like
+An \inlinecode{conclave} operator is a good design choice for an embedded DSL,
+but is not necessary in an abstract or bespoke language where the action of conclaving can be built into relevant constructs like
 functions and conditionals.
 
-The combination of censuses with enclaving and MLVs constitutes a novel KoC strategy,
+The combination of censuses with conclaving and MLVs constitutes a novel KoC strategy,
 on par with state-of-the-art select-\&-merge systems like \chorLambda in terms of communication efficiency
 and more amenable to implementation as an eDSL.
 
 
-\section{A Formal MLVs-\&-Enclaves Language}\label{sec:more-formalism}
+\section{A Formal MLVs-\&-Conclaves Language}\label{sec:more-formalism}
 
 We present the \HLSCentral CP system.
 The syntax of \HLSCentral and our overarching computational model and proof-approach are loosely based on
 Chorλ~\cite{chor-lambda}.
 \HLSCentral is a higher-order choreographic lambda calculus;
 we omit recursion and polymorphism because they are orthogonal to our goals here.
-Specifically, we will show that multiply-located values and enclaving operations are sufficient for a sound
+Specifically, we will show that multiply-located values and conclaving operations are sufficient for a sound
 CP language without further KoC management.
 In \Crefrange{sec:syntax}{sec:semantics}
 we describe the syntax, type system, and semantics of \HLSCentral.
@@ -356,7 +356,7 @@ data types at $\nonempty{p}$.
 The final precondition says that $\nonempty{p}$ is a subset of Θ,
 \ie everyone who's supposed to be branching is actually present to do so.
 
-The other rules are mostly normal, with similar masking of types and enclaving of censuses as needed.
+The other rules are mostly normal, with similar masking of types and conclaving of censuses as needed.
 In \textsc{TVar}, the census masks the type bindings in Γ.
 In isolation, some expressions such as $\INR ()@\set{p}$
 or the projection operators
@@ -945,10 +945,10 @@ The implementation is succinct and easy to use.
 HasChor does not have \inlinecode{select} statements;
 KoC is handled by broadcasting branch-guards to all participants in the choreography.
 This is not efficient.
-The choreography in \Cref{fig:kvsenclave}\emph{(a)}
+The choreography in \Cref{fig:kvsconclave}\emph{(a)}
 is a translation into \MultiChor of an example from \cite{shen-haschor},
 and shows explicitly the redundant communication that's implicit in HasChor choreographies.
-\Cref{fig:our-kvs} shows a \HLSCentral version of the amended choreography from \Cref{fig:kvsenclave}\emph{(b)}.
+\Cref{fig:our-kvs} shows a \HLSCentral version of the amended choreography from \Cref{fig:kvsconclave}\emph{(b)}.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
@@ -961,12 +961,12 @@ and shows explicitly the redundant communication that's implicit in HasChor chor
     The census annotation follows the function body (line~10).
     \inlinecode{request}, \inlinecode{request_}, and \inlinecode{req} all contain the same data,
     but have different owners (respectively, \inlinecode{[client]}, \inlinecode{[primary]}, and \inlinecode{[primary,backup]}).
-    The \inlinecode{case} expression (line~4) explicitly enclaves to the sub-census \inlinecode{[primary,backup]}.
-    Although the choreography looks (and in practice would execute) very much like the \MultiChor version in \Cref{fig:kvsenclave}\emph{(b)},
+    The \inlinecode{case} expression (line~4) explicitly conclaves to the sub-census \inlinecode{[primary,backup]}.
+    Although the choreography looks (and in practice would execute) very much like the \MultiChor version in \Cref{fig:kvsconclave}\emph{(b)},
     the actual semantics does not use a monad;
     this representation would de-sugar to a nesting of lambda abstractions and applications.
   \end{minipage}
-    \caption{A \HLSCentral choreography implementing the same KVS as in \Cref{fig:kvsenclave}.}
+    \caption{A \HLSCentral choreography implementing the same KVS as in \Cref{fig:kvsconclave}.}
     \label{fig:our-kvs}
     %\Description[An anonymous He-Lambda-Small function.]
      %           {Ten lines of He-Lambda-Small code implementing the interaction between
@@ -1115,9 +1115,9 @@ the code is intermediate in verbosity between an actual machine-generated transl
 and a thoughtful human reimplementation.
 
 We believe that, while select-\&-merge languages like Chorλ are equivalent
-in expressivity and communication efficiency to enclaves-\&-MLVs languages like \HLSCentral,
+in expressivity and communication efficiency to conclaves-\&-MLVs languages like \HLSCentral,
 \HLSCentral's syntax and semantics are more user-friendly for most software engineering purposes.
-In the following chapter we present an eDSL implementation of enclave-\&-MLVs choreographic programming,
+In the following chapter we present an eDSL implementation of conclave-\&-MLVs choreographic programming,
 and demonstrate its use.
 
 \begin{figure}[tbhp]

@@ -21,7 +21,7 @@ locally :: (KnownSymbol (l :: LocTy))
                              --   unwrap funciton.
         -> Choreo ps m (Located '[lwait, where's the "shared doc?] a)
 infix 4 `locally`
-locally l m = enclave (l @@ nobody) $ locally' m
+locally l m = conclave (l @@ nobody) $ locally' m
 
 -- | Un-nest located values.
 flatten :: Subset ls ms -> Subset ls ns -> Located ms (Located ns a) -> Located ls a

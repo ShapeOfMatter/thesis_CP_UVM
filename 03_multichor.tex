@@ -4,7 +4,7 @@
 
 
 \section{Introduction}
-In this chapter we demonstrate the practicality of enclaves-\&-MLVs choreographic programming
+In this chapter we demonstrate the practicality of conclaves-\&-MLVs choreographic programming
 by presenting our implementation:
 the \MultiChor Haskell library.
 \MultiChor is a "just a library" CP system in the style of HasChor.
@@ -25,7 +25,7 @@ A few other desiderata motivate our implementation:
           and to use values known to the entire census as normal (un-located) values of their type.
     \item It should be possible to know from an appropriately-written choreography's type that some
           certain party or parties are not involved, are not in its census.
-          Users should be able to embed such "enclave" choreographies inside choreographies with larger,
+          Users should be able to embed such "conclave" choreographies inside choreographies with larger,
           possibly polymorphic, censuses.
     \item The type system should be able to reason about parties'
           membership in a census or ownership-set
@@ -34,7 +34,7 @@ A few other desiderata motivate our implementation:
 The choreography in Figure~\ref{fig:card-game} showcases the above points.
 The census of the whole program appears in the type
 and does not specify who the players are.
-The \inlinecode{enclaveTo} on line~18
+The \inlinecode{conclaveTo} on line~18
 embeds a choreography whose census is exactly the monomorphic \inlinecode{"dealer"}
 and a polymorphic \inlinecode{player} (\#2).
 The helper-function \inlinecode{broadcast} on line 19 functions as described in \#1.
@@ -60,7 +60,7 @@ to attest that \inlinecode{player} is present in the census.
 \end{figure*}
 
 
-\section{Censuses, Enclaves, and MLVs in Haskell}
+\section{Censuses, Conclaves, and MLVs in Haskell}
 \label{sec:implementation}
 
 \MultiChor uses the same free-monad approach as \HasChor~\cite{shen-haschor} to implement choreographic programming, EPP,
@@ -85,8 +85,8 @@ but monadic operations can take choreographies with smaller censuses as argument
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/operators-multichor.hs.txt}
     \caption{
         The fundamental operators for writing expressions in \MultiChor's \inlinecode{Choreo} monad.
-        Of these four operators, \inlinecode{enclave} is the only one users will usually call directly;
-        the other three can combine with each other (and with \inlinecode{enclave}) to make more user-friendly alternatives.
+        Of these four operators, \inlinecode{conclave} is the only one users will usually call directly;
+        the other three can combine with each other (and with \inlinecode{conclave}) to make more user-friendly alternatives.
     }
     \label{fig:operators-multichor}
     %\Description{Four type signatures for Haskell functions using the MultiChor library.}
@@ -94,7 +94,7 @@ but monadic operations can take choreographies with smaller censuses as argument
 \end{figure*}
 
 The fundamental operations of \MultiChor's \inlinecode{Choreo} monad are
-\inlinecode{enclave}, \inlinecode{broadcast'}, \inlinecode{locally'}, and \inlinecode{congruently'}.
+\inlinecode{conclave}, \inlinecode{broadcast'}, \inlinecode{locally'}, and \inlinecode{congruently'}.
 Their type signatures are given in \Cref{fig:operators-multichor}.
 Like in \HasChor, these are free-monad constructors; their behavior is implemented in interpreters
 that carry out EPP or implement a centralized semantics.
@@ -102,10 +102,10 @@ Three of them have their names "primed" because the un-primed versions of these 
 For example, \inlinecode{locally'} takes a single argument, a computation in the local monad, and requires that the census contains
 \emph{a single party}, who will execute that computation.
 The un-primed \inlinecode{locally} takes an additional argument that identifies a single party from a larger census;
-it uses \inlinecode{enclave} to correctly call \inlinecode{locally'}.
+it uses \inlinecode{conclave} to correctly call \inlinecode{locally'}.
 \inlinecode{broadcast} shares a \inlinecode{Located} value with the entire census so the unwrapped value can be used;
-by combining this with \inlinecode{enclave} we can implement point-to-point or multicast communication.
-From the perspective of a centralized semantics, \inlinecode{enclave} doesn't do anything at all besides run
+by combining this with \inlinecode{conclave} we can implement point-to-point or multicast communication.
+From the perspective of a centralized semantics, \inlinecode{conclave} doesn't do anything at all besides run
 the sub-choreography,
 but EPP to a party \emph{not} in the sub-census skips the sub-choreography and just returns \inlinecode{Empty}.
 
@@ -113,7 +113,7 @@ but EPP to a party \emph{not} in the sub-census skips the sub-choreography and j
 In contrast to \inlinecode{locally}, the computation is performed by multiple parties
 and the result is multiply-located across all of them.\footnote{
     The entire census participates in the primed version, and its result is returned naked.
-    The behavior of \inlinecode{enclave} and the more fundamental rules of monadic programming
+    The behavior of \inlinecode{conclave} and the more fundamental rules of monadic programming
     ensure the un-primed \inlinecode{congruently} behaves correctly.
 }
 For the execution of these actively-replicated computations to correctly return an MLV,
@@ -227,7 +227,7 @@ Census polymorphism is achieved in \MultiChor library by type-level programming 
     \caption{
         A key-value store choreography with an unspecified number of backup servers.
         The main action happens in \inlinecode{handleRequest},
-        a choreography involving only the servers which is called via \inlinecode{enclave} on line 21.
+        a choreography involving only the servers which is called via \inlinecode{conclave} on line 21.
         \inlinecode{handleRequest}'s census explicitly includes the primary server, but is polymorphic over the list of backup servers.
         The primary server broadcasts the request (line~5--12); the backups will update their state and report their health
         only for a \inlinecode{Put} request.
@@ -430,7 +430,7 @@ Importantly, the sender does \emph{not} learn which of $b_1$ or $b_2$ has been s
 and the receiver does \emph{not} learn the non-selected value.
 
 Oblivious transfer is a \emph{two-party protocol}; it would be erroneous for any third-parties to be involved in the implementation.
-\MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of enclaved sub-protocols within larger censuses
+\MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of conclaved sub-protocols within larger censuses
 make it possible to embed the use of pairwise oblivious transfer between parties in a general version of multi-party GMW.
 
 \paragraph{Computing secret-shared AND via OT}
@@ -441,7 +441,7 @@ takes \inlinecode{Faceted} values holding the parties' shares of the input value
 and returns a \inlinecode{Faceted} value representing each party's share of the output.
 On line~25, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
 the \inlinecode{fanIn} on line~27 completes the pairing,
-and uses \inlinecode{enclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+and uses \inlinecode{conclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
 
 \paragraph{The GMW protocol}
 The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.
@@ -462,7 +462,7 @@ Since additive secret shares are not multiplicatively homomorphic,
 this operation leverages the oblivious transfer protocol to perform the multiplication.
 
 Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values
-and utilities for type-safe parallel, enclaved, and pairwise choreographies to build a fully-general implementation
+and utilities for type-safe parallel, conclaved, and pairwise choreographies to build a fully-general implementation
 of the protocol that works for an arbitrary number of parties.
 
 \bibliographystyle{chicago}

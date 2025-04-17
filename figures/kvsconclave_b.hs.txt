@@ -7,6 +7,6 @@ handleBackup :: Located '["backup"] (IORef State)
              -> Request
 	     -> Choreo Servers IO ()
 
--- Change to line 20: sub-choreography is *enclaved*
-enclave servers $
+-- Change to line 20: sub-choreography is *conclaved*
+conclave servers $
     broadcast (primary, request') >>= (handleBackup backupStateRef)

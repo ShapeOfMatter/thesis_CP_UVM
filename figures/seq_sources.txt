@@ -16,10 +16,10 @@ backup-->primary:ack
 note over primary:handleRequest()
 primary->client: response
 
-KVS with enclave:
+KVS with conclave:
 
 client->primary:request
-group enclave
+group conclave
 primary->backup:request'
 note over backup:handleRequest()
 backup-->primary:ack
@@ -27,15 +27,15 @@ end
 note over primary:handleRequest()
 primary->client: response
 
-KVS with enclave and error handling:
+KVS with conclave and error handling:
 
 client->primary:request
-group enclave
+group conclave
 primary->backup:request'
 note over backup:handleRequest()
 backup->primary:maybeErr
 end
-group enclave
+group conclave
 note over backup,primary:handleError()
 end
 note over primary:handleRequest()
