@@ -647,3 +647,48 @@ keywords = {security, public-key cryptosystems, protocols, networks, encryption,
   biburl       = {https://dblp.org/rec/journals/tcs/Cruz-FilipeM20.bib},
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
+
+@article{zakhour23,
+author = {Zakhour, George and Weisenburger, Pascal and Salvaneschi, Guido},
+title = {Type-Safe Dynamic Placement with First-Class Placed Values},
+year = {2023},
+issue_date = {October 2023},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {7},
+number = {OOPSLA2},
+url = {https://doi.org/10.1145/3622873},
+doi = {10.1145/3622873},
+abstract = {Several distributed programming language solutions have been proposed to reason about the placement of data, computations, and peers interaction. Such solutions include, among the others, multitier programming, choreographic programming and various approaches based on behavioral types. These methods statically ensure safety properties thanks to a complete knowledge about placement of data and computation at compile time. In distributed systems, however, dynamic placement of computation and data is crucial to enable performance optimizations, e.g., driven by data locality or in presence of a number of other constraints such as security and compliance regarding data storage location. Unfortunately, in existing programming languages, dynamic placement conflicts with static reasoning about distributed programs: the flexibility required by dynamic placement hinders statically tracking the location of data and computation. 
+
+In this paper we present Dyno, a programming language that enables static reasoning about dynamic placement. Dyno features a type system where values are explicitly placed, but in contrast to existing approaches, placed values are also first class, ensuring that they can be passed around and referred to from other locations. Building on top of this mechanism, we provide a novel interpretation of dynamic placement as unions of placement types. We formalize type soundness, placement correctness (as part of type soundness) and architecture conformance. In case studies and benchmarks, our evaluation shows that Dyno enables static reasoning about programs even in presence of dynamic placement, ensuring type safety and placement correctness of programs at negligible performance cost. We reimplement an Android app with ∼ 7 K LOC in Dyno, find a bug in the existing implementation, and show that the app's approach is representative of a common way to implement dynamic placement found in over 100 apps in a large open-source app store.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {297},
+numpages = {29},
+keywords = {Distributed Programming, Dynamic Placement, Multitier Programming, Placement Types, Scala, Union Types}
+}
+
+@inproceedings{multiparty-languages,
+  author       = {Saverio Giallorenzo and
+                  Fabrizio Montesi and
+                  Marco Peressotti and
+                  David Richter and
+                  Guido Salvaneschi and
+                  Pascal Weisenburger},
+  editor       = {Anders M{\o}ller and
+                  Manu Sridharan},
+  title        = {Multiparty Languages: The Choreographic and Multitier Cases (Pearl)},
+  booktitle    = {35th European Conference on Object-Oriented Programming, {ECOOP} 2021,
+                  July 11-17, 2021, Aarhus, Denmark (Virtual Conference)},
+  series       = {LIPIcs},
+  volume       = {194},
+  pages        = {22:1--22:27},
+  publisher    = {Schloss Dagstuhl - Leibniz-Zentrum f{\"{u}}r Informatik},
+  year         = {2021},
+  url          = {https://doi.org/10.4230/LIPIcs.ECOOP.2021.22},
+  doi          = {10.4230/LIPICS.ECOOP.2021.22},
+  timestamp    = {Wed, 21 Aug 2024 22:46:00 +0200},
+  biburl       = {https://dblp.org/rec/conf/ecoop/GiallorenzoMPRS21.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
