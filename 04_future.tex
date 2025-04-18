@@ -1,22 +1,73 @@
-\chapter{Ongoing Work}
-%\chaptermark{\MultiChor?} %this is the chapter heading that will show on subsequent pages
+\chapter{Beyond \MultiChor}
 \label{sec:future}
 
 We believe \MultiChor to be the best off-the-shelf system presently available for any real-world applications of CP.
 We are also confident that \HLSCentral and the associated theorems demonstrate the theoretical soundness of the conclaves-\&-MLVs
 CP paradigm.
 That said, it is unsatisfying that the syntactic structures of these two systems are so different from each other.
-Furthermore, it is not clear that these systems as they stand are good foundations for the development of more advanced CP techniques.
-We propose to make changes to one or both systems in the coming months,
-to make them align with each other better
-and to facilitate subsequent work in this area.
+Furthermore, it is not clear that these systems as they stand are good foundations for the development of more advanced CP techniques,
+nor is it clear that the current design of the \MultiChor as a software library is ideal for real-world engineering.
+In \Cref{sec:usability} we discuss some known usability problems with the existing \MultiChor implementation
+(as distinct from theoretical limitations).
+In \Cref{sec:future-implementation} we describe a fork of \MultiChor, a research prototype with some theoretical implications that will affect
+the design of future \MultiChor versions.
+
+\section{User challenges in \MultiChor}
+\label{sec:usability}
+
+Industry use of CP concepts remains nascent,
+but enough embedded or semi-embedded implementations now exist or are in development that prospective users
+will need to actively choose between them.
+Just within the Haskell ecosystem, it's possible that an engineer might accept the excess communication necessitated by \HasChor's
+KoC strategy in order to avoid the conceptual (and textual) overhead of census tracking.
+Indeed, although we know of no "in the wild" use of \MultiChor,
+anecdotal reports from academic peers who have attempted to use the library suggest it would benefit from substantial further cosmetic work,
+and may need theoretical breakthroughs to appeal to non-academic developers.
+
+\subsection{General Feedback}
+\label{sec:usability-sources}
+A few people that we know of (besides ourselves) have actually attempted to write programs using \MultiChor.
+A couple of our fellow students accepted our invitation to do try a small programming exercise modeled after a job-interview exercise.
+The exercise itself is described in \Cref{sec:usability-exercise}.
+These sessions were not structured as a controlled usability study;
+volunteers were invited to ask for help with any part of the exercise they wished.
+Nonetheless, none of the volunteers were able to implement the described protocol,
+which had been designed both for brevity and to exactly fit \MultiChor's capabilities.
+This was our most detailed source of feedback.
+
+While our own efforts to asses \MultiChor's usability were illuminating and negative,
+we also received feedback on the software artifact~\cite{ourArtifact} submitted alongside~\cite{batesenclaves}.
+
+One point of feedback has been practically unanimous:
+\MultiChor's existing documentation is insufficient.
+Relying on type signatures to communicate behavior presupposes familiarity with \MultiChor's types,
+and the textual documentation, however systematic, is not suitable for bootstrapping a new user's understanding.
+The example choreographies included in the \MultiChor repository are not presented as a form of documentation, 
+and therefor do not serve that purpose.
+Regarding specific directions for future documentation,
+the documentation of \MultiChor's API should have relevant examples built into it,
+and the entry-point of the documentation (the \inlinecode[bash]{README} file) should be structured as a tutorial.
+Furthermore, the module structure of the repository should be refactored to reflect how the API will be \emph{used},
+instead of how it was \emph{engineered}.
+
+\subsection{The proof-witnesses system}
+
+powerful, but not powerful enough and hard to use.
+
+\subsection{"Compute this" operators}
+
+There's too many of them.
+
+\subsection{Clarity over flexibility}
+
+get rid of CanSend.
 
 \section{"Mini"-Chor}
 \label{sec:future-implementation}
 It is natural to ask why \MultiChor has a "core" API distinct from the ergonomic API afforded to end-users.
 This design pattern makes reasoning about \MultiChor's implementation easier;
 whether there are any performance implications has not been explored\footnote{
-  The need for methods for comparing the performance of CP systems was acknowleged by the community
+  The need for methods for comparing the performance of CP systems was acknowledged by the community
   of CP researchers attending PLDI24.
 }.
 In the coming months, we would like to push the simplicity of the core API even further:
@@ -46,3 +97,5 @@ By making these changes, which we expect to preserve in a clearly labeled fork o
 we will facilitate subsequent theoretical work on CP.
 In particular, the reduced API would make a good target for a more fully-featured formal model.
 
+\bibliographystyle{chicago}
+\bibliography{refs}
