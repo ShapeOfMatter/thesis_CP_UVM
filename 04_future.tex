@@ -52,15 +52,71 @@ instead of how it was \emph{engineered}.
 
 \subsection{The proof-witnesses system}
 
-powerful, but not powerful enough and hard to use.
+A major hurdle to writing correct choreographies with \MultiChor is constructing and managing the proof-witness arguments.
+Regardless of whether or not the system is overly-complicated
+(to quote both the volunteers from the usability exercise:
+\emph{"It's kinda complicated."})
+the cognitive load of using the proof-witness system is \emph{additional} to, and mostly \emph{perpendicular} to,
+the complexity of writing the actual choreography.
+In other words,
+a user must consider both how to represent a choreographic behavior using \MultiChor's operators
+and how to prove that the relevant parties have the relevant memberships,
+and because the proofs serve double-duty as identifiers, the user must think about those two problems simultaneously.
+
+It's not unusual for a Haskell library to have a steep learning curve,
+but we observe that the proof-witness system is a real bottleneck to use of \MultiChor,
+so it would be worth improving.
+Furthermore, the existing system is lacking certain capabilities one would expect,
+such as the ability to talk about set unions, intersections, and differences.
+There are two plausible directions for improvident;
+neither of them are perfectly clear at this time:
+\begin{enumerate}
+	\item Remove the witnesses altogether in favor of constraint programming.
+		(\inlinecode{Proxy} objects would still be necessary in some cases, but contain no complexity.)
+		As explained in \Cref{sec:membership}, normal \inlinecode{class}es will not suffice,
+		but quantified constraints~\cite{bottu2017} are not yet ruled out.
+		Specifically, type-level programming with GHC's \inlinecode{QuantifiedConstraints} extension
+		will be able to automatically infer sufficient subset relations,
+		\emph{if} a satisfactory representation of membership constraints can be expressed.
+	\item Externalize the proof-witness system.
+		Several experimental systems exist for reasoning about type-level sets in Haskell,
+		including \inlinecode{gdp}~\cite{gdp_hackage} and \inlinecode{type-level-sets}~\cite{tls_hackage}.
+		If truly no off-the-self library exists that's suitable for the challenges of \MultiChor,
+		then \MultiChor's solution should be separated as a stand-alone library.
+		Regardless of where an external library came from, its externalness would facilitate code-reuse 
+		and clarify a separation of concerns.
+\end{enumerate}
 
 \subsection{"Compute this" operators}
 
-There's too many of them.
+\MultiChor offers three "basic" operators for embedding non-choreographic computation in a choreography:
+\inlinecode{locally}, \inlinecode{congruently}, and \inlinecode{parallel}.
+Each of these is derived from more primitive forms, and each has further derived forms
+(\eg \inlinecode{_locally_}, \inlinecode{purely}).
+Choosing the best of these options for any given task is worse than a needle-in-haystack problem,
+because multiple of them may actually work,
+and because some may appear to work for the immediate task while causing problems later in the program.
+
+In \Cref{sec:future-implementation} we will see a possibility for removing some of this complexity.
+Regardless of whether the development of \MultiChor actually goes in that direction,
+the cost (as measured in end-user boilerplate) of removing (or not exporting) most of these functions
+would probably be worth the benefit of simplifying the choices they present to end-users.
 
 \subsection{Clarity over flexibility}
 
-get rid of CanSend.
+To send a value in \MultiChor one must (in addition to specifying the recipients)
+provide a MLV and prove that the sender both owns the value and is present in the census.
+This can be quite repetitive.
+To minimise boiler-plate, the surface API of \MultiChor uses a class \inlinecode{CanSend}
+so that the broad- and multi-cast functions can take the proof arguments in different formats.
+In keeping with the above theme of reducing the space of options users must navigate,
+\inlinecode{CanSend} should be removed and the functions should each have a single, general-purpose, signature.
+
+More broadly, we suggest abandoning the existing implementation-focused module structure
+that separates operators across three modules ("core", "surface", and "batteries")
+in favor of exporting a single surface-level API.
+We expect that users will build predictable helper functions on top of this,
+but trying to preempt their efforts doesn't seem to have helped prospective users.
 
 \section{"Mini"-Chor}
 \label{sec:future-implementation}
