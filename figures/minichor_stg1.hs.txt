@@ -1,0 +1,5 @@
+type Unwrap (q :: LocTy) = forall ls a. Member q ls -> Located ls a -> a
+type Unwraps (qs :: [LocTy]) = forall ls a. Subset qs ls -> Located ls a -> a
+
+locally'     :: (KnownSymbol  l ) => (Unwrap  l  -> m a) -> Choreo '[l] m a
+congruently' :: (KnownSymbols ls) => (Unwraps ls -> a  ) -> Choreo ls   m a

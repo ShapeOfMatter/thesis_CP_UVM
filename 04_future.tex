@@ -120,13 +120,67 @@ but trying to preempt their efforts doesn't seem to have helped prospective user
 
 \section{"Mini"-Chor}
 \label{sec:future-implementation}
-It is natural to ask why \MultiChor has a "core" API distinct from the ergonomic API afforded to end-users.
-This design pattern makes reasoning about \MultiChor's implementation easier;
-whether there are any performance implications has not been explored\footnote{
-  The need for methods for comparing the performance of CP systems was acknowledged by the community
+
+Entirely perpendicular to questions of ergonomics and learning-curves, the expressivity of \MultiChor could be improved
+(\eg failable communication),
+and the \HLSCentral system is not readily adaptable for proving the safety of further extensions.
+Therefore, in this section we discuss a fork of \MultiChor, \minichor,
+which is able to express all the same choreographies (with caveats noted in \Cref{sec:absolute-owners})
+using a parred-down core API which we believe is simple enough to directly model in a formalism.
+\todo{cite minichor}
+We do not present such a model at this time.
+We also don't present \minichor as "\MultiChor-V2",
+because it's differences from \MultiChor are probably negative if measured in terms of performance or ergonomics.
+
+Most of this section will describe the differences between \MultiChor and \minichor narratively.
+The first change is to remove the freer-monad system and instead implement \inlinecode{Functor}, \inlinecode{Applicative}, and \inlinecode{Monad}
+for \inlinecode{Choreo} directly.
+This has no effect on the rest of the system or on the case studies;
+it's simply a moving part which we have the ability to remove\footnote{
+	The main selling point of freer monads is how they compose with each other,
+	and how little boiler-plate is needed when writing them.
+	Neither of these are needed for \minichor.
+	There may also be performance considerations;
+	the need for methods for comparing the performance of CP systems was acknowledged by the community
   of CP researchers attending PLDI24.
-}.
-In the coming months, we would like to push the simplicity of the core API even further:
+	}.
+Second, we remove \inlinecode{othersForget} and \inlinecode{flatten} from the core API and re-implement them as
+monadic operations in the surface API using \inlinecode{congruently'}.
+This requires some small changes in the case studies; \eg
+\begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
+do result <- (listedFirst,
+              alice @@ nobody,
+              flatten aliceInConclaveA aliceinConclaveB value) ~> bob @@ nobody
+   return result
+\end{minted}
+becomes
+\begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
+do value' <- flatten aliceInConclaveA aliceinConclaveB value
+   result <- (listedFirst, alice @@ nobody, value') ~> bob @@ nobody
+   return result
+\end{minted}
+The rest of the changes descried in this section are more impactful,
+but the process follows a similar pattern of refactoring the core API and then either shimming the difference in the surface API
+(so that the exposed system behaves the same)
+or propagating semantically-inconsequential changes into the case studies.
+Most of the case studies have robust unit tests based on them, to detect any mistakes during this process.
+
+\subsection{Monadic Unwrappers}
+\HasChor enforces the rule that only the owner of a located value may call \inlinecode{unwrap} on it
+by hiding \inlinecode{unwrap} in a module (only its type, \inlinecode{Unwrap} is exported)
+and affording it to users only as an argument to \inlinecode{locally}'s callback argument.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/minichor_stg1.hs.txt}
+    \caption{
+	    ssdfff
+    }
+    \label{fig:minichor-stg1}
+  \end{mdframed}
+\end{figure*}
+
+
 \begin{enumerate}
   \item The use of a freer monad system is not actually necessary.
         It facilitates implementation, but it's also an additional "moving part" that can be removed
