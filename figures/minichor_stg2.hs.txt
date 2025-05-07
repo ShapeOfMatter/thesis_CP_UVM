@@ -1,0 +1,57 @@
+data Located ls a = Wrap a | Empty
+
+-- Core operations
+locally' :: ... ;  naked :: ... ;  broadcast' :: ... ;  conclave :: ...
+
+epp (Naked ownership value) self = let unwraps = ...
+			           in pure $ unwraps ownership value
+epp (Broadcast sender (ownership, value)) self
+    | self == toLocTm sender = do let val = unwrap ownership value
+                                  Send val otherRecipients
+                                  pure val
+    | otherwise              = Recv $ toLocTm sender
+epp (Conclave subcensus choreo) self
+    | self `elem` toLocs subcensus = Wrap <$> epp choreo self
+    | otherwise                    = pure Empty
+epp (...) self = ...
+
+
+-- start minichor on ln 20
+newtype Located ls a = Located {
+    naked :: forall census. Subset census ls -> Choreo census a
+}
+
+-- Core operations
+locally' :: ... ;                  broadcast' :: ... ;  conclave :: ...
+
+epp (Broadcast sender (ownership, value)) self
+    | self == toLocTm sender = do val <- epp (naked value (ownership @@ nobody)) self
+                                  Send val otherRecipients
+                                  pure val
+    | otherwise              = Recv $ toLocTm sender
+epp (Conclave subcensus choreo) self
+    | self `elem` toLocs subcensus = do val <- epp choreo self
+                                        pure $ Located \_ -> pure val
+    | otherwise = pure $ Located \_ -> pure undefined
+epp (...) self = ...
+
+
+-- start minichor on ln 40
+type Located ls a = Choreo ls a
+
+-- Core operations
+locally' :: (...)   => CLI IO a -> Choreo '[l] a
+broadcast' :: (...) => Member sender ps -> Located '[sender] a -> Choreo ps a
+conclaveTo :: (...) => Subset subcensus census -> Subset owners subcensus
+                    -> Choreo subcensus (Located owners a)
+		    -> Choreo census (Located owners a)
+
+epp (Broadcast sender value) self
+    | self == toLocTm sender = do val <- epp value self
+                                  Send val otherRecipients
+                                  pure val
+    | otherwise              = Recv $ toLocTm sender
+epp (Conclave subcensus owners choreo) self
+    | self `elem` toLocs subcensus = epp choreo self
+    | otherwise = pure $ pure undefined
+epp (...) self = ...
