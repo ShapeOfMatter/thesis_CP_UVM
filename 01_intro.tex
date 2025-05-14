@@ -131,7 +131,6 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
 	  \textbf{(b)} In this variation, the \inlinecode{conclave} operator eliminates the redundant communication.
            The conclaved sub-choreography is indicated by a box in the sequence diagram.
            On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \Cref{sec:membership}.
-	   \todo{fix terminology}
   \end{minipage}}
   \end{tabular}
   \caption{A Real Choreography: a key-value store writing using \MultiChor, two variations.}
@@ -176,15 +175,27 @@ The \MultiChor library is already available on Hackage, Haskell's main package m
 and combines Haskell's Hindley–Milner-based type system with a proof-witness system
 to capture the requisite notion of a well-typed choreography.
 
+Our third contribution is \emph{census polymorphism},
+a design pattern for choreographies that different CP systems may or may not support.
+\MultiChor is the first system to support census polymorphism\footnote{
+	We do not rule out the possibility that pre-existing systems exist
+	in which it might be possible to recapitulate the patterns we describe in this work.
+},
+by which we mean the ability to write choreographies
+that are parametric over their set of participants.
 Because \MultiChor is fully embedded in and interoperable with Haskell,
 functional-programming patterns can be applied to the choreographic setting without further theoretical or infrastructural work.
-The most important example of this, which we call "census polymorphism" is the ability to write choreographies
-that are parametric over their set of participants.
-This capability is novel among CP systems, and the third contribution presented in this work.
+\MultiChor's census polymoprhism functions work by applying advanced type-level programming techniques native to mordern Haskell
+to \MultiChor's core API.
 We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
 
-\Cref{sec:future} explains a plan for modifications to the \MultiChor system to simplify its core mechanisms
-and facilitate further theoretical work.
+\Cref{sec:future} expores possibilites for the future developent of \MultiChor,
+including our forth main contribution:
+We show that located values are not a necessary primitive component of CP systems
+by developing \minichor,
+a variant of \MultiChor which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
+In \Cref{sec:future} we also discus some usability issues with \MultiChor,
+and consider how these different findins can apply to future systems.
 
 
 
@@ -219,6 +230,8 @@ and a form of deadlock freedom.
 One way to think about choreographic programming is as the extension of multiparty session types to include
 both the communication plan and the implementation of the computation each party is doing.
 
+For a comparison between choreographic programming and the closely-related field of \emph{multitier langauges}, we refer to~\cite{multiparty-languages}.
+
 \subsection{Endpoint Projection}
 \label{sec:endpoint-projection}
 CP systems necessarily include a means by which a given computer can execute the behavior of a role in the choreography.
@@ -228,7 +241,16 @@ Such a function is parameterized by the target role, and is called \emph{Endpoin
 the roles are "endpoints", \ie surfaces from which and into which messages pass,
 and the choreography is "projected" in the sense that the given endpoint's view of it is extracted.
 
-For example, EPP of the choreography in \Cref{fig:kvsconclave}\emph{(b)} to each of the three participants
+In a choreographic program, many (in some systems, all) values will be \emph{located}:
+they will have explicit or implicit metadata indicating their owner.
+EPP of a located value to its owner results in the value itself
+(typically with the ownership annotation removed),
+and EPP to anyone else results in a special placeholder symbol, \eg $\bot$.
+The appearance of $\bot$ in a party's projection is not an error,
+but attempting to do any semantic evaluation on $\bot$ would be,
+so an important correctness property for choreographies is that parties never do that.
+
+As an example, EPP of the choreography in \Cref{fig:kvsconclave}\emph{(b)} to each of the three participants
 would yield respective programs very similar to the ones in \Cref{fig:kvspiecewise},
 except that the primary server would always send the request to the backup server
 (and therefor the backup server would know how to proceed).
@@ -248,7 +270,7 @@ that ensures that relevant parties have enough information to play their part in
 The pseudo-code in \Cref{fig:kvspseudo} shows a simple instance of this exact problem:
 \inlinecode{backup} doesn't know whether to expect a message or not,
 because that decision depends on a value (\inlinecode{request'}) that \inlinecode{backup} doesn't have.
-\Cref{fig:kvsconclave}\emph{(a)} implements HasChor's KoC strategy: the branch guard is broadcast to everyone.
+\Cref{fig:kvsconclave}\emph{(a)} implements the KoC strategy used by HasChor~\cite{shen-haschor}: the branch guard is broadcast to everyone.
 HasChor's authors knew this to be an inefficient (but expedient) solution.
 As we show in \Cref{fig:kvsconclave}\emph{(b)}, \MultiChor can do better.
 
@@ -327,6 +349,9 @@ PolChorλ additionally introduces polymorphism over identities of parties.
 Choral~\cite{giallorenzo-choral} is a choreographic language implementing the select-\&-merge paradigm
 and targeting industrial use;
 it runs on the JVM and can easily import local Java code.
+Dyno~\cite{zakhour23} is a CP system for Android development;
+it's key feature is the ability to resolve the location and ownership of data and computation dynamically,
+while still providing static safety guarantees.
 
 Excitingly, CP libraries for a variety of general purpose languages have recently appeared on the scene.
 These include UniChorn~\cite{unichorn}, Chorex~\cite{chorex-github}, and Klor~\cite{klor-github}.
@@ -355,8 +380,6 @@ is to our knowledge a novel contribution of this paper.
 Symphony does not support conditionals, and therefore KoC propagation is a moot point for them.
 
 
-\todo{\cite{zakhour23}}
-\todo{\cite{multiparty-languages}}
 
 \bibliographystyle{chicago}
 \bibliography{refs}
