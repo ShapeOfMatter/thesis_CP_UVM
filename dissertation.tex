@@ -150,24 +150,29 @@
   Choreographic programming (CP) is a paradigm for implementing
   distributed systems that uses a single global program to define the
   actions and interactions of all participants.
+  One characteristic of CP is that values are "located",
+  \ie associated or annotated with parties who own them,
+  and non-owners of a located value cannot use it.
   %
-  Library-level CP implementations, which enable choreographic programming in mainstream programming languages,
-  can facilitate real-world use of CP, but existing implementations like HasChor have limitations:
-  Their conditionals require extra communication,
-  and they lack support for programming patterns that are essential for implementing
-  realistic distributed applications.
-
-  We make three contributions to library-level CP to specifically
-  address these challenges. First, we propose and formalize
-  \emph{conclaves} and \emph{multiply-located values}, which enable
-  efficient conditionals in library-level CP without redundant
-  communication.
+  Existing CP systems are generally either \emph{select-\&-merge} systems,
+  which have a designated "select" operator for communicating knowledge of choice,
+  or use alternative strategies that are known to be less efficient.
+  
+  We make four contributions to the ongoing development of CP systems.
+  First, we propose and formalize \emph{conclaves} and \emph{multiply-located values};
+  this combination of features enables efficient conditionals
+  without redundant communication or a specialized operator.
   Second, we implement this "conclaves-\&-MLVs" paradigm in Haskell as the \MultiChor library.
-  \MultiChor is available to end-users now,
-  and contains solutions to key engineering problems.
   Third, we propose
   \emph{census polymorphism}, a technique for abstracting over the
   number of participants in a choreography.
+  Forth, we demonstrate the viability of a CP system \minichor that uses only conclaves and has no designated syntax for located values.
+
+  \MultiChor is available to end-users now,
+  and contains solutions to key engineering problems.
+  Based on anecdotal experiences using it
+  and subsequent work on the theory-oriented fork \minichor,
+  we outline near-term avenues for future work on CP systems for industry use.
 \end{abstract}
 
 \begin{citationspage}
