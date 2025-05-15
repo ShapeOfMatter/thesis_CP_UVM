@@ -6,6 +6,9 @@
    id="svg48"
    sodipodi:docname="seq3.svg"
    inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   inkscape:export-filename="seq3.pdf"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -20,14 +23,14 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.88661266"
-     inkscape:cx="137.60237"
-     inkscape:cy="360.92424"
+     inkscape:cx="253.77485"
+     inkscape:cy="350.2093"
      inkscape:window-width="1920"
      inkscape:window-height="1011"
      inkscape:window-x="0"
      inkscape:window-y="32"
      inkscape:window-maximized="0"
-     inkscape:current-layer="svg48" />
+     inkscape:current-layer="g48" />
   <desc
      id="desc1">client-%3Eprimary%3Arequest%0Agroup%20conclave%0Aprimary-%3Ebackup%3Arequest'%0Anote%20over%20backup%3AhandleRequest()%0Abackup--%3Eprimary%3Aack%0Aend%0Anote%20over%20primary%3AhandleRequest()%0Aprimary-%3Eclient%3A%20response%0A</desc>
   <defs
@@ -124,19 +127,20 @@
         <g
            id="g19" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="37.841126721500004"
-           y="56.582631123"
+           x="32.201683"
+           y="54.326855"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text19">client</text>
+           id="text19"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">client</text>
       </g>
       <path
          fill="none"
@@ -159,19 +163,20 @@
         <g
            id="g22" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="159.4565352177728"
-           y="56.582631123"
+           x="153.81709"
+           y="54.326855"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text22">primary</text>
+           id="text22"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">primary</text>
       </g>
       <path
          fill="none"
@@ -194,19 +199,20 @@
         <g
            id="g25" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="292.4387878978333"
-           y="56.582631123"
+           x="286.79932"
+           y="54.326855"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text25">backup</text>
+           id="text25"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">backup</text>
       </g>
     </g>
     <g
@@ -222,19 +228,20 @@
            height="31.03688627"
            id="rect27" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="95.19883020669694"
-           y="149.69328993300002"
+           x="81.664169"
+           y="148.5654"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text27">request</text>
+           id="text27"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">request</text>
       </g>
       <g
          id="g30">
@@ -269,19 +276,20 @@
            height="31.03688627"
            id="rect30" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="223.67266098559847"
-           y="281.00319338299994"
+           x="210.13802"
+           y="279.87531"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text30">request'</text>
+           id="text30"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">request'</text>
       </g>
       <g
          id="g33">
@@ -306,55 +314,60 @@
         </g>
       </g>
       <path
-         fill="white"
-         stroke="black"
+         fill="#ffffff"
+         stroke="#000000"
          paint-order="fill stroke markers"
-         d=" M 225.08111448724736 326.36479639299995 L 391.2427205490052 326.36479639299995 L 412.72979565900516 347.8518715029999 L 412.72979565900516 381.27621056299995 L 225.08111448724736 381.27621056299995 L 225.08111448724736 326.36479639299995 M 391.2427205490052 326.36479639299995 L 391.2427205490052 347.8518715029999 L 412.72979565900516 347.8518715029999"
+         d="m 225.08111,330.3648 h 166.16161 l 21.48708,21.48707 v 29.42434 H 225.08111 V 330.3648 m 166.16161,0 v 21.48707 h 21.48708"
          stroke-miterlimit="10"
-         stroke-width="1.9895439916666666"
-         stroke-dasharray=""
-         id="path33" />
+         stroke-width="1.98954"
+         stroke-dasharray="none"
+         id="path33"
+         sodipodi:nodetypes="ccccccccc" />
       <g
-         id="g34">
+         id="g34"
+         transform="translate(-4,2)">
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="258.5054535472474"
-           y="359.789135453"
+           x="244.97081"
+           y="358.66122"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text33">handleRequest()</text>
+           id="text33"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">handleRequest()</text>
       </g>
       <g
-         id="g35">
+         id="g35"
+         transform="translate(12,2)">
         <rect
-           fill="white"
+           fill="#ffffff"
            stroke="none"
-           x="237.17481576971468"
-           y="417.0880024129999"
-           width="32.66235837"
-           height="31.03688627"
+           x="237.17482"
+           y="417.08801"
+           width="32.662357"
+           height="31.036886"
            id="rect34" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="240.75599495471468"
-           y="438.5750775229999"
+           x="227.22134"
+           y="437.44717"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text34">ack</text>
+           id="text34"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">ack</text>
       </g>
       <g
          id="g37">
@@ -379,55 +392,60 @@
         </g>
       </g>
       <path
-         fill="white"
-         stroke="black"
+         fill="#ffffff"
+         stroke="#000000"
          paint-order="fill stroke markers"
-         d=" M 94.28219425042417 519.748472383 L 260.443800312182 519.748472383 L 281.930875422182 541.235547493 L 281.930875422182 574.659886553 L 94.28219425042417 574.659886553 L 94.28219425042417 519.748472383 M 260.443800312182 519.748472383 L 260.443800312182 541.235547493 L 281.930875422182 541.235547493"
+         d="M 94.282194,523.74847 H 260.4438 l 21.48708,21.48708 v 29.42434 H 94.282194 v -50.91142 m 166.161606,0 v 21.48708 h 21.48708"
          stroke-miterlimit="10"
-         stroke-width="1.9895439916666666"
-         stroke-dasharray=""
-         id="path37" />
+         stroke-width="1.98954"
+         stroke-dasharray="none"
+         id="path37"
+         sodipodi:nodetypes="ccccccccc" />
       <g
-         id="g38">
+         id="g38"
+         transform="translate(-6,4)">
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="127.70653331042416"
-           y="553.172811443"
+           x="114.17188"
+           y="550.04492"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text37">handleRequest()</text>
+           id="text37"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">handleRequest()</text>
       </g>
       <g
-         id="g39">
+         id="g39"
+         transform="translate(10)">
         <rect
-           fill="white"
+           fill="#ffffff"
            stroke="none"
-           x="86.1926517846364"
-           y="610.471678403"
-           width="73.66235836999999"
-           height="31.03688627"
+           x="86.19265"
+           y="610.47168"
+           width="73.662361"
+           height="31.036886"
            id="rect38" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="11pt"
            font-style="normal"
            font-weight="normal"
            text-decoration="normal"
-           x="89.77383096963639"
-           y="631.958753513"
+           x="76.239174"
+           y="630.83087"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text38">response</text>
+           id="text38"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">response</text>
       </g>
       <g
          id="g41">
@@ -474,19 +492,22 @@
            stroke-dasharray=""
            id="path43" />
         <text
-           fill="black"
+           fill="#000000"
            stroke="none"
            font-family="sans-serif"
            font-size="8.8pt"
            font-style="normal"
            font-weight="bold"
            text-decoration="normal"
-           x="128.42021508630307"
-           y="214.154515263"
+           x="114.88555"
+           y="213.02663"
            text-anchor="start"
            dominant-baseline="alphabetic"
            xml:space="preserve"
-           id="text43">conclave</text>
+           id="text43"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:17.3333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal"><tspan
+             style="font-weight:bold"
+             id="tspan50">conclave</tspan></text>
       </g>
     </g>
     <g
