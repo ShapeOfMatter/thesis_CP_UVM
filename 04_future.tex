@@ -128,11 +128,16 @@ Entirely perpendicular to questions of ergonomics and learning-curves, the expre
 and the \HLSCentral system is not readily adaptable for proving the safety of further extensions.
 Therefore, in this section we discuss a fork of \MultiChor, \minichor,
 which is able to express all the same choreographies (with caveats noted in \Cref{sec:minichor-stg3})
-using a parred-down core API which we believe is simple enough to directly model in a formalism.
-\todo{cite minichor}
+using a parred-down core API which we believe is simple enough to directly model in a formalism~\cite{minichor-repo}.
 We do not present such a model at this time.
 We also don't present \minichor as "\MultiChor-V2",
 because it's differences from \MultiChor are potentially negative if measured in terms of performance or ergonomics.
+
+Of particular note is that \minichor does not feature located values (multiply or singly) as understood by prior CP systems.
+While the type \inlinecode{Located} appears in \minichor and is used similarly to the type of the same name in \MultiChor,
+in \minichor \inlinecode{Located} is just an alias for \inlinecode{Choreo}!
+The theoretical implication of this is that MLVs are actually just a special case of census-annotated choregraphies.
+We discuss further implicaitons in \Cref{sec:minichor-implications}.
 
 Most of this section will describe the differences between \MultiChor and \minichor narratively.
 The first change is to remove the freer-monad system and instead implement \inlinecode{Functor}, \inlinecode{Applicative}, and \inlinecode{Monad}
@@ -172,6 +177,8 @@ or propagating semantically-inconsequential changes into the case studies.
 Most of the case studies have robust unit tests based on them, to detect any mistakes during this process.
 
 \subsection{Monadic Unwrapping}
+We replace the core operator \inlinecode{congruently'} with \inlinecode{naked}, simiplifying the core API.
+
 \HasChor enforces the rule that only the owner of a located value may call \inlinecode{unwrap} on it
 by hiding \inlinecode{unwrap} in a module (only its type, \inlinecode{Unwrap} is exported)
 and affording it to users only as an argument to \inlinecode{locally}'s callback argument.
@@ -291,12 +298,12 @@ The change in \Cref{fig:minichor-stg2} is just where the impossible error lives,
 from the case-wise definition of \inlinecode{unwrap} to an undefined value returned by a choreography generated at runtime
 (\Cref{fig:minichor-stg2}\textbf{(b)}~line~16).
 
+The point of the change described in \Cref{fig:minichor-stg2}\textbf{(b)} is to make intuitive the remaining jumps to \minichor,
+a core API for choreographic programming that
+doesn't have located values at all!
+
 \subsection{MLVs \emph{are} Choreographies}
 \label{sec:minichor-stg3}
-The change described in \Cref{sec:minichor-stg2} has almost no effect on the exposed API; it just swaps the order of \inlinecode{naked}'s arguments.
-At the same time, it may be unclear what the point of it was.
-The point of it was to make intuitive the remaining jumps to \minichor, a core API for choreographic programming that
-doesn't have located values at all!
 
 We get rid of MLVs by relaxing our demands of them.
 Previously it sufficed for one or more owners of an MLV to be present in a census for them to do something with that value,
@@ -304,6 +311,7 @@ but now we will require that \emph{all} owners be present.
 In terms of implementation,
 we demote \inlinecode{Located} from a \inlinecode{newtype} wrapper around a function down to just a type alias for \inlinecode{Choreo}
 (\Cref{fig:minichor-stg2}\textbf{(c)}~line~1).
+
 To understand the conceptual difference,
 consider some formal DSL of no specific purpose:
 the syntax of expressions in that language contains as a subset it's syntax of values.
@@ -363,7 +371,7 @@ We leave as future work to compose a formal model of \minichor,
 and to prove theorems about it
 (especially that it enjoys some equivalence with a corresponding select-\&-merge system).
  
-Second, while the actual implementation of \minichor doesn't enjoy any kind of laziness beyond whats normal for Haskell programs,
+Second, while the actual implementation of \minichor doesn't enjoy any kind of laziness beyond what's normal for Haskell programs,
 the use of \emph{choreographies} to represent \emph{values} suggests that laziness could be built on top without additional boiler plate.
 Specifically, while the MLVs that arise naturally in naïve use of \minichor are generally trivial \inlinecode{Return} ASTs,
 nothing about the type system requires that;
