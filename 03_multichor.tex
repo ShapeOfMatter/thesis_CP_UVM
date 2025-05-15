@@ -35,7 +35,7 @@ A few other desiderata motivate our implementation:
           membership in a census or ownership-set
           with normal subset reasoning.
 \end{enumerate}
-The choreography in Figure~\ref{fig:card-game} showcases the above points.
+The choreography in \Cref{fig:card-game} showcases the above points.
 The census of the whole program appears in the type
 and does not specify who the players are.
 The \inlinecode{conclaveTo} on line~18
@@ -76,7 +76,7 @@ but the derived API in which users write \MultiChor choreographies contains a cl
 Haskell's monadic-\inlinecode{do} notation and purity-oriented type system make \MultiChor code concise and safe
 (in the sense that users are unlikely to accidentally invalidate important invariants).
 
-As explained in Section~\ref{sec:formalism},
+As explained in \Cref{sec:formalism},
 our KoC strategy requires that the correctness (well-typed-ness) of choreographies be judged in the context of a census.
 \MultiChor adds the census as a type parameter of the \inlinecode{Choreo} monad.
 Its kind is \inlinecode{[Symbol]},
@@ -170,7 +170,7 @@ First, we were able to write everything we needed without hand-waving any founda
 Second, pattern matching against the constructors of \inlinecode{Member l ls} suffices to convince GHC that \inlinecode{ls} is not empty,
 which is sometimes useful.
 Finally, the implicit paradigm of "memberships as indices \& subsets as functions" was qualitatively easier to work with
-when we were building the census-polymorphism tools described in Section~\ref{sec:census-poly}.
+when we were building the census-polymorphism tools described in \Cref{sec:census-poly}.
 
 In \MultiChor, locations are identified by type-level strings, uninhabited types with "kind" \inlinecode{Symbol}.
 A values of type \inlinecode{Member p ps} can be used both
@@ -312,7 +312,7 @@ This behavior is implemented as a layer \textit{on top of} \MultiChor's central 
 from a theory perspective \MultiChor gets census polymorphism "for free" because it's a Haskell library.
 (Therefore, we do not bother with a separate proof of the soundness of census polymorphism.)
 The \MultiChor repository contains over a dozen example choreographies, several of which use census polymorphism.
-In Figure~\ref{fig:census-poly-example} we showcase a key-value store choreography that's polymorphic over the number of backup servers.
+In \Cref{fig:census-poly-example} we showcase a key-value store choreography that's polymorphic over the number of backup servers.
 \Cref{sec:mpc} presents a more involved census-polymorphic example.
 
 Key to \MultiChor's strategy is Haskell's ability to express quantified type variables.
@@ -461,7 +461,7 @@ and uses \inlinecode{conclaveTo} (line 18) to embed pairwise OTs (via \inlinecod
 
 \paragraph{The GMW protocol}
 The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.
-Our implementation as a \MultiChor choreography appears in Figure~\ref{fig:gmw-multichor-example},
+Our implementation as a \MultiChor choreography appears in \Cref{fig:gmw-multichor-example},
 defined as a recursive function over the structure of the circuit.
 The choreography returns a \inlinecode{Faceted} value, representing the secret-shared output of the circuit.
 For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in \Cref{fig:gmw-helpers-multichor-example-a}

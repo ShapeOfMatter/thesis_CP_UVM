@@ -6,7 +6,7 @@
 
 \section{Proof of The Substitution Theorem}\label{sec:substitution-proof}
 
-Theorem~\ref{theorem:substitution} says that
+\Cref{theorem:substitution} says that
 if $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
 then $Θ;Γ ⊢ M[x := V] : T$.
 We first prove a few lemmas.
@@ -18,7 +18,7 @@ We first prove a few lemmas.
     and $Θ';Γ ⊢ V' : T'$.
 \end{lemma}
 
-\subsection{Proof of Lemma~\ref{theorem:enclave}}
+\subsection{Proof of \Cref{theorem:enclave}}
 This is vacuous if $T'$ doesn't exist, so assume it does.
 Do induction on the definition of masking for $T$:
 
@@ -47,7 +47,7 @@ Do induction on the definition of masking for $T$:
     \textbf{B)} If $Θ;Γ,(x:T_x) ⊢ M : T$ and $T_x \mask Θ$ is not defined, then $Θ;Γ ⊢ M : T$.
 \end{lemma}
 
-\subsection{Proof of Lemma~\ref{theorem:quorum}}
+\subsection{Proof of \Cref{theorem:quorum}}
 By induction on the typing of M.
 The only case that's not recursive or trivial is \textsc{TVar},
 for which we just need to observe that masking on a given party-set is idempotent.
@@ -56,11 +56,11 @@ for which we just need to observe that masking on a given party-set is idempoten
 \begin{lemma}[Unused]\label{theorem:unused}
   If $Θ;Γ ⊢ M : T$ and $x \not \in Γ$, then $M[x := V] = M$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:unused}}
+\subsection{Proof of \Cref{theorem:unused}}
 By induction on the typing of $M$.
 There are no non-trivial cases.
 
-\subsection{Theorem~\ref{theorem:substitution}}
+\subsection{\Cref{theorem:substitution}}
 
 \Cref{theorem:substitution} says that
   if $Θ;Γ,(x:T_x) ⊢ M : T$ and $Θ;Γ ⊢ V : T_x$,
@@ -80,8 +80,8 @@ are trivial recursive cases.
       \item $Θ;Γ ⊢ V : T_x$ by assumption.
       \item $\nonempty{p};Γ,(x:T_x),(y:T_y) ⊢ N : T'$ per preconditions of \textsc{TLambda}.
       \item $Θ;Γ,(y:T_y) ⊢ V : T_x$ by weakening (or strengthening?) \#2.
-      \item $V' = V \mask \nonempty{p}$ and $\nonempty{p}; Γ,(y:T_y) ⊢ V' : T_x'$ by Lemma~\ref{theorem:enclave}.
-      \item $\nonempty{p};Γ,(x:T_x'),(y:T_y) ⊢ N : T'$ by applying Lemma~\ref{theorem:quorum} to \#3.
+      \item $V' = V \mask \nonempty{p}$ and $\nonempty{p}; Γ,(y:T_y) ⊢ V' : T_x'$ by \Cref{theorem:enclave}.
+      \item $\nonempty{p};Γ,(x:T_x'),(y:T_y) ⊢ N : T'$ by applying \Cref{theorem:quorum} to \#3.
       \item $\nonempty{p};Γ,(y:T_y) ⊢ N[x:=V'] : T'$ by induction on \#6 and \#5.
       \item $M[x:=V] = (λ y : T_y \DOT N[x:=V'])@\nonempty{p}$ by definition,
      which typechecks by \#7 and \textsc{TLambda}. \textbf{QED.}
@@ -90,8 +90,8 @@ are trivial recursive cases.
   $M = (λ y : T_y \DOT N)@\nonempty{p}$.
   \begin{enumerate}
       \item $\nonempty{p};Γ,(x:T_x),(y:T_y) ⊢ N : T'$ per preconditions of \textsc{TLambda}.
-      \item $\nonempty{p};Γ,(y:T_y) ⊢ N : T'$ by Lemma~\ref{theorem:quorum} B.
-      \item $N[x:=V] = N$ by Lemma~\ref{theorem:unused},
+      \item $\nonempty{p};Γ,(y:T_y) ⊢ N : T'$ by \Cref{theorem:quorum} B.
+      \item $N[x:=V] = N$ by \Cref{theorem:unused},
      so regardless of the existence of $V \mask \nonempty{p}$ the substitution is a noop,
      and it typechecks by \#2 and \textsc{TLambda}.
   \end{enumerate}
@@ -105,7 +105,7 @@ are trivial recursive cases.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proof of The Preservation Theorem}\label{sec:preservation-proof}
-Theorem~\ref{theorem:preservation} says that
+\Cref{theorem:preservation} says that
 if $Θ;∅ ⊢ M : T$ and $M \step M'$,
 then $Θ;∅ ⊢ M' : T$.
 We'll need a few lemmas first.
@@ -115,7 +115,7 @@ We'll need a few lemmas first.
     then \textbf{A:} $d@\nonempty{p} \mask \nonempty{q} = d@\nonempty{q}$ is defined
     and \textbf{B:} $V \mask \nonempty{q}$ is also defined and types as $d@\nonempty{q}$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:sub-mask}}
+\subsection{Proof of \Cref{theorem:sub-mask}}
 Part A is obvious by \textsc{MTData}.
 Part B follows by induction on the definition of masking for values.
 \begin{itemize}
@@ -134,7 +134,7 @@ Part B follows by induction on the definition of masking for values.
   then \textbf{A:} $V \mask \nonempty{p} = V'$ is defined
     and \textbf{B:} $Θ;Γ ⊢ V' : T'$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:maskable}}
+\subsection{Proof of \Cref{theorem:maskable}}
 By induction on the definition of masking for values.
 \begin{itemize}
 \item \textsc{MVLambda}: Base case. From the type-masking assumption, \textsc{MTFunction},
@@ -154,7 +154,7 @@ By induction on the definition of masking for values.
   If $Θ;∅ ⊢ M : T$ and $Θ \subseteq Θ'$
   then $Θ';∅ ⊢ M : T$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:exclave}}
+\subsection{Proof of \Cref{theorem:exclave}}
 By induction on the typing of $M$.
 \begin{itemize}
 \item \textsc{TLambda}: The recursive typing is unaffected,
@@ -164,9 +164,9 @@ By induction on the typing of $M$.
 \end{itemize}
 
 
-\subsection{Theorem~\ref{theorem:preservation}}
+\subsection{\Cref{theorem:preservation}}
 
-To repeat: Theorem~\ref{theorem:preservation} says that
+To repeat: \Cref{theorem:preservation} says that
 if $Θ;∅ ⊢ M : T$ and $M \step M'$,
 then $Θ;∅ ⊢ M' : T$.
 
@@ -182,9 +182,9 @@ so we consider the recursive cases:
     \begin{enumerate}
     \item $\nonempty{p};(x_l:d_l@\nonempty{p}) ⊢ M_l : T$ by the preconditions of \textsc{TCase}.
     \item $Θ;∅ ⊢ V : d_l@\nonempty{p}$ because $N$ must type by \textsc{TInL}.
-    \item $\nonempty{p};∅ ⊢ V' : d_l@\nonempty{p}$ by Lemma~\ref{theorem:enclave} and \textsc{MTData}.
-    \item $\nonempty{p};∅ ⊢ M_l[x_l := V'] : T$ by Lemma~\ref{theorem:substitution}.
-    \item $Θ;∅ ⊢ M_l[x_l := V'] : T$ by Lemma~\ref{theorem:exclave}. \textbf{QED.}
+    \item $\nonempty{p};∅ ⊢ V' : d_l@\nonempty{p}$ by \Cref{theorem:enclave} and \textsc{MTData}.
+    \item $\nonempty{p};∅ ⊢ M_l[x_l := V'] : T$ by \Cref{theorem:substitution}.
+    \item $Θ;∅ ⊢ M_l[x_l := V'] : T$ by \Cref{theorem:exclave}. \textbf{QED.}
     \end{enumerate}
   \item \textsc{CaseR}: Same as \textsc{CaseL}.
   \item \textsc{Case}: $N \step N'$, and by induction and \textsc{TCase},
@@ -203,15 +203,15 @@ so we consider the recursive cases:
     \item $\nonempty{p};(x:T_x) ⊢ B : T$ by the preconditions of \textsc{TLambda}.
     \item $Θ;∅ ⊢ A : T_a'$ such that $T_x = T_a' \mask \nonempty{p}$,
        by the preconditions of \textsc{TApp}.
-    \item $A'$ exists and $\nonempty{p};∅ ⊢ A' : T_x$ by Lemma~\ref{theorem:enclave} on \#2.
-    \item $\nonempty{p};∅ ⊢ B[x := A'] : T$ by Lemma~\ref{theorem:substitution}.
-    \item \textbf{QED.} by Lemma~\ref{theorem:exclave}.
+    \item $A'$ exists and $\nonempty{p};∅ ⊢ A' : T_x$ by \Cref{theorem:enclave} on \#2.
+    \item $\nonempty{p};∅ ⊢ B[x := A'] : T$ by \Cref{theorem:substitution}.
+    \item \textbf{QED.} by \Cref{theorem:exclave}.
     \end{enumerate}
   \item \textsc{Proj1}: $F = \FST{\nonempty{p}}$ and $A = \PAIR V_1 V_2$ and
     $M' = V_1 \mask \nonempty{p}$.
     Necessarily, by \textsc{TPair} $Θ;∅ ⊢ V_1 : d_1@\nonempty{p_1}$
     where $\nonempty{p} \subseteq \nonempty{p_1}$.
-    By Lemma~\ref{theorem:sub-mask}, $Θ;∅ ⊢ M' : T$.
+    By \Cref{theorem:sub-mask}, $Θ;∅ ⊢ M' : T$.
   \item \textsc{Proj2}: same as \textsc{Proj1}.
   \item \textsc{ProjN}: $F = \LOOKUP{i}{\nonempty{p}}$ and $A = (\dots, V_i, \dots)$
     and $M' = V_i \mask \nonempty{p}$.
@@ -219,7 +219,7 @@ so we consider the recursive cases:
     By \textsc{TApp}, $(\dots, T_i, \dots) \mask \nonempty{p} = T_a$,
     so by \textsc{MTVector} $T_i \mask \nonempty{p}$ exists
     and (again by \textsc{TApp} and \textsc{TProjN}) it must equal $T$.
-    \textbf{QED.} by Lemma~\ref{theorem:maskable}.
+    \textbf{QED.} by \Cref{theorem:maskable}.
   \item \textsc{Com1}: By \textsc{TCom} and \textsc{TUnit}.
   \item \textsc{ComPair}: Recusion among the \textsc{Com*} cases.
   \item \textsc{ComInl}:  Recusion among the \textsc{Com*} cases.
@@ -262,7 +262,7 @@ Recursive cases:
   \textsc{TVar} (which isn't compatible with the assumed empty $Γ$),
   and \textsc{TInl} and \textsc{TInr}, which respectively force $N$ to have the required forms
   for $M$ to step by \textsc{CaseL} or \textsc{CaseR}.
-  From the typing rules, \textsc{MTData}, and the first part of Lemma~\ref{theorem:enclave},
+  From the typing rules, \textsc{MTData}, and the first part of \Cref{theorem:enclave},
   the masking required by the step rules is possible.
 \item \textsc{TApp}: $M$ is of form $F A$, and $F$ is of a function type and $A$ also types
   (both in the same empty $Γ$).
@@ -272,7 +272,7 @@ Recursive cases:
   Ignoring the impossible \textsc{TVar} cases,
   there are five ways an $F$ of form $V$ could type as a function;
   in each case we get to make some assumption about the type of $A$.
-  Furthermore, by \textsc{TApp} and Lemma~\ref{theorem:enclave},
+  Furthermore, by \textsc{TApp} and \Cref{theorem:enclave},
   we know that $A$ can mask to the owners of $F$.
   \begin{itemize}
   \item \textsc{TProj1}: $A$ must be a value of type $(d_1×d_2)@\nonempty{q}$,
@@ -291,18 +291,18 @@ Recursive cases:
     which respectively force forms $()@\nonempty{q}$, $\PAIR V_1 V_2$, $\INL V$, and $\INR V$,
     which respectively require that $M$ reduce by
     \textsc{Com1}, \textsc{ComPair}, \textsc{ComInl}, and \textsc{ComInr}.
-          In the case of $()$, this follows from Lemma~\ref{theorem:sub-mask},
+          In the case of $()$, this follows from \Cref{theorem:sub-mask},
           since $\set{s} \subseteq \nonempty{s} \subseteq \nonempty{q}$;
     the other three are recursive among each other.
   \item \textsc{TLambda}: $M$ must reduce by \textsc{AppAbs}.
-      By the assumption of \textsc{TApp} and Lemma~\ref{theorem:maskable}, it can.
+      By the assumption of \textsc{TApp} and \Cref{theorem:maskable}, it can.
   \end{itemize}
 \end{itemize}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proof of The Soundness Theorem}\label{sec:soundness-proof}
-Theorem~\ref{theorem:soundness} says that
+\Cref{theorem:soundness} says that
 if $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}_n$,
 then there exists $M'$ such that
 $M \step^{\ast} M'$ and $\mathcal{N}_n \netstep{}{∅}^{\ast} ⟦M'⟧$.
@@ -319,8 +319,8 @@ We'll need a few lemmas first.
     then \textbf{(A)} $N$ can step to some $N'$
     and \textbf{(B)} $⟦N⟧$ can multi-step to $⟦N'⟧$ with empty annotation.
 
-    \textbf{A} follows from Lemma~\ref{theorem:values} and Theorem~\ref{theorem:progress}.
-    \textbf{B} is just Theorem~\ref{theorem:completeness}.
+    \textbf{A} follows from \Cref{theorem:values} and \Cref{theorem:progress}.
+    \textbf{B} is just \Cref{theorem:completeness}.
 \end{corollary}
 
 \begin{lemma}[Determinism]\label{theorem:determinism}
@@ -337,7 +337,7 @@ We'll need a few lemmas first.
     \end{itemize}
 \end{lemma}
 
-\subsection{Proof of Lemma~\ref{theorem:determinism}} First, observe that for every non-value expression in the process language,
+\subsection{Proof of \Cref{theorem:determinism}} First, observe that for every non-value expression in the process language,
 there is at most one rule in the process semantics by which it can step.
 (For values, there are zero.)
 Furthermore, the only way for
@@ -401,7 +401,7 @@ that would imply parties in $\mathcal{N}_0$ who don't step.
   and $\mathcal{N}_2 \netstep{}{∅}^{\ast} \mathcal{N}_2'$.
 \end{lemma}
 
-\subsection{Proof of Lemma~\ref{theorem:parallelism}}
+\subsection{Proof of \Cref{theorem:parallelism}}
 \textbf{A} is just repeated application of \textsc{NPar}. \\
 For \textbf{B}, observer that in the derivation tree of ever step of the sequence, some (possibly different)
 minimal sub-network will step by \textsc{NPro} or {NCom} as a precondition
@@ -411,7 +411,7 @@ and $\mathcal{N}_2$ respectively,
 so they can just combine via \textsc{NPar} to get the needed step in the respective sequences for
 $\mathcal{N}_1$ and $\mathcal{N}_2$.
 
-\subsection{Theorem~\ref{theorem:soundness}}
+\subsection{\Cref{theorem:soundness}}
 \Cref{theorem:soundness} says that
   if $Θ;∅ ⊢ M : T$ and $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}_n$,
   then there exists $M'$ such that
@@ -424,7 +424,7 @@ and $\mathcal{N} \netstep{}{∅}^{\ast} ⟦M_{\mathcal{N}}⟧$.
 
 Consider the sequence of network steps
 $⟦M⟧ = \mathcal{N}_0 \netstep{}{∅} \dots \netstep{}{∅} \mathcal{N}_n$.
-By Corollary~\ref{theorem:values-cor}, $\mathsf{sound}(\mathcal{N}_0)$.
+By \Cref{theorem:values-cor}, $\mathsf{sound}(\mathcal{N}_0)$.
 Select the largest $i$ s.t. $\mathsf{sound}(\mathcal{N}_i)$.
 We will derive a contradiction from an assumption that
 $\mathcal{N}_{i+1}$ is part of the sequence;
@@ -448,13 +448,13 @@ $\mathcal{N}^a_j = \mathcal{N}^b_j \mid \mathcal{N}^1_i$.
 
 \begin{itemize}
 \item Suppose $j < m$. \\
-  By Lemma~\ref{theorem:determinism} and our decision that $j$ is as large as possible,
+  By \Cref{theorem:determinism} and our decision that $j$ is as large as possible,
   $\mathcal{N}^a_{j+1} = \mathcal{N}^b_j \mid \mathcal{N}^1_{i+1}$.
   Thus we have
   $\mathcal{N}^0_i \mid \mathcal{N}^1_i \netstep{}{∅}^{\ast}
    \mathcal{N}^b_j \mid \mathcal{N}^1_i \netstep{}{∅}
    \mathcal{N}^b_j \mid \mathcal{N}^1_{i+1}$.
-  By Lemma~\ref{theorem:parallelism}, we can reorganize that into an alternative sequence where
+  By \Cref{theorem:parallelism}, we can reorganize that into an alternative sequence where
   $\mathcal{N}^0_i \mid \mathcal{N}^1_i \netstep{}{∅}
    \mathcal{N}^0_i \mid \mathcal{N}^1_{i+1} \netstep{}{∅}^{\ast}
    \mathcal{N}^b_j \mid \mathcal{N}^1_{i+1}$.
@@ -462,8 +462,8 @@ $\mathcal{N}^a_j = \mathcal{N}^b_j \mid \mathcal{N}^1_i$.
   and $\mathcal{N}^a_{j+1} \netstep{}{∅}^{\ast} ⟦M^a⟧$,
   this contradicts our choice that $i$ be as large as possible.
 \item Suppose $j = m$, so $⟦M^a⟧ = \mathcal{N}^b_m \mid \mathcal{N}^1_i$.\\
-  By Lemma~\ref{theorem:parallelism}, $⟦M^a⟧$ can step (because $\mathcal{N}^1_i$ can step)
-  so by Corollary~\ref{theorem:values-cor}, $M^a \step M^{a+1}$.
+  By \Cref{theorem:parallelism}, $⟦M^a⟧$ can step (because $\mathcal{N}^1_i$ can step)
+  so by \Cref{theorem:values-cor}, $M^a \step M^{a+1}$.
   We can repeat our steps from our choice of
   $\mathcal{N}^a_i \netstep{}{∅}^{\ast} \mathcal{N}^a_m = ⟦M^a⟧$,
   but using $M^{a+1}$ instead of $M^a$.
@@ -475,7 +475,7 @@ $\mathcal{N}^a_j = \mathcal{N}^b_j \mid \mathcal{N}^1_i$.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Proof of The Completeness Theorem}\label{sec:completeness-proof}
-Theorem~\ref{theorem:completeness} says that
+\Cref{theorem:completeness} says that
 if $Θ;∅ ⊢ M : T$ and $M \step M'$,
 then $⟦M⟧ \netstep{}{∅}^{\ast} ⟦M'⟧$.
 We'll need a few lemmas first.
@@ -484,7 +484,7 @@ We'll need a few lemmas first.
   If $Θ;∅ ⊢ M : T$ and $p \not\in Θ$,
   then $⟦M⟧_p = ⊥$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:cruft}}
+\subsection{Proof of \Cref{theorem:cruft}}
 By induction on the typing of $M$:
 \begin{itemize}
 \item \textsc{TLambda}:
@@ -511,7 +511,7 @@ By induction on the typing of $M$:
   If $Θ;Γ ⊢ V : d@\nonempty{p}$ and $p,q \in \nonempty{p}$,
   then $⟦V⟧_p = ⟦V⟧_q \neq ⊥$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:existence}}
+\subsection{Proof of \Cref{theorem:existence}}
 By induction on possible typings of $V$:
 \begin{itemize}
 \item \textsc{TVar}: Projection is a no-op on variables.
@@ -525,14 +525,14 @@ By induction on possible typings of $V$:
   If $Θ;∅ ⊢ M : T$ and $⟦M⟧_p = ⊥$ and $M \step M'$
   then $⟦M'⟧_p = ⊥$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:bottom}}
+\subsection{Proof of \Cref{theorem:bottom}}
 By induction on the step $M \step M'$.
 \begin{itemize}
 \item \textsc{AppAbs}: $M = (λ x:T_x \DOT N)@\nonempty{p} V$,
   and necessarily $⟦(λ x:T_x \DOT N)@\nonempty{p}⟧_p = ⊥$.
   Since the lambda doesn't project to a lambda, $p\not\in\nonempty{p}$.
   $M' = N[x:=V\mask\nonempty{p}]$.
-        By \textsc{TLambda}, Lemma~\ref{theorem:substitution}, and Lemma~\ref{theorem:cruft},
+        By \textsc{TLambda}, \Cref{theorem:substitution}, and \Cref{theorem:cruft},
   $⟦N[x:=V\mask\nonempty{p}]⟧_p = ⊥$.
 \item \textsc{App1}: $M = V N$
   and necessarily $⟦V⟧_p = ⟦N⟧_p = ⊥$.
@@ -544,8 +544,8 @@ By induction on the step $M \step M'$.
   and $M' = M_l[x_l := V\mask\nonempty{p}]$.
   Necessarily, $⟦V⟧_p = ⊥$.
   By \textsc{TCase} and \textsc{MTData}, $\INL V$ types as data,
-        so by Lemma~\ref{theorem:existence} $p \not\in \nonempty{p}$.
-        By \textsc{TCase}, Lemma~\ref{theorem:substitution}, and Lemma~\ref{theorem:cruft},
+        so by \Cref{theorem:existence} $p \not\in \nonempty{p}$.
+        By \textsc{TCase}, \Cref{theorem:substitution}, and \Cref{theorem:cruft},
   $⟦M'⟧_p = ⟦M_l[x_l := V\mask\nonempty{p}]⟧_p = ⊥$.
 \item \textsc{Proj1}: $M = \FST{\nonempty{p}}(\PAIR V_1 V_2)$,
   and $p \not \in \nonempty{p}$.
@@ -553,8 +553,8 @@ By induction on the step $M \step M'$.
   Since $Θ;∅ ⊢ V_1 : T'$ (by \textsc{TPair})
   and $T' \mask \nonempty{p} = T''$ is defined
   (by \textsc{TApp} and the indifference of \textsc{MTData} to the data's structure),
-        by Lemma~\ref{theorem:enclave} $\nonempty{p};∅ ⊢ V_1 \mask \nonempty{p} : T''$.
-        By Lemma~\ref{theorem:cruft} this projects to $⊥$.
+        by \Cref{theorem:enclave} $\nonempty{p};∅ ⊢ V_1 \mask \nonempty{p} : T''$.
+        By \Cref{theorem:cruft} this projects to $⊥$.
 \item \textsc{Proj2}, \textsc{ProjN}, and \textsc{Com1} are each pretty similar to
   \textsc{Proj1}.
 \item \textsc{Com1}, \textsc{ComPair}, \textsc{ComInl}, and \textsc{ComInr}:
@@ -569,7 +569,7 @@ By induction on the step $M \step M'$.
   If $p \in \nonempty{p}$ and $V' = V \mask \nonempty{p}$
   then $⟦V⟧_p = ⟦V'⟧_p$.
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:masked}}
+\subsection{Proof of \Cref{theorem:masked}}
 By (inductive) case analysis of endpoint projection:
 \begin{itemize}
 \item $⟦x⟧_p = x$. By \textsc{MVVar} the mask does nothing.
@@ -587,7 +587,7 @@ By (inductive) case analysis of endpoint projection:
 \begin{lemma}[Floor Zero]\label{theorem:floor-zero}
   $⟦M⟧_p = \FLR{⟦M⟧_p}$
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:floor-zero}}
+\subsection{Proof of \Cref{theorem:floor-zero}}
 There are thirteen forms.
 Six of them (application, case, injection-r/l, pair and vector)
 apply floor directly in the definition of projection.
@@ -601,7 +601,7 @@ For a lambda $(λ x:T_x \DOT N)@\nonempty{p}$, the proof is by induction on the 
   then $⟦M[x:=V]⟧_p = \FLR{⟦M⟧_p[x := ⟦V⟧_p]}$.
     (Because $⟦V⟧_p$ may be ⊥, this isn't really distribution; an extra flooring operation is necessary.)
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:distributive-substitution}}
+\subsection{Proof of \Cref{theorem:distributive-substitution}}
 It'd be more elegant if substitution really did distribute over projection,
 but this weaker statement is what we really need anyway.
 The proof is by inductive case analysis on the form of $M$:
@@ -613,7 +613,7 @@ The proof is by inductive case analysis on the form of $M$:
   \item Suppose one of $⟦V_1⟧_p$, $⟦V_2⟧_p$ is not $⊥$.
     Then \\
     $⟦M⟧_p[x := ⟦V⟧_p] = (\PAIR \FLR{⟦V_1⟧_p} \FLR{⟦V_2⟧_p})[x := ⟦V⟧_p]$ \\
-          which by Lemma~\ref{theorem:floor-zero}
+          which by \Cref{theorem:floor-zero}
     $= (\PAIR ⟦V_1⟧_p ⟦V_2⟧_p)[x := ⟦V⟧_p]$ \\
     $= \PAIR (⟦V_1⟧_p[x := ⟦V⟧_p]) (⟦V_2⟧_p[x := ⟦V⟧_p])$. \\
     Thus $\FLR{⟦M⟧_p[x := ⟦V⟧_p]}
@@ -678,7 +678,7 @@ The proof is by inductive case analysis on the form of $M$:
     $\FLR{⟦(λ y:T_y \DOT N)@\nonempty{p}⟧_p[x := ⟦V⟧_p]}$ \\
     $= \FLR{(λ y \DOT ⟦N⟧_p)[x := ⟦V⟧_p]  }$ \\
     $= \FLR{ λ y \DOT (⟦N⟧_p[x := ⟦V⟧_p]) }$ \\
-          $= \FLR{ λ y \DOT (⟦N⟧_p[x := ⟦V'⟧_p])}$ (by Lemma~\ref{theorem:masked}) \\
+          $= \FLR{ λ y \DOT (⟦N⟧_p[x := ⟦V'⟧_p])}$ (by \Cref{theorem:masked}) \\
     $=  λ y \DOT \FLR{(⟦N⟧_p[x := ⟦V'⟧_p])}$ \\
     Then we do induction on $N$ and $V'$.
   \item Otherwise, substitution in the central program is a no-op.  
@@ -691,10 +691,10 @@ The proof is by inductive case analysis on the form of $M$:
       $= λ y \DOT \FLR{⟦N⟧_p[x := ⟦V⟧_p]}$.
     \item Since we already known
       $(λ y:T_y \DOT N)@\nonempty{p}[x:=V] = (λ y:T_y \DOT N)@\nonempty{p}$,
-            we can apply Lemma~\ref{theorem:substitution} to $M$ and unpack the typing of
+            we can apply \Cref{theorem:substitution} to $M$ and unpack the typing of
       $M[x:=V] = M$
       to get $\nonempty{p};(y:T_y) ⊢ N : T'$.
-  \item By Lemma~\ref{theorem:unused}, we get $N[x:=V] = N$.
+  \item By \Cref{theorem:unused}, we get $N[x:=V] = N$.
     \item By induction on $N$ and $V$, we get
       $\FLR{⟦N⟧_p[x := ⟦V⟧_p]} = ⟦N[x:=V]⟧_p =  ⟦N⟧_p$,
       QED.
@@ -728,8 +728,8 @@ The proof is by inductive case analysis on the form of $M$:
   then $⟦M⟧_p \prcstep{μ}{η}^{?} ⟦M'⟧_p$.  
   (\ie it takes zero or one steps to get there.)
 \end{lemma}
-\subsection{Proof of Lemma~\ref{theorem:weak-completeness}}
-If $⟦M⟧_p = ⊥$ then this is follows trivially from Lemma~\ref{theorem:bottom},
+\subsection{Proof of \Cref{theorem:weak-completeness}}
+If $⟦M⟧_p = ⊥$ then this is follows trivially from \Cref{theorem:bottom},
 so assume it doesn't.
 We proceed with induction on the form of $M \step M'$:
 \begin{itemize}
@@ -737,7 +737,7 @@ We proceed with induction on the form of $M \step M'$:
   and $M' = N[x:=V\mask\nonempty{p}]$.
   By assumption, the lambda doesn't project to $⊥$, so $p \in \nonempty{p}$
   and $⟦M⟧_p \prcstep{∅}{∅} \FLR{⟦N⟧_p[x:=⟦V⟧_p]}$ by \textsc{LAbsApp}. \\
-        By Lemma~\ref{theorem:masked} and Lemma~\ref{theorem:distributive-substitution}
+        By \Cref{theorem:masked} and \Cref{theorem:distributive-substitution}
   $\FLR{⟦N⟧_p[x:=⟦V⟧_p]} = \FLR{⟦N⟧_p[x:=⟦V\mask\nonempty{p}⟧_p]}
   = ⟦N[x:=V\mask\nonempty{p}]⟧_p = ⟦M'⟧_p$.
 \item \textsc{App1}: $M = V N \step V N' = M'$.
@@ -773,21 +773,21 @@ We proceed with induction on the form of $M \step M'$:
   $M' = M_l[x_l := V\mask\nonempty{p}]$.
   If $p \in \nonempty{p}$
   then $B_l = ⟦M_l⟧_p$
-        and by Lemma~\ref{theorem:masked} and Lemma~\ref{theorem:distributive-substitution}
+        and by \Cref{theorem:masked} and \Cref{theorem:distributive-substitution}
   $\FLR{B_l[x_l := ⟦V⟧_p]} = \FLR{⟦M_l⟧_p[x_l := ⟦V⟧_p]}
   = \FLR{⟦M_l⟧_p[x_l := ⟦V\mask\nonempty{p}⟧_p]}$ \\
   $= ⟦M_l[x_l := V\mask\nonempty{p}]⟧_p
   = ⟦M'⟧_p$. \\
   Otherwise, $B_l[x_l := ⟦V⟧_p] = ⊥$
-        and by \textsc{TCase}, Lemma~\ref{theorem:substitution}, and Lemma~\ref{theorem:cruft},
+        and by \textsc{TCase}, \Cref{theorem:substitution}, and \Cref{theorem:cruft},
   $⟦M'⟧_p = ⊥$.
 \item \textsc{Proj1}: $M = \FST{\nonempty{p}} (\PAIR V_1 V_2)$
   and $M' = V_1 \mask \nonempty{p}$.
   Since we assumed $⟦M⟧_p \neq ⊥$, $p \in \nonempty{p}$. \\
   $⟦M⟧_p = \FST{} \FLR{\PAIR ⟦V_1⟧_p ⟦V_2⟧_p} = \FST{} (\PAIR ⟦V_1⟧_p ⟦V_2⟧_p)$
-        by Lemma~\ref{theorem:existence} and \textsc{TPair}.
+        by \Cref{theorem:existence} and \textsc{TPair}.
   This steps by \textsc{LProj1} to $⟦V_1⟧_p$,
-        which equals $⟦M'⟧_p$ by Lemma~\ref{theorem:masked}.
+        which equals $⟦M'⟧_p$ by \Cref{theorem:masked}.
 \item \textsc{Proj2}, \textsc{ProjN}: Same as \textsc{Proj1}.
 \item \textsc{Com1}: $M = \COMM{s}{\nonempty{r}} ()@\nonempty{p}$
   and $M' = ()@\nonempty{r}$.
@@ -815,7 +815,7 @@ We proceed with induction on the form of $M \step M'$:
   to support the respective process-semantics step.
 \end{itemize}
 
-\subsection{Theorem~\ref{theorem:completeness}}
+\subsection{\Cref{theorem:completeness}}
 \Cref{theorem:completeness} says that
   if $Θ;∅ ⊢ M : T$ and $M \step M'$,
   then $⟦M⟧ \netstep{}{∅}^{\ast} ⟦M'⟧$.
@@ -831,15 +831,15 @@ The proof is by case analysis on the semantic step $M \step M'$:
   Necessarily, the set of parties $\nonempty{p}$ for whom
   $⟦M⟧_{p\in\nonempty{p}} \neq ⊥$ is not empty.
   For every $p \in \nonempty{p}$,
-        by Lemma~\ref{theorem:weak-completeness} $⟦M⟧_p \prcstep{∅}{∅}^{?} ⟦M'⟧_p$
+        by \Cref{theorem:weak-completeness} $⟦M⟧_p \prcstep{∅}{∅}^{?} ⟦M'⟧_p$
   (checking the cases to see that the annotations are really empty!).
   By \textsc{NPro}, each of those is also a
   network step,
-        which by Lemma~\ref{theorem:parallelism} can be composed in any order to get
+        which by \Cref{theorem:parallelism} can be composed in any order to get
   $⟦M⟧ \netstep{}{∅}^{\ast} \mathcal{N}$.
   For every $p \in \nonempty{p}$,
   $\mathcal{N}(p) = ⟦M'⟧_p$,
-        and (by Lemma~\ref{theorem:bottom}) for every $q \not\in \nonempty{p}$,
+        and (by \Cref{theorem:bottom}) for every $q \not\in \nonempty{p}$,
   $\mathcal{N}(q) = ⊥ = ⟦M'⟧_q$,
   Q.E.D.
 \item \textsc{Com1},
@@ -852,16 +852,16 @@ The proof is by case analysis on the semantic step $M \step M'$:
   $\set{\PAIR, \INL{}, \INR{}, ()@\nonempty{r}}$,
   and $⟦M'⟧_{r\in\nonempty{r}} = ⟦V⟧_s$.
   For every $q \not\in \nonempty{r} ∪ \set{s}$, $⟦M⟧_q = ⊥ = ⟦M'⟧_q$
-        by Lemma~\ref{theorem:bottom}.
+        by \Cref{theorem:bottom}.
   Consider two cases:
   \begin{itemize}
   \item $s \not\in \nonempty{r}$: \\
-      By Lemma~\ref{theorem:weak-completeness}
+      By \Cref{theorem:weak-completeness}
     $⟦M⟧_s = \SEND{\nonempty{r}} ⟦V⟧_s
     \prcstep{\set{(r, ⟦V⟧_s) \mid r \in \nonempty{r}}}{∅} ⊥$.\\
     By the previously mentioned structure of $M'$, $⟦M'⟧_s = ⊥$. \\
     For every $r \in \nonempty{r}$,
-    by Lemma~\ref{theorem:weak-completeness}
+    by \Cref{theorem:weak-completeness}
     $⟦M⟧_r = \RECV{s} ⟦V⟧_r
     \prcstep{∅}{\set{(s,⟦V⟧_s)}} ⟦V⟧_s = ⟦M'⟧_{r}$. \\
     By \textsc{NPro},
@@ -871,12 +871,12 @@ The proof is by case analysis on the semantic step $M \step M'$:
     Everyone in and not-in $\nonempty{r} ∪ \set{s}$ has stepped, if needed,
     to the respective projection of $M'$.
   \item $s \in \nonempty{r}$: Let $\nonempty{r_0} = \nonempty{r} ∖ \set{s}$. \\
-    By Lemma~\ref{theorem:weak-completeness}
+    By \Cref{theorem:weak-completeness}
     $⟦M⟧_s = \SEND{\nonempty{r_0}}^{\ast} ⟦V⟧_s
     \prcstep{\set{(r, ⟦V⟧_s) \mid r \in \nonempty{r_0}}}{∅} ⟦V⟧_s
     = ⟦M'⟧_{s\in \nonempty{r}}$. \\
     For every $r \in \nonempty{r_0}$,
-    by Lemma~\ref{theorem:weak-completeness}
+    by \Cref{theorem:weak-completeness}
     $⟦M⟧_r = \RECV{s} ⟦V⟧_r
     \prcstep{∅}{\set{(s,⟦V⟧_s)}} ⟦V⟧_s = ⟦M'⟧_{r}$. \\
     We proceed as in the previous case.
