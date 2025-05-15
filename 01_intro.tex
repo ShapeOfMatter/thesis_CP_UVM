@@ -241,6 +241,11 @@ Such a function is parameterized by the target role, and is called \emph{Endpoin
 the roles are "endpoints", \ie surfaces from which and into which messages pass,
 and the choreography is "projected" in the sense that the given endpoint's view of it is extracted.
 
+As an example, EPP of the choreography in \Cref{fig:kvsconclave}\emph{(b)} to each of the three participants
+would yield respective programs very similar to the ones in \Cref{fig:kvspiecewise},
+except that the primary server would always send the request to the backup server
+(and therefor the backup server would know how to proceed).
+
 In a choreographic program, many (in some systems, all) values will be \emph{located}:
 they will have explicit or implicit metadata indicating their owner.
 EPP of a located value to its owner results in the value itself
@@ -249,11 +254,6 @@ and EPP to anyone else results in a special placeholder symbol, \eg $\bot$.
 The appearance of $\bot$ in a party's projection is not an error,
 but attempting to do any semantic evaluation on $\bot$ would be,
 so an important correctness property for choreographies is that parties never do that.
-
-As an example, EPP of the choreography in \Cref{fig:kvsconclave}\emph{(b)} to each of the three participants
-would yield respective programs very similar to the ones in \Cref{fig:kvspiecewise},
-except that the primary server would always send the request to the backup server
-(and therefor the backup server would know how to proceed).
 
 \subsection{Knowledge of Choice}
 \label{sec:knowledge-of-choice}
