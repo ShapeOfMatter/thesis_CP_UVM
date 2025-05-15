@@ -4,6 +4,10 @@
 
 
 \section{Introduction}
+In this chapter we introduce and formalize the \emph{conclaves-\&-MLVs} paradigm for choreographic programming.
+The motivation is to match both the communication efficiency of select-\&-merge systems like \chorLambda
+and the portability and simplicity of broadcast-based systems like HasChor.
+
 The HasChor library is inefficient in two ways.
 The first is particular to its broadcast-based KoC strategy:
 in order for any parities to branch on a value, the value must be broadcast to \emph{all} parties.

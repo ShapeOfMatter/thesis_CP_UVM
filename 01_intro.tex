@@ -18,11 +18,56 @@ In this chapter we describe the central concepts of choreographic programming,
 its advantages and disadvantages,
 and past and ongoing work to push the boundaries of the kinds of systems it can implement.
 
-\subsection{An illustrative example}
+\subsection{Layout and Contributions}
 
-Consider the three programs in \Cref{fig:kvspiecewise},
+This chapter covers the history and theory of CP
+and discusses some modern work relevant to the ongoing development of CP systems.
+In particular, \Cref{sec:knowledge-of-choice} discusses the "Knowledge of Choice" problem,
+a central difficulty in the design of CP systems,
+and a number of strategies that have been used to solve it.
+
+\Cref{sec:formalism} presents our first contribution:
+a formal model of a CP system with
+\emph{multiply-located values} (MLVs)
+and \emph{conclaves}.
+These features combine to allow a compelling new strategy for KoC management.
+In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
+In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
+
+\Cref{sec:multichor} presents our second contribution: an implementation of the conclaves-\&-MLVs paradigm in Haskell.
+The \MultiChor library is already available on Hackage, Haskell's main package management system.
+\MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
+and combines Haskell's Hindley–Milner-based type system with a proof-witness system
+to capture the requisite notion of a well-typed choreography.
+
+Our third contribution is \emph{census polymorphism},
+a design pattern for choreographies that different CP systems may or may not support.
+\MultiChor is the first system to support census polymorphism\footnote{
+	We do not rule out the possibility that pre-existing systems exist
+	in which it might be possible to recapitulate the patterns we describe in this work.
+},
+by which we mean the ability to write choreographies
+that are parametric over their set of participants.
+Because \MultiChor is fully embedded in and interoperable with Haskell,
+functional-programming patterns can be applied to the choreographic setting without further theoretical or infrastructural work.
+\MultiChor's census polymorphic functions work by applying advanced type-level programming techniques native to modern Haskell
+to \MultiChor's core API.
+We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
+
+\Cref{sec:future} explores possibilities for the future development of \MultiChor,
+including our forth main contribution:
+Located values are not a necessary primitive component of CP systems.
+We show this
+by developing \minichor,
+a variant of \MultiChor which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
+In \Cref{sec:future} we also discus some usability issues with \MultiChor,
+and consider how these different findings can apply to future systems.
+
+\subsection{An illustrative example}
+To motivate the ideas of choreographic programming,
+we first consider the three (non-choreographic, single-thread) programs in \Cref{fig:kvspiecewise},
 which are intended to run concurrently and pass messages back and forth between each other.
-The overall effect is an elementary process in which the client makes a \inlinecode{Get} or \inlinecode{Put} request to
+The overall effect is an elementary protocol in which the client makes a \inlinecode{Get} or \inlinecode{Put} request to
 a server (with a backup) that manages a key-value-store (KVS).
 Even this simplified example takes a moment for a reader to make sense of;
 one must read the three programs, infer the correspondence between messages sent and received by the three parties,
@@ -133,7 +178,7 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
            On line~3, \inlinecode{@@ nobody} is \MultiChor idiom explained in \Cref{sec:membership}.
   \end{minipage}}
   \end{tabular}
-  \caption{A Real Choreography: a key-value store writing using \MultiChor, two variations.}
+  \caption{Real Choreographies: a key-value store writing using \MultiChor, two variations.}
   \label{fig:kvsconclave}
     %%\Description{In the top section, twenty four lines of Haskell code using the MultiChor library, with a UML sequence diagram of that program.
 %%	The code defines a choreography called "kvs", and helper-functions "handleRequest" and "handleBackup".
@@ -152,50 +197,6 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
 \end{figure}
 
 
-
-\subsection{Layout and Contributions}
-
-The remainder of this chapter covers the history and theory of CP
-and discusses some modern work relevant to the ongoing development of CP systems.
-In particular, \Cref{sec:knowledge-of-choice} discusses the "Knowledge of Choice" problem,
-a central difficulty in the design of CP systems,
-and a number of strategies that have been used to solve it.
-
-\Cref{sec:formalism} presents our first contribution:
-a formal model of a CP system with
-\emph{multiply-located values} (MLVs)
-and \emph{conclaves}.
-These features combine to allow a compelling new strategy for KoC management.
-In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
-In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
-
-\Cref{sec:multichor} presents our second contribution: an implementation of the conclaves-\&-MLVs paradigm in Haskell.
-The \MultiChor library is already available on Hackage, Haskell's main package management system.
-\MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
-and combines Haskell's Hindley–Milner-based type system with a proof-witness system
-to capture the requisite notion of a well-typed choreography.
-
-Our third contribution is \emph{census polymorphism},
-a design pattern for choreographies that different CP systems may or may not support.
-\MultiChor is the first system to support census polymorphism\footnote{
-	We do not rule out the possibility that pre-existing systems exist
-	in which it might be possible to recapitulate the patterns we describe in this work.
-},
-by which we mean the ability to write choreographies
-that are parametric over their set of participants.
-Because \MultiChor is fully embedded in and interoperable with Haskell,
-functional-programming patterns can be applied to the choreographic setting without further theoretical or infrastructural work.
-\MultiChor's census polymoprhism functions work by applying advanced type-level programming techniques native to mordern Haskell
-to \MultiChor's core API.
-We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
-
-\Cref{sec:future} expores possibilites for the future developent of \MultiChor,
-including our forth main contribution:
-We show that located values are not a necessary primitive component of CP systems
-by developing \minichor,
-a variant of \MultiChor which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
-In \Cref{sec:future} we also discus some usability issues with \MultiChor,
-and consider how these different findins can apply to future systems.
 
 
 
