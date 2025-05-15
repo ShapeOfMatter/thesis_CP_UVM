@@ -15,7 +15,8 @@ gmw circuit = case circuit of
     fAnd lResult rResult
   XorGate l r -> do        -- process an XOR gate
     lResult <- gmw l; rResult <- gmw r
-    parallel (allOf @parties) \p un -> pure $ xor [viewFacet un p lResult, viewFacet un p rResult]
+    parallel (allOf @parties) \p un -> pure $ xor [viewFacet un p lResult,
+                                                   viewFacet un p rResult]
 
 data Circuit :: [LocTy] -> Type where
   InputWire :: (KnownSymbol p) => Member p ps -> Circuit ps

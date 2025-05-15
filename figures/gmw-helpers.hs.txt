@@ -1,11 +1,13 @@
 secretShare :: forall parties p m. (KnownSymbols parties, KnownSymbol p, MonadIO m)
-            => Member p parties -> Located '[p] Bool -> Choreo parties m (Faceted parties '[] Bool)
+            => Member p parties -> Located '[p] Bool
+	    -> Choreo parties m (Faceted parties '[] Bool)
 secretShare p value = do
   shares <- locally p \un -> genShares p (un singleton value)
   PIndexed fs <- scatter p (allOf @parties) shares
   return $ PIndexed $ Facet . othersForget (First @@ nobody) . getFacet . fs
 
-genShares :: forall ps p m. (MonadIO m, KnownSymbols ps) => Member p ps -> Bool -> m (Quire ps Bool)
+genShares :: forall ps p m. (MonadIO m, KnownSymbols ps)
+          => Member p ps -> Bool -> m (Quire ps Bool)
 genShares p x = quorum1 p gs'
   where gs' :: forall q qs. (KnownSymbol q, KnownSymbols qs) => m (Quire (q ': qs) Bool)
         gs' = do freeShares <- sequence $ pure $ liftIO randomIO -- generate n-1 random shares
@@ -31,7 +33,9 @@ fAnd uShares vShares = do
               bb <- locally p_i \un -> let a_ij = getLeaf (viewFacet un p_i a_j_s) p_j
                                            u_i = viewFacet un p_i uShares
                                          in pure (xor [u_i, a_ij], a_ij)
-              conclaveTo (p_i @@ p_j @@ nobody) (listedSecond @@ nobody) (ot2 bb $ localize p_j vShares)
+              conclaveTo (p_i @@ p_j @@ nobody)
+	                 (listedSecond @@ nobody)
+			 (ot2 bb $ localize p_j vShares)
       locally p_j \un -> pure $ xor $ un singleton b_i_s
   parallel (allOf @parties) \p_i un ->
     let computeShare u v a_js b = xor $ [u && v, b] ++ toList (qModify p_i (const False) a_js)
@@ -48,8 +52,10 @@ ot2 bb s = do
   keys <- locally receiver  \un -> liftIO $ genKeys $ un singleton s
   pks <- (receiver, \un -> let (pk1, pk2, _) = un singleton keys
                            in return (pk1, pk2)) ~~> sender @@ nobody
-  encrypted <- (sender, \un -> let (b1, b2) = un singleton bb
-                               in liftIO $ encryptS (un singleton pks) b1 b2) ~~> receiver @@ nobody
+  encrypted <- (sender,
+                \un -> let (b1, b2) = un singleton bb
+                       in liftIO $ encryptS (un singleton pks) b1 b2
+               ) ~~> receiver @@ nobody
   locally receiver  \un -> liftIO $ decryptS (un singleton keys)
                                                            (un singleton s)
                                                            (un singleton encrypted)

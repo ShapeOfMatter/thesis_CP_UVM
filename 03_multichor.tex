@@ -229,16 +229,16 @@ Census polymorphism is achieved in \MultiChor library by type-level programming 
     \caption{
         A key-value store choreography with an unspecified number of backup servers.
         The main action happens in \inlinecode{handleRequest},
-        a choreography involving only the servers which is called via \inlinecode{conclave} on line 21.
+        a choreography involving only the servers which is called via \inlinecode{conclave} on line~24.
         \inlinecode{handleRequest}'s census explicitly includes the primary server, but is polymorphic over the list of backup servers.
-        The primary server broadcasts the request (line~5--12); the backups will update their state and report their health
+        The primary server broadcasts the request (line~6); the backups will update their state and report their health
         only for a \inlinecode{Put} request.
-        On line 7 the backups call the local IO function \inlinecode{handlePut} in \inlinecode{parallel} using their individual state references;
+        On line 8 the backups call the local IO function \inlinecode{handlePut} in \inlinecode{parallel} using their individual state references;
         \inlinecode{oks} is therefore a \inlinecode{Faceted backups '[] Response}.
         (The extra \inlinecode{'[]} denotes that no party yet knows all of the \inlinecode{oks}.)
-        \inlinecode{gather} (line 8) communicates all the \inlinecode{oks} to the primary server
+        \inlinecode{gather} (line 9) communicates all the \inlinecode{oks} to the primary server
         where they're stored as a \inlinecode{Quire backups Response}.
-        If all the backups are ok, then the primary server also handles the request (line 10).
+        If all the backups are ok, then the primary server also handles the request (line 12).
     }
     \label{fig:census-poly-example}
     %\Description{23 lines of Haskell code using MultiChor defining a new version of "kvs" that is parametric over the number of backup servers.}
@@ -377,11 +377,11 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
   \begin{mdframed}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{Haskell}{figures/gmw.hs.txt}
     \caption{A choreography for the GMW protocol. The choreography works for an arbitrary number of parties.
-      \Cref{fig:gmw-helpers-multichor-example} contains the \inlinecode{xor} function to compute the OR gate,
-      the \inlinecode{secretShare} choreography to handle an INPUT,
-      and the \inlinecode{fAnd} choreography to compute the result of an AND gate.
-	  \inlinecode{mpc} uses \inlinecode{gmw} protocol as well as \inlinecode{reveal}
-	  (also in \Cref{fig:gmw-helpers-multichor-example}, and prints the resulting bit at each party.}
+      \Cref{fig:gmw-helpers-multichor-example-a} contains the \inlinecode{secretShare} choreography to handle an INPUT;
+      \Cref{fig:gmw-helpers-multichor-example-b} shows the \inlinecode{fAnd} choreography to compute the result of an AND gate,
+      and the choreography \inlinecode{reveal}.
+      \inlinecode{xor} is a non-choreographic fold function.
+      \inlinecode{mpc} uses \inlinecode{gmw} and \inlinecode{reveal}, and prints the resulting bit at each party.}
     \label{fig:gmw-multichor-example}
   \end{mdframed}
     %\Description{Thirty one lines of Haskell code using the MultiChor library.
@@ -390,17 +390,28 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
 
 \begin{figure*}
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{Haskell}{figures/gmw-helpers.hs.txt}
-    \caption{Various helpers for the GMW protocol.
-      \inlinecode{fANd} computes the result of an AND gate on secret-shared inputs using pairwise oblivious transfer. The choreography works for an arbitrary number of parties, and leverages the 1 out of 2 OT defined earlier.
-      \inlinecode{xor} computes the result of an OR gate as a standard non-choreographic function.
-      \inlinecode{secretShare} handles Input gate secret sharing \inlinecode{p}'s secret value among \inlinecode{parties}
-         and for revealing a secret-shared value.
-      \inlinecode{ot} performs 1 out of 2 oblivious transfer (OT) using RSA public-key encryption. The choreography involves exactly two parties, \inlinecode{sender} and \inlinecode{receiver}.
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=1,lastline=14]{Haskell}{figures/gmw-helpers.hs.txt}
+    \caption{Helper functions for the GMW protocol (1 of 2).
+      \inlinecode{secretShare} handles Input gates by secret sharing \inlinecode{p}'s secret value among \inlinecode{parties}.
       \inlinecode{genShares} uses \inlinecode{Quire} to map each member \inlinecode{p} in \inlinecode{ps} to a generated secret share \inlinecode{Bool}.
-      \inlinecode{encryptS} \inlinecode{decryptS} which are omitted for brevity use the cryptonite library for encryption and decryption.
     }
-    \label{fig:gmw-helpers-multichor-example}
+    \label{fig:gmw-helpers-multichor-example-a}
+  \end{mdframed}
+    %\Description{Fifty nine lines of Haskell code using the MultiChor library.
+%	This code defines functions "secretShare", "genShares", "xor", "fAnd", "ot2", and "reveal".}
+\end{figure*}
+
+\begin{figure*}
+  \begin{mdframed}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=19,lastline=65]{Haskell}{figures/gmw-helpers.hs.txt}
+    \caption{Helper functions for the GMW protocol (2 of 2).
+      \inlinecode{fANd} computes the result of an AND gate on secret-shared inputs using pairwise oblivious transfer. The choreography works for an arbitrary number of parties, and leverages the 1 out of 2 OT defined earlier.
+      \inlinecode{ot} performs 1 out of 2 oblivious transfer (OT) using RSA public-key encryption. The choreography involves exactly two parties, \inlinecode{sender} and \inlinecode{receiver}.
+      \inlinecode{encryptS} \inlinecode{decryptS} (which are omitted for brevity) use the cryptonite library for encryption and decryption.
+      In \inlinecode{reveal}, all parties broadcast their shares of the value to each other, the gathered shares are \inlinecode{xor}ed
+      to compute the plaintext result.
+    }
+    \label{fig:gmw-helpers-multichor-example-b}
   \end{mdframed}
     %\Description{Fifty nine lines of Haskell code using the MultiChor library.
 %	This code defines functions "secretShare", "genShares", "xor", "fAnd", "ot2", and "reveal".}
@@ -409,7 +420,8 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
 \paragraph{Additive secret sharing}
 We begin by describing additive secret sharing, a common building block in MPC protocols. A secret bit $x$ can be \emph{secret shared} by generating $n$ random \emph{shares} $s_1, \dots, s_n$ such that $x = \sum_{i=1}^n s_i$. If $n-1$ of the shares are generated uniformly and independently randomly, and the final share is chosen to satisfy the property above, then the shares can be safely distributed to the $n$ parties without revealing $x$---recovering $x$ requires access to all $n$ shares. Importantly, secret shares are \emph{additively homomorphic}---adding together shares of secrets $x$ and $y$ produces a share of $x+y$.
 
-\MultiChor choreographies for performing secret sharing in the arithmetic field of booleans appear in Figure~\ref{fig:gmw-helpers-multichor-example}. The function \inlinecode{secretShare} takes a single secret bit located at party \inlinecode{p}, generates \inlinecode{shares},
+\MultiChor choreographies for performing secret sharing in the arithmetic field of booleans appear in
+\Cref{fig:gmw-helpers-multichor-example-a,fig:gmw-helpers-multichor-example-b}. The function \inlinecode{secretShare} takes a single secret bit located at party \inlinecode{p}, generates \inlinecode{shares},
 a \inlinecode{Quire} which maps each member in \inlinecode{parties} to a share,
 and then uses \inlinecode{scatter} to send the assigned share to each member.
 However \inlinecode{scatter} would return a \inlinecode{Faceted parties '[p] Bool} since by default it includes the sender.
@@ -438,25 +450,25 @@ make it possible to embed the use of pairwise oblivious transfer between parties
 \paragraph{Computing secret-shared AND via OT}
 To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values,
 then use the results to derive shares of the gate's output.
-The \inlinecode{fAnd} choreography (Figure~\ref{fig:gmw-helpers-multichor-example} lines~17--39)
+The \inlinecode{fAnd} choreography (\Cref{fig:gmw-helpers-multichor-example-b} lines~1--25)
 takes \inlinecode{Faceted} values holding the parties' shares of the input values,
 and returns a \inlinecode{Faceted} value representing each party's share of the output.
-On line~25, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
-the \inlinecode{fanIn} on line~27 completes the pairing,
-and uses \inlinecode{conclaveTo} (line 34) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+On line~9, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
+the \inlinecode{fanIn} on line~11 completes the pairing,
+and uses \inlinecode{conclaveTo} (line 18) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
 
 \paragraph{The GMW protocol}
 The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.
 Our implementation as a \MultiChor choreography appears in Figure~\ref{fig:gmw-multichor-example},
 defined as a recursive function over the structure of the circuit.
 The choreography returns a \inlinecode{Faceted} value, representing the secret-shared output of the circuit.
-For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in Figure~\ref{fig:gmw-helpers-multichor-example}
+For ``input'' gates (lines~4--6), the choreography runs the secret sharing protocol in \Cref{fig:gmw-helpers-multichor-example-a}
 to distribute shares of the secret value.
-For XOR gates (lines~16--18) Figure ~\ref{fig:gmw-multichor-example},
+For XOR gates (\Cref{fig:gmw-multichor-example} lines~16--18),
 the parties recursively run the GMW protocol to compute the two inputs to the gate
 and then each party computes one share of the gate's output by XORing their shares of the inputs.
 This approach leverages the additive homomorphism of additive secret shares.
-For AND gates (lines~13--15) Figure ~\ref{fig:gmw-multichor-example}, the parties compute shares of the gate's inputs,
+For AND gates (lines~13--15), the parties compute shares of the gate's inputs,
 then use the \inlinecode{fAnd} protocol to perform multiplication of the two inputs.
 This implements the protocol as described in  Section 3.2.1 of \cite{evans2018pragmatic},
 namely the \emph{Generalization to more than two parties} case.

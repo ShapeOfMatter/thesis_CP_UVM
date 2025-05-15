@@ -1,7 +1,7 @@
 game :: forall players m. (KnownSymbols players) => Choreo ("dealer" ': players) (CLI m) ()
 game = do
   let players = consSuper (refl @players)
-      dealer = listedFirst @"dealer"    -- listedFirst is just First with the type-arguments rearranged.
+      dealer = listedFirst @"dealer"  -- `listedFirst` is basically just `First`.
       everyone = refl @("dealer" ': players)
   hand1 <- (fanIn everyone \(player :: Member player players) -> do
       card1 <- locally dealer (\_ -> getInput ("Enter random card for " ++ toLocTm player))

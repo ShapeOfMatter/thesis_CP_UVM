@@ -2,15 +2,18 @@ handleRequest :: forall backups. (KnownSymbols backups)
               => Located '["primary"] Request
               -> (Located '["primary"] (IORef State), Faceted backups '[] (IORef State))
               -> Choreo ("primary" ': backups) IO (Located '["primary"] Response)
-handleRequest request (primaryStateRef, backupsStateRefs) = broadcast (primary, request) >>= \case
+handleRequest request (primaryStateRef, backupsStateRefs) =
+  broadcast (primary, request) >>= \case
     Put key value -> do oks <- parallel backups \backup un ->
                                    handlePut (viewFacet un backup backupsStateRefs) key value
                         gathered <- gather backups (primary @@ nobody) oks
-                        locally primary \un -> if all isOk (un primary gathered)
-                                                then handlePut (un primary primaryStateRef) key value
-                                                else return errorResponse
+                        locally primary \un ->
+			    if all isOk (un primary gathered)
+                                then handlePut (un primary primaryStateRef) key value
+                                else return errorResponse
     Get key -> locally primary \un -> handleGet (un primary primaryStateRef) key
-  where primary = listedFirst ; backups = consSuper refl
+  where primary = listedFirst
+        backups = consSuper refl
 
 kvs :: forall backups. (KnownSymbols backups)
     => Located '["client"] Request
