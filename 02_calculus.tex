@@ -4,14 +4,17 @@
 
 
 \section{Introduction}
-While the most urgent shortcoming of HasChor's KoC strategy is that it induces extraneous communication costs,
-it has another shortcoming which it shares in common with many select-\&-merge systems like Pirouette:
+The HasChor library is inefficient in two ways.
+The first is particular to its broadcast-based KoC strategy:
+in order for any parities to branch on a value, the value must be broadcast to \emph{all} parties.
+This can be overcome by adding censuses and \emph{conclaves} to the system.
+The second shortcoming is shared in common with many select-\&-merge systems like Pirouette:
 Sequential conditional clauses on the same branch-guard (\textit{aka} "scrutinee") require KoC to be \emph{re}communicated.
-We address this issue directly by extending the notion of located values into \emph{multiply located values} (MLVs).
+We address this issue by extending the notion of located values into \emph{multiply located values} (MLVs).
 MLVs allow multiple parties to branch together on a shared guard;
 in addition to recyclability, this alleviates the need for a designated \inlinecode[bash]{select} operator.
 In this section we present \HLSCentral,
-a formal model of a higher-order functional CP language that uses MLVs and \emph{census tracking}
+a formal model of a higher-order functional CP language that uses conclaves, census tracking, and MLVs
 to guarantee proper KoC management entirely by type-checking and without compromising efficiency or expressivity.
 
 
@@ -52,11 +55,19 @@ Multiply-located values can also enable concise expression of programs in which 
 a common occurrence when communication is more expensive than computation.
 For example, the \HLSCentral expression $5@\set{p,q,r}+3@\set{p,q,r}$ represents an addition performed in parallel by $p$, $q$, and $r$.
 
-\subsection{Managing KoC with MLVs}
+\subsection{Managing KoC with Conclaves and MLVs}
 \label{sec:conclaves}
 
 As discussed in \Cref{sec:census}, prior systems have tracked censuses as attributes of choreographic functions.
-The ChoRus system introduced the \inlinecode{conclave} operator to explicitly limit the census within its argument,
+It's not usually required that every member of a census actually do anything in the choreography in question,
+so (intuitively) if a choreography has some given census $\mathbf{C}$,
+then it should be possible to embed that choreography inside a larger one with census $\mathbf{D}$,
+provided $\mathbf{C}\subseteq\mathbf{D}$.
+We call such sub-choreographies with sub-censuses \emph{conclaves}.
+Any system with censuses likely has some version of conclaves,
+but in prior systems like \chorLambda they were implicit side-effects of function application;
+they did not affect the KoC strategy~\cite{chor-lambda}.
+The ChoRus system introduced a designated conclave operator to explicitly limit the census within its argument,
 and showed how this could be used to avoid HasChor's overly broad \inlinecode{broadcasts}\footnote{
 	As discussed in \cite{batesenclaves}, ChoRus has since been upgraded to incorporate
 	the innovations discussed in this work.
@@ -70,9 +81,13 @@ functions and conditionals.
 The combination of censuses with conclaving and MLVs constitutes a novel KoC strategy,
 on par with state-of-the-art select-\&-merge systems like \chorLambda in terms of communication efficiency
 and more amenable to implementation as an eDSL.
+The specific strategy is to require conditionals (control-flow branches) to conclave to the owners of their guard value.
+This can be accomplished by broadcasting inside the conclave, or by passing in a MLV as the guard.
+The advantage of using MLVs (aside from generally making things more concise)
+is that they let conclaves return shared knowledge to for reuse in later conditionals.
 
 
-\section{A Formal MLVs-\&-Conclaves Language}\label{sec:more-formalism}
+\section{A Formal Conclaves-\&-MLVs Language}\label{sec:more-formalism}
 
 We present the \HLSCentral CP system.
 The syntax of \HLSCentral and our overarching computational model and proof-approach are loosely based on
@@ -349,10 +364,10 @@ as a sum-type $(d_l + d_r)@\nonempty{p}$.
 The only rule by which it can do that is \textsc{MTData},
 so we can deduce that $T_N = (d_l + d_r)@\nonempty{q}$,
 where $\nonempty{q}$ is some unspecified superset of $\nonempty{p}$.
-The third and forth preconditions say that $M_l$ and $M_r$
+The third and forth preconditions require the bodies of the expression to conclave correctly: $M_l$ and $M_r$
 must both type as $T$ with the reduced census $\nonempty{p}$
-and with the respective $x_l$ and $x_r$ bound to the right and left
-data types at $\nonempty{p}$.
+(and with the respective $x_l$ and $x_r$ bound to the right and left
+data types at $\nonempty{p}$).
 The final precondition says that $\nonempty{p}$ is a subset of Θ,
 \ie everyone who's supposed to be branching is actually present to do so.
 
