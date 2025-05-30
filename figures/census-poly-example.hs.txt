@@ -1,10 +1,12 @@
-game :: forall players m. (KnownSymbols players) => Choreo ("dealer" ': players) (CLI m) ()
+game :: forall players m. (KnownSymbols players)
+     => Choreo ("dealer" ': players) (CLI m) ()
 game = do
   let players = consSuper (refl @players)
       dealer = listedFirst @"dealer"  -- `listedFirst` is basically just `First`.
       everyone = refl @("dealer" ': players)
   hand1 <- (fanIn everyone \(player :: Member player players) -> do
-      card1 <- locally dealer (\_ -> getInput ("Enter random card for " ++ toLocTm player))
+      card1 <- locally dealer (\_ ->
+                   getInput ("Enter random card for " ++ toLocTm player))
       (dealer, card1) ~> everyone
     ) >>= naked everyone
   wantsNextCard <- parallel players \_ _ -> do
@@ -15,7 +17,8 @@ game = do
         let dealer = listedSecond @"dealer"
         choice <- broadcast (listedFirst @player, localize player wantsNextCard)
         if choice then do
-            cd2 <- locally dealer (\_ -> getInput (toLocTm player ++ "'s second card:"))
+            cd2 <- locally dealer (\_ ->
+	               getInput (toLocTm player ++ "'s second card:"))
             card2 <- broadcast (dealer, cd2)
             return [getLeaf hand1 player, card2]
         else return [getLeaf hand1 player]

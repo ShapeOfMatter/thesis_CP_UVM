@@ -1,8 +1,17 @@
-locally' :: (KnownSymbol l) => (Unwrap l -> m a) -> Choreo '[l] m a
+locally' :: (KnownSymbol l)
+         => (Unwrap l -> m a)
+	 -> Choreo '[l] m a
 
-congruently' :: (KnownSymbols ls) => (Unwraps ls -> a) -> Choreo ls m a
+congruently' :: (KnownSymbols ls)
+             => (Unwraps ls -> a)
+	     -> Choreo ls m a
 
-broadcast' :: (Show a, Read a, KnownSymbol l) =>
-              Member l ps -> (Member l ls, Located ls a) -> Choreo ps m a
+broadcast' :: (Show a, Read a, KnownSymbol l)
+           => Member l ps
+	   -> (Member l ls, Located ls a)
+	   -> Choreo ps m a
 
-conclave :: (KnownSymbols ls) => Subset ls ps -> Choreo ls m a -> Choreo ps m (Located ls a)
+conclave :: (KnownSymbols ls)
+         => Subset ls ps
+	 -> Choreo ls m a
+	 -> Choreo ps m (Located ls a)

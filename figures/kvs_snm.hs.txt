@@ -10,12 +10,12 @@ kvs request primaryStateRef backupStateRef = do
       pure ()
     Put _ _ -> do
       select primary backup RIGHT
-      request'' <- (primary, request') `comm` backup  -- forward the request to the backup
+      request'' <- (primary, request') `comm` backup  -- forward request to backup
       success <- backup `locally`                     -- the backup does local work:
                    (handleRequest <$> request'' <*> backupStateRef)
       ack <- (backup, success) `comm` primary
       pure ()
-  response <- primary `locally`                 -- the primary server does local work:
+  response <- primary `locally`               -- the primary server does local work:
                 (handleRequest <$> request' <*> primaryStateRef)
   result <- (primary, response) `comm` client @@ nobody  -- send response to client
   return result

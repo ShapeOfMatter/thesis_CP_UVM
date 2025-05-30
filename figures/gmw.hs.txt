@@ -2,13 +2,13 @@ gmw :: forall parties m. (KnownSymbols parties, MonadIO m, CRT.MonadRandom m)
     => Circuit parties -> Choreo parties (CLI m) (Faceted parties '[] Bool)
 gmw circuit = case circuit of
   InputWire p -> do        -- process a secret input value from party p
-    value :: Located '[p] Bool <- _locally p $ getInput "Enter a secret input value:"
+    value :: Located '[p] Bool <- _locally p $ getInput "Your secret input value:"
     secretShare p value
   LitWire b -> do          -- process a publicly-known literal value
-    let chooseShare :: forall p. (KnownSymbol p) =>
-                       Member p parties -> Choreo parties (CLI m) (Located '[p] Bool)
-        chooseShare p = congruently (p @@ nobody) $ \_ -> case p of First   -> b
-                                                                    Later _ -> False
+    let chooseShare :: forall p. (KnownSymbol p)
+                  => Member p parties -> Choreo parties (CLI m) (Located '[p] Bool)
+        chooseShare p = congruently (p @@ nobody) $ \_ -> case p of First  -> b
+                                                                    Later _-> False
     fanOut chooseShare
   AndGate l r -> do        -- process an AND gate
     lResult <- gmw l; rResult <- gmw r;

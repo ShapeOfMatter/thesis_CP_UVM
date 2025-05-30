@@ -38,26 +38,32 @@ A few other desiderata motivate our implementation:
 The choreography in \Cref{fig:card-game} showcases the above points.
 The census of the whole program appears in the type
 and does not specify who the players are.
-The \inlinecode{conclaveTo} on line~18
+The \inlinecode{conclave} on line~16
 embeds a choreography whose census is exactly the monomorphic \inlinecode{"dealer"}
 and a polymorphic \inlinecode{player} (\#2).
-The helper-function \inlinecode{broadcast} on line 19 functions as described in \#1.
+The helper-function \inlinecode{broadcast} on line~18 functions as described in \#1.
 Many examples of \#3 are automated or hidden in \MultiChor,
-but on line~19 the function \inlinecode{inSuper} is applied to
+but on line~16 the function \inlinecode{inSuper} is applied to
 \inlinecode{players :: Subset players ("dealer" : players)}
 and \inlinecode{player :: Member player players}
 to attest that \inlinecode{player} is present in the census.
 
 \begin{figure*}[tbhp]
     \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/census-poly-example.hs.txt}
-    \caption{A card game expressed as a choreography written in \MultiChor.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/census-poly-example.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
              This choreography is polymorphic over the number and identity of the players,
              but the party named \inlinecode{"dealer"} is an explicit member.
              The inner monad \inlinecode{CLI} that all parties have access to is a simple freer monad
              that can be handled to IO operations, or as \inlinecode{State} for testing purposes.
              The \inlinecode{newtype Card} encapsulates the modulo operation in its
-             \inlinecode{Num} instance.}
+             \inlinecode{Num} instance.
+  \end{minipage}
+  \end{tabular}
+    \caption{A card game expressed as a choreography written in \MultiChor.}
     \label{fig:card-game}
     %\Description{Thirty lines of haskell code describing a choreography called "game".}
     \end{mdframed}
@@ -86,11 +92,17 @@ but monadic operations can take choreographies with smaller censuses as argument
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/operators-multichor.hs.txt}
-    \caption{
-        The fundamental operators for writing expressions in \MultiChor's \inlinecode{Choreo} monad.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/operators-multichor.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
         Of these four operators, \inlinecode{conclave} is the only one users will usually call directly;
         the other three can combine with each other (and with \inlinecode{conclave}) to make more user-friendly alternatives.
+  \end{minipage}
+  \end{tabular}
+    \caption{
+        The fundamental operators for writing expressions in \MultiChor's \inlinecode{Choreo} monad.
     }
     \label{fig:operators-multichor}
     %\Description{Four type signatures for Haskell functions using the MultiChor library.}
@@ -227,20 +239,26 @@ Census polymorphism is achieved in \MultiChor library by type-level programming 
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/kvs_poly.hs.txt}
-    \caption{
-        A key-value store choreography with an unspecified number of backup servers.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/kvs_poly.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
         The main action happens in \inlinecode{handleRequest},
-        a choreography involving only the servers which is called via \inlinecode{conclave} on line~24.
+        a choreography involving only the servers which is called via \inlinecode{conclave} on line~27.
         \inlinecode{handleRequest}'s census explicitly includes the primary server, but is polymorphic over the list of backup servers.
-        The primary server broadcasts the request (line~6); the backups will update their state and report their health
+        The primary server broadcasts the request (line~7); the backups will update their state and report their health
         only for a \inlinecode{Put} request.
-        On line 8 the backups call the local IO function \inlinecode{handlePut} in \inlinecode{parallel} using their individual state references;
+        On lines~8--10 the backups call the local IO function \inlinecode{handlePut} in \inlinecode{parallel} using their individual state references;
         \inlinecode{oks} is therefore a \inlinecode{Faceted backups '[] Response}.
         (The extra \inlinecode{'[]} denotes that no party yet knows all of the \inlinecode{oks}.)
-        \inlinecode{gather} (line 9) communicates all the \inlinecode{oks} to the primary server
+        \inlinecode{gather} (line~11) communicates all the \inlinecode{oks} to the primary server
         where they're stored as a \inlinecode{Quire backups Response}.
-        If all the backups are ok, then the primary server also handles the request (line 12).
+        If all the backups are ok, then the primary server also handles the request (line~14).
+  \end{minipage}
+  \end{tabular}
+    \caption{
+        A key-value store choreography with an unspecified number of backup servers.
     }
     \label{fig:census-poly-example}
     %\Description{23 lines of Haskell code using MultiChor defining a new version of "kvs" that is parametric over the number of backup servers.}
@@ -339,7 +357,11 @@ the type class \inlinecode{KnownSymbols} affords to the runtime environment suff
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{haskell}{figures/census-poly-haskell.hs.txt}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/census-poly-haskell.hs.txt}
+  \end{minipage}
+  \end{tabular}
     \caption{
         Type signatures for \inlinecode{sequenceP}, \inlinecode{fanOut}, and \inlinecode{scatter}.
     }
@@ -377,13 +399,20 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{Haskell}{figures/gmw.hs.txt}
-    \caption{A choreography for the GMW protocol. The choreography works for an arbitrary number of parties.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{Haskell}{figures/gmw.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+      This choreography works for an arbitrary number of parties.
       \Cref{fig:gmw-helpers-multichor-example-a} contains the \inlinecode{secretShare} choreography to handle an INPUT;
       \Cref{fig:gmw-helpers-multichor-example-b} shows the \inlinecode{fAnd} choreography to compute the result of an AND gate,
       and the choreography \inlinecode{reveal}.
       \inlinecode{xor} is a non-choreographic fold function.
-      \inlinecode{mpc} uses \inlinecode{gmw} and \inlinecode{reveal}, and prints the resulting bit at each party.}
+      \inlinecode{mpc} uses \inlinecode{gmw} and \inlinecode{reveal}, and prints the resulting bit at each party.
+  \end{minipage}
+  \end{tabular}
+    \caption{A choreography for the GMW protocol.}
     \label{fig:gmw-multichor-example}
   \end{mdframed}
     %\Description{Thirty one lines of Haskell code using the MultiChor library.
@@ -392,10 +421,16 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
 
 \begin{figure*}
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=1,lastline=14]{Haskell}{figures/gmw-helpers.hs.txt}
-    \caption{Helper functions for the GMW protocol (1 of 2).
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=1,lastline=15]{Haskell}{figures/gmw-helpers.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
       \inlinecode{secretShare} handles Input gates by secret sharing \inlinecode{p}'s secret value among \inlinecode{parties}.
       \inlinecode{genShares} uses \inlinecode{Quire} to map each member \inlinecode{p} in \inlinecode{ps} to a generated secret share \inlinecode{Bool}.
+  \end{minipage}
+  \end{tabular}
+    \caption{Helper functions for the GMW protocol (1 of 2).
     }
     \label{fig:gmw-helpers-multichor-example-a}
   \end{mdframed}
@@ -405,13 +440,21 @@ The GMW protocol is based on two important building blocks: \emph{additive secre
 
 \begin{figure*}
   \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=19,lastline=65]{Haskell}{figures/gmw-helpers.hs.txt}
-    \caption{Helper functions for the GMW protocol (2 of 2).
-      \inlinecode{fANd} computes the result of an AND gate on secret-shared inputs using pairwise oblivious transfer. The choreography works for an arbitrary number of parties, and leverages the 1 out of 2 OT defined earlier.
-      \inlinecode{ot} performs 1 out of 2 oblivious transfer (OT) using RSA public-key encryption. The choreography involves exactly two parties, \inlinecode{sender} and \inlinecode{receiver}.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=20]{Haskell}{figures/gmw-helpers.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+      \inlinecode{fANd} computes the result of an AND gate on secret-shared inputs using pairwise oblivious transfer.
+	  The choreography works for an arbitrary number of parties, and leverages 1-out-of-2 OT.
+      \inlinecode{ot} performs 1-out-of-2 oblivious transfer (OT) using RSA public-key encryption.
+	  The choreography involves exactly two parties, \inlinecode{sender} and \inlinecode{receiver}.
       \inlinecode{encryptS} \inlinecode{decryptS} (which are omitted for brevity) use the cryptonite library for encryption and decryption.
       In \inlinecode{reveal}, all parties broadcast their shares of the value to each other, the gathered shares are \inlinecode{xor}ed
       to compute the plaintext result.
+  \end{minipage}
+  \end{tabular}
+    \caption{Helper functions for the GMW protocol (2 of 2).
     }
     \label{fig:gmw-helpers-multichor-example-b}
   \end{mdframed}
@@ -452,12 +495,12 @@ make it possible to embed the use of pairwise oblivious transfer between parties
 \paragraph{Computing secret-shared AND via OT}
 To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values,
 then use the results to derive shares of the gate's output.
-The \inlinecode{fAnd} choreography (\Cref{fig:gmw-helpers-multichor-example-b} lines~1--25)
+The \inlinecode{fAnd} choreography (\Cref{fig:gmw-helpers-multichor-example-b} lines~1--27)
 takes \inlinecode{Faceted} values holding the parties' shares of the input values,
 and returns a \inlinecode{Faceted} value representing each party's share of the output.
-On line~9, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
-the \inlinecode{fanIn} on line~11 completes the pairing,
-and uses \inlinecode{conclaveTo} (line 18) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+On line~10, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
+the \inlinecode{fanIn} on line~12 completes the pairing,
+and uses \inlinecode{conclaveTo} (line~20) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
 
 \paragraph{The GMW protocol}
 The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.

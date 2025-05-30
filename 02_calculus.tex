@@ -971,7 +971,10 @@ and shows explicitly the redundant communication that's implicit in HasChor chor
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/kvs_hls.txt}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{bash}{figures/kvs_hls.txt}
+  \end{minipage} \\\\
   \begin{minipage}{0.95\linewidth}
     This choreography is represented as a function from a Sum-Type located at \inlinecode{client}
     (\inlinecode{request} on line~1)
@@ -985,6 +988,7 @@ and shows explicitly the redundant communication that's implicit in HasChor chor
     the actual semantics does not use a monad;
     this representation would de-sugar to a nesting of lambda abstractions and applications.
   \end{minipage}
+  \end{tabular}
     \caption{A \HLSCentral choreography implementing the same KVS as in \Cref{fig:kvsconclave}.}
     \label{fig:our-kvs}
     %\Description[An anonymous He-Lambda-Small function.]
@@ -1030,10 +1034,17 @@ could be challenging.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/sequential_hls.txt}
-    \caption{A \HLSCentral implementation of a two-client one-server choreography involving sequential branches.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{bash}{figures/sequential_hls.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  This choreography involves two clients and one server.
         Client \inlinecode{bob} may delegate a query against server \inlinecode{carroll},
-        or client \inlinecode{alice} may provide the query herself.}
+        or client \inlinecode{alice} may provide the query herself.
+  \end{minipage}
+  \end{tabular}
+    \caption{A \HLSCentral implementation of a choreography involving sequential branches.}
     \label{fig:our-client-server}
     %\Description[A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".]
     %            {A He-Lambda-Small choreography with parties "alice", "bob", and "carroll".
@@ -1044,7 +1055,9 @@ could be challenging.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \begin{minted}[xleftmargin=10pt,linenos]{bash}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \begin{minted}[xleftmargin=10pt,linenos,fontsize=\footnotesize]{bash}
 if alice.choice
   then alice[L] ~> bob;
        bob.bobs_query ~> alice.query;
@@ -1058,6 +1071,8 @@ if alice.choice
        carroll.(answerer(query)) ~> alice.response;
        alice.(terminal response)
     \end{minted}
+  \end{minipage}
+  \end{tabular}
     \caption{A Pirouette implementation of the client-server-delegation choreography in \Cref{fig:our-client-server}}
     \label{fig:pirouette-client-server}
     %\Description[Pirouette code showing a choreography between Alice, Bob, and Carroll.]
@@ -1141,7 +1156,11 @@ and demonstrate its use.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
-    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/contrived_lc.txt}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{bash}{figures/contrived_lc.txt}
+  \end{minipage}
+  \end{tabular}
     \caption{A contrived Chorλ choreography that is complicated to efficiently translate into \HLSCentral.}
     \label{fig:chor-lambda-complex}
     %\Description[An 18-line Chor-Lambda choreography in which there are four parallel branches, only one of which is has special behavior for the second party.]
@@ -1156,7 +1175,11 @@ and demonstrate its use.
 
 \begin{figure}[tbhp]
     \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
     \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize]{bash}{figures/contrived_hls.txt}
+  \end{minipage}
+  \end{tabular}
     \caption{An algorithmic \HLSCentral translation of the choreography from \Cref{fig:chor-lambda-complex}.}
     \label{fig:our-complex}
     %\Description[46 lines of He-Lambda-Small code. The program flow from the earlier program is still present, but hard to see.]
