@@ -398,10 +398,10 @@ do let myFilter :: (Key -> Widgit -> Bool) -> Key -> [Widgit] -> [Widgit] = ...
               (un workers comparator) (un refl key) (un refl values)
    ...
 \end{minted}
-using "map" and "splat" as \todo{fix the \inlinecode{<\$>} operator}
+using "map" and "splat" as
 \begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
 do let ...
-   let filtered = (othersForget workers comparator) <\$> key <*> values
+   let filtered = (othersForget workers comparator) <$> key <*> values
    ...
 \end{minted}
 This pattern could be used to completely replace \inlinecode{congruently},
@@ -436,8 +436,6 @@ Further future work constitutes a substantial and open-ended research campaign t
 	\item Conduct a structured study comparing the performance of \MultiChor, \minichor,
 		and other relevant systems that target real industry use.
 	\item Develop a system for lazy choreographies as discussed in \Cref{sec:minichor-implications}.
-		Some existing research concerns laziness in CP systems, and should be incorporated.
-		\todo{cite}
 	\item Augment \MultiChor with tools for modeling and recovering from communication failures.
 \end{itemize}
 
