@@ -42,9 +42,10 @@ to capture the requisite notion of a well-typed choreography.
 
 Our third contribution is \emph{census polymorphism},
 a design pattern for choreographies that different CP systems may or may not support.
-\MultiChor is the first system to support census polymorphism\footnote{
+\MultiChor is the first CP system to support type-safe census polymorphism\footnote{
 	We do not rule out the possibility that pre-existing systems exist
 	in which it might be possible to recapitulate the patterns we describe in this work.
+	In particular, in \Cref{sec:modern-work} we mention a few works preceding systems that support comparable behavior.
 },
 by which we mean the ability to write choreographies
 that are parametric over their set of participants.
@@ -335,9 +336,8 @@ Some earlier works, \eg \cite{chor-lambda}, have tracked these sets of participa
 and used that typing context to control participation inside of function bodies.
 Such a typing context plays a more active role in this present work, so we coin the term \emph{"census"}
 for a typing context that controls which parties are "present" to participate in any given part of a choreography.
-
-A party not listed in a census should will typically skip evaluating that section of the choreography.
-In terms of EPP, that's done by projecting the entire clause to ⊥ or some similar marker.
+A party not listed in a census typically should not evaluate that section of the choreography;
+exactly how that's enforced or implemented will depend on the system in question.
 
 \subsection{Additional Literature}
 \label{sec:modern-work}
@@ -380,6 +380,17 @@ However, applying the conclave concept to choreographic programming, and to the 
 is to our knowledge a novel contribution of this paper.
 Symphony does not support conditionals, and therefore KoC propagation is a moot point for them.
 
+Another possible antecedent to census polymorphism as described in \Cref{sec:census-poly} is \cite{cp_practice_cruz_filipe_montesi},
+which extends the syntax of Procedural Choreographies (PC) \cite{cp_procedural_cruz_filipe_montesi}
+to support lists of processes as arguments to procedure calls.
+Exact comparison between the extended PC system and \MultiChor is difficult for a few reasons:
+First, PC is an advanced select-\&-merge system which tracks mutable network topology instead of a census.
+Second, in PC's computational model processes serve double-duty as "participants" who do things and as "variables" that store data;
+this is a sensible choice for their target usage context: parallelized object-oriented programming in which communication is cheap.
+Understanding the limits of their syntax extensions in the context of their computational model is difficult because
+the commensurate typing rule extensions not explicit.
+Third, PC does not have an implementation.
+We do not assert here whether either system's expressivity subsumes that of the other.
 
 
 \bibliographystyle{chicago}

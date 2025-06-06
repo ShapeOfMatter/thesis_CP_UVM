@@ -204,7 +204,11 @@ makes a \inlinecode{Subset '[p] ps} out of a \inlinecode{Member p ps}.
 \label{sec:census-poly}
 
 So far, the example choreographies we have discussed have had fixed numbers of participants.
-In all prior CP systems this has been a syntactic constraint:
+In all prior CP systems this has been a syntactic constraint\footnote{
+	\cite{cp_practice_cruz_filipe_montesi} describes an extension to Procedural Choreographies (PC)
+	to allow lists of processes as arguments to procedures;
+	although PC has not been implemented, the extended version would clearly be an exception to the above statement.
+	}:
 even systems that allow polymorphism over the identities of participants require the participants' "roles" to be explicitly defined in-context.
 This is a serious limitation for writing choreographic software;
 modern concurrent systems often use dozens to thousands of participants
