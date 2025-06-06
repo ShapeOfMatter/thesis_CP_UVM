@@ -29,7 +29,7 @@ and may need theoretical breakthroughs to appeal to non-academic developers.
 \subsection{General Feedback}
 \label{sec:usability-sources}
 A few people that we know of (besides ourselves) have actually attempted to write programs using \MultiChor.
-A couple of our fellow students accepted our invitation to do try a small programming exercise modeled after a job-interview exercise.
+A couple of our fellow students accepted our invitation to attempt a programming challenge modeled after a job-interview exercise.
 The exercise itself is described in \Cref{sec:usability-exercise}.
 These sessions were not structured as a controlled usability study;
 volunteers were invited to ask for help with any part of the exercise they wished.
@@ -70,7 +70,7 @@ but we observe that the proof-witness system is a real bottleneck to use of \Mul
 so it would be worth improving.
 Furthermore, the existing system is lacking certain capabilities one would expect,
 such as the ability to talk about set unions, intersections, and differences.
-There are two plausible directions for improvident;
+There are two plausible directions for improvement;
 neither of them are perfectly clear at this time:
 \begin{enumerate}
 	\item Remove the witnesses altogether in favor of constraint programming.
@@ -82,7 +82,7 @@ neither of them are perfectly clear at this time:
 		\emph{if} a satisfactory representation of membership constraints can be expressed.
 	\item Externalize the proof-witness system.
 		Several experimental systems exist for reasoning about type-level sets in Haskell,
-		including \inlinecode{gdp}~\cite{gdp_hackage} and \inlinecode{type-level-sets}~\cite{tls_hackage}.
+		including \inlinecode[text]{gdp}~\cite{gdp_hackage} and \inlinecode[text]{type-level-sets}~\cite{tls_hackage}.
 		If truly no off-the-self library exists that's suitable for the challenges of \MultiChor,
 		then \MultiChor's solution should be separated as a stand-alone library.
 		Regardless of where an external library came from, its externalness would facilitate code-reuse 
@@ -325,7 +325,7 @@ we demote \inlinecode{Located} from a \inlinecode{newtype} wrapper around a func
 
 To understand the conceptual difference,
 consider some formal DSL of no specific purpose:
-the syntax of expressions in that language contains as a subset it's syntax of values.
+the syntax of expressions in that language contains as a subset its syntax of values.
 In other words, $5$ is a computation that happens to evaluate to the same thing as $2+3$.
 Similarly, in our earlier model \HLSCentral, $5@\nonempty{p}$ is a computation that evaluates by $\nonempty{p}$ to five;
 we promise that no-one not in $\nonempty{p}$ will attempt to evaluate it, and such non-owning parties replace it with $\bot$ at runtime.
