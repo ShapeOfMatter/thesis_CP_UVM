@@ -1,8 +1,10 @@
+-- MLVs are secretly isomorphic to Maybe values.
 data Located ls a = Wrap a | Empty
 
 -- Core operations
 locally' :: ... ;  naked :: ... ;  broadcast' :: ... ;  conclave :: ...
 
+-- Endpoint Projection, selected cases
 epp (Naked ownership value) self = let unwraps = ...
 			           in pure $ unwraps ownership value
 epp (Broadcast sender (ownership, value)) self
@@ -16,14 +18,16 @@ epp (Conclave subcensus choreo) self
 epp (...) self = ...
 
 
--- start minichor on ln 20
+-- start (b) on ln 22
+-- MLVs are explicitly choreographies quantified over subsets of their owners.
 newtype Located ls a = Located {
     naked :: forall census. Subset census ls -> Choreo census a
 }
 
--- Core operations
+-- Core operations, naked has moved
 locally' :: ... ;                  broadcast' :: ... ;  conclave :: ...
 
+-- Endpoint Projection, selected cases
 epp (Broadcast sender (ownership, value)) self
     | self == toLocTm sender = do val <- epp (naked value (ownership @@ nobody)) self
                                   Send val otherRecipients
@@ -36,16 +40,18 @@ epp (Conclave subcensus choreo) self
 epp (...) self = ...
 
 
--- start minichor on ln 40
+-- start (c) on ln 44
+-- MLVs are literally choreographies; the owners are the census.
 type Located ls a = Choreo ls a
 
--- Core operations
+-- Core operations, naked is gone and there are other changes.
 locally' :: (...)   => CLI IO a -> Choreo '[l] a
 broadcast' :: (...) => Member sender ps -> Located '[sender] a -> Choreo ps a
 conclaveTo :: (...) => Subset subcensus census -> Subset owners subcensus
                     -> Choreo subcensus (Located owners a)
 		    -> Choreo census (Located owners a)
 
+-- Endpoint Projection, selected cases
 epp (Broadcast sender value) self
     | self == toLocTm sender = do val <- epp value self
                                   Send val otherRecipients

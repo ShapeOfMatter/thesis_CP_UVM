@@ -177,6 +177,7 @@ or propagating semantically-inconsequential changes into the case studies.
 Most of the case studies have robust unit tests based on them, to detect any mistakes during this process.
 
 \subsection{Monadic Unwrapping}
+\label{sec:minichor-stg1}
 We replace the core operator \inlinecode{congruently'} with \inlinecode{naked}, simiplifying the core API.
 
 \HasChor enforces the rule that only the owner of a located value may call \inlinecode{unwrap} on it
@@ -186,7 +187,7 @@ and affording it to users only as an argument to \inlinecode{locally}'s callback
 actively replicated across the owners of the relevant MLVs.
 The way \MultiChor does this is by duplicating the \inlinecode{locally}\inlinecode{Unwrap} pattern
 to make \inlinecode{congruently}\inlinecode{Unwraps},
-as shown in \Cref{fig:minichor-stg1}(a).
+as shown in \Cref{fig:minichor-stg1}\textbf{(a)}.
 
 An alternative to \inlinecode{congruently'}
 (which actively replicates a pure computation using MLVs known to the entire census)
@@ -199,35 +200,34 @@ functions for each fixed $N$ that each handle pure computations on $N$ arguments
 Since \minichor doesn't care about ergonomics, this is acceptable.
 
 The advantage of replacing \inlinecode{congruently'} with \inlinecode{naked} is that it can also replace the call-back pattern of \inlinecode{locally}.
-This intermediate system is shown in \Cref{fig:minichor-stg1}(b).
+This intermediate system is shown in \Cref{fig:minichor-stg1}\textbf{(b)}.
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \begin{tabular}{r l}
-	    \begin{minipage}{1cm}
-	    \textbf{(a)} 
-	    \end{minipage}&
-	    \begin{minipage}{11cm}
-	    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=1,lastline=9]{haskell}{figures/minichor_stg1.hs.txt}
-	    \end{minipage}\\[6em]
-	    \begin{minipage}{1cm}
-	    \textbf{(b)}
-	    \end{minipage}&
-	    \begin{minipage}{11cm}
-	    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=15,lastline=25]{haskell}{figures/minichor_stg1.hs.txt}
-	    \end{minipage}
-    \end{tabular}
-    \caption{
-	    Different strategies for local effects and pure active replication.
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+	    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=1,lastline=9]{haskell}{figures/minichor_stg1.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
 	    \textbf{(a)} The \MultiChor approach. The two types \inlinecode{Unwrap} and \inlinecode{Unwraps} are used as the argument types in callback functions used by \inlinecode{locally'} and \inlinecode{congruently'}.
 	    \inlinecode{naked} in this system is a derived function.
-	    \textbf{(b)} The \inlinecode{naked}-based approach.
+  \end{minipage} \\\\
+  \hline\\
+  \begin{minipage}{0.95\linewidth}
+	    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=15,lastline=25]{haskell}{figures/minichor_stg1.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  \textbf{(b)} The \inlinecode{naked}-based approach described in \Cref{sec:minichor-stg1}.
 	    In this system, \inlinecode{locally'} just lifts local monadic effects (\inlinecode{CLI IO}) into singleton choreographies
 	    (which can be conclaved).
 	    The pseudo-code \inlinecode{congruentlyN} shows how,
 	    for any fixed number $N$ of MLVs that will be used in the pure computation,
 	    an analog of \inlinecode{congruently} can be written.
 	    A similar pattern for \inlinecode{locallyN} is not shown.
+  \end{minipage}
+  \end{tabular}
+    \caption{
+	    Different strategies for local effects and pure active replication.
     }
     \label{fig:minichor-stg1}
   \end{mdframed}
@@ -235,58 +235,69 @@ This intermediate system is shown in \Cref{fig:minichor-stg1}(b).
 
 \begin{figure*}[tbhp]
   \begin{mdframed}
-    \begin{tabular}{r l}
-	    \begin{minipage}{1cm}
-	    \textbf{(a)} 
-	    \end{minipage}&
-	    \begin{minipage}{11cm}
-	    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=1,lastline=16]{haskell}{figures/minichor_stg2.hs.txt}
-	    \end{minipage}\\[7em]
-	    \begin{minipage}{1cm}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+	    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=1,lastline=18]{haskell}{figures/minichor_stg2.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	    \textbf{(a)}
+	    The \inlinecode{naked}-based system from \Cref{sec:minichor-stg1} and \Cref{fig:minichor-stg1}\textbf{(b)}.
+  \end{minipage} \\\\
+  \hline\\
+  \begin{minipage}{0.95\linewidth}
+	    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=22,lastline=40]{haskell}{figures/minichor_stg2.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
 	    \textbf{(b)}
-	    \end{minipage}&
-	    \begin{minipage}{11cm}
-	    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=20,lastline=36]{haskell}{figures/minichor_stg2.hs.txt}
-	    \end{minipage}\\[7em]
-	    \begin{minipage}{1cm}
-	    \textbf{(c)}
-	    \end{minipage}&
-	    \begin{minipage}{11cm}
-	    \inputminted[xleftmargin=10pt,linenos,fontsize=\scriptsize,firstnumber=1,firstline=40,lastline=56]{haskell}{figures/minichor_stg2.hs.txt}
-	    \end{minipage}
-    \end{tabular}
-    \caption{
-	    Under-the-hood implementation changes for redefining MLVs out of existence.
-	    \textbf{(a)} shows the \inlinecode{naked}-based system from \Cref{fig:minichor-stg1}.
-	    \textbf{(b)} shows another intermediate system described in \Cref{sec:minichor-stg2}.
-	    \textbf{(c)} shows \minichor.
-	    Each block lists the core operations of the \inlinecode{Choreo} monad (lines~4, 6, and~4--6 respectively),
-	    the representation of \inlinecode{Located} values, and the interesting cases of the EPP function.
+	    Another intermediate system described in \Cref{sec:minichor-stg2}.
 	    The data constructors \inlinecode{Wrap} and \inlinecode{Empty} (\textbf{(a)}~line~1)
-	    and the AST form \inlinecode{Naked} (line~6), are absent in \textbf{(b)}.
+	    and the AST form \inlinecode{Naked} (\textbf{(a)}~line~6), are absent.
 	    Instead, \inlinecode{naked} is the accessor of the data type \inlinecode{Located},
-	    which wraps a function from proof of ownership to a choreography over the specified subset of the owners (\textbf{(b)}~line~2).
+	    which wraps a function from proof of ownership to a choreography over the specified subset of the owners (line~2).
 	    At runtime, the placeholder used for remote MLVs is a choreography that returns \inlinecode{undefined} (an error) (line~16).
 	    In practice one's own MLVs will be represented at runtime by ASTs for trivial choreographies (\eg \inlinecode{Return 5}),
-	    this is what \inlinecode{pure} does in the \inlinecode{Choreo} monad (\textbf{(b)}~line~15).
-	    In \textbf{(c)}, \inlinecode{Located} is just an alias for \inlinecode{Choreo}.
+	    this is what \inlinecode{pure} does in the \inlinecode{Choreo} monad (line~15).
+  \end{minipage}
+  \end{tabular}
+    \caption{
+	    Under-the-hood implementation changes for redefining MLVs out of existence.
+	    \textit{(1/2)}
+    }
+    \label{fig:minichor-stg2ab}
+  \end{mdframed}
+\end{figure*}
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+	    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize,firstnumber=1,firstline=44,lastline=63]{haskell}{figures/minichor_stg2.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  The \minichor system described in \Cref{sec:minichor-stg3}.
+	    Here \inlinecode{Located} is just an alias for \inlinecode{Choreo}.
 	    As discussed in \Cref{sec:minichor-stg3}, this requires swapping \inlinecode{conclave} for \inlinecode{conclaveTo}
 	    and changing the signature of \inlinecode{broadcast'}.
 	    The implementation of EPP is basically the same, there's just no construction or unwrapping of located values;
 	    \inlinecode{naked} no longer exists.
+  \end{minipage}
+  \end{tabular}
+    \caption{
+	    Under-the-hood implementation changes for redefining MLVs out of existence.
+	    \textit{(2/2)}
     }
-    \label{fig:minichor-stg2}
+    \label{fig:minichor-stg2c}
   \end{mdframed}
 \end{figure*}
 
 
 \subsection{MLVs as quantified functions}
 \label{sec:minichor-stg2}
-In the \inlinecode{naked}-based system of \Cref{fig:minichor-stg1}(b),
+In the \inlinecode{naked}-based system of \Cref{fig:minichor-stg1}\textbf{(b)},
 \inlinecode{naked} is the only means by which the actual value of an MLV can be accessed.
 This suggests removing \inlinecode{naked} from the foundational signature of \inlinecode{Choreo},
 and instead making it the actual definition of \inlinecode{Located}.
-\Cref{fig:minichor-stg2}\textbf{(b)} shows this change.
+\Cref{fig:minichor-stg2ab}\textbf{(b)} shows this change.
 
 A design pattern of \MultiChor was that the \inlinecode{Core} module needed to be "trusted";
 our own reasoning outside of Haskell's type system is what guarantees that no user working outside of \inlinecode{Core}
@@ -294,11 +305,11 @@ can call \inlinecode{unwrap} on \inlinecode{Empty}.
 None of our changes in the \minichor fork alter this pattern;
 even the nature of the invariant we're maintaining is the same:
 That a party will never compute on an MLV they don't own.
-The change in \Cref{fig:minichor-stg2} is just where the impossible error lives,
+The changes in \Cref{fig:minichor-stg2ab,fig:minichor-stg2c} are only to where the impossible error lives,
 from the case-wise definition of \inlinecode{unwrap} to an undefined value returned by a choreography generated at runtime
-(\Cref{fig:minichor-stg2}\textbf{(b)}~line~16).
+(\Cref{fig:minichor-stg2ab}\textbf{(b)}~line~16).
 
-The point of the change described in \Cref{fig:minichor-stg2}\textbf{(b)} is to make intuitive the remaining jumps to \minichor,
+The point of the change described in \Cref{fig:minichor-stg2ab}\textbf{(b)} is to make intuitive the remaining jumps to \minichor,
 a core API for choreographic programming that
 doesn't have located values at all!
 
@@ -310,7 +321,7 @@ Previously it sufficed for one or more owners of an MLV to be present in a censu
 but now we will require that \emph{all} owners be present.
 In terms of implementation,
 we demote \inlinecode{Located} from a \inlinecode{newtype} wrapper around a function down to just a type alias for \inlinecode{Choreo}
-(\Cref{fig:minichor-stg2}\textbf{(c)}~line~1).
+(\Cref{fig:minichor-stg2c}~line~1).
 
 To understand the conceptual difference,
 consider some formal DSL of no specific purpose:
@@ -345,7 +356,7 @@ but there'd be nothing it could do with it because there'd be no proof that all 
 There may be multiple solutions to this problem; \minichor's solution is to make \inlinecode{flatten} unnecessary
 by replacing the core operation \inlinecode{conclave} with \inlinecode{conclaveTo},
 who's body-argument is required to return a located value, and which does not add a layer of location-wrapping
-(\Cref{fig:minichor-stg2}\textbf{(c)}~line~6).
+(\Cref{fig:minichor-stg2c}~line~6).
 (In \MultiChor, \inlinecode{conclaveTo} is a derived function using \inlinecode{flatten}.
 In \minichor, \inlinecode{conclave} is a derived function using monad-bind.)
 

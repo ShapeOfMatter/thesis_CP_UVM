@@ -21,5 +21,5 @@ congruentlyN :: (KnownSymbols ls) => Subset ls census ->
   (Subset ls ownersN, Located ownersN argN) ->
   (arg1 -> ... -> argN -> a) ->
   Choreo census (Located ls a)
-congruentlyN present (owns1, arg1) ... (owns3, arg3) f =
-    conclave present $ f <$> naked owns1 arg1 <*> ... <*> naked owns3 arg3
+congruentlyN present (owns1, arg1) ... (ownsN, argN) f =
+    conclave present $ f <$> naked owns1 arg1 <*> ... <*> naked ownsN argN
