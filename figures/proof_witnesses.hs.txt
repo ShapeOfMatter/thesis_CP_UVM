@@ -1,0 +1,20 @@
+-- Aliases for "parties" or "locations" represented by strings
+type LocTm = String
+type LocTy = GHC.TypeLits.Symbol  -- type level strings
+-- Membership proofs
+data Member (x :: k) (xs :: [k]) where
+  First :: Member x (x ': xs')
+  Later :: Member x xs -> Member x (y ': xs)
+-- Subset proofs
+newtype Subset xs ys = Subset { inSuper :: forall x. Member x xs -> Member x ys }
+
+-- Examples
+refl :: Subset xs xs
+refl = Subset id
+transitive :: Subset xs ys -> Subset ys zs -> Subset xs zs
+transitive sxy syz = Subset $ inSuper syz . inSuper sxy
+nobody :: Subset '[] ys
+nobody = Subset \case {}
+(@@) :: Member x ys -> Subset xs ys -> Subset (x ': xs) ys
+mxy @@ sxy = Subset \case { First -> mxy
+                          ; Later mxxs -> inSuper sxy mxxs }

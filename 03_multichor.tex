@@ -155,7 +155,7 @@ but by implementing them in the core module where they can pattern-match \inline
 and so more convenient.
 
 
-\section{Membership Constraints}
+\section{Membership Constraints \& Proof Witnesses}
 \label{sec:membership}
 
 It is not trivial for Haskell's type-checker (a component of GHC, the compiler) to judge if
@@ -168,12 +168,12 @@ $(p \in ps_1 \land ps1 \subseteq ps_2) \to p \in ps_2$,
 represented in Haskell as
 \inlinecode{instance ( IsMember p ps1, IsSubset ps1 ps2) => IsMember p ps2},
 would be impossible to use because the compiler has no way of guessing which set \inlinecode{ps1}
-it should be checking \inlinecode{p}'s membership in
-(and even if it could \emph{guess}, it wouldn't backtrack and try a different guess if its first try didn't work).
+it should be checking \inlinecode{p}'s membership in.
+(Even if it could \emph{guess}, it wouldn't backtrack and try a different guess when its first try didn't work).
 
 To work around such limitations, \MultiChor uses a strategy of \emph{proof witnesses}
 like those described by \cite{noonanGDP}.
-These are vacuous runtime values with specially crafted types,
+These are light-weight runtime values with specially crafted types,
 such that the existence of a value of the given type guarantees the truth of some logical assertion.
 We do not actually use the \inlinecode{gdp}\footnote{
     "Ghosts of Departed Proofs"~\cite{gdp_hackage}
@@ -184,20 +184,56 @@ which is sometimes useful.
 Finally, the implicit paradigm of "memberships as indices \& subsets as functions" was qualitatively easier to work with
 when we were building the census-polymorphism tools described in \Cref{sec:census-poly}.
 
+\Cref{fig:proof_witnesses} shows the implementation of this system and some of its idioms.
 In \MultiChor, locations are identified by type-level strings, uninhabited types with "kind" \inlinecode{Symbol}.
 A values of type \inlinecode{Member p ps} can be used both
 as proof that \inlinecode{p} is eligible to take some action (because of their membership in \inlinecode{ps})
 and as a term-level identifier for the party \inlinecode{p}.
-It's actual form will be that of an index in the type-level list \inlinecode{ps} at which \inlinecode{p} appears.
-Subset relations are expressed and used similarly.
+The actual form of a value of type \inlinecode{Member p ps}
+is equivalent to an index in the type-level list \inlinecode{ps} at which \inlinecode{p} appears.
+Subset relations are expressed and used similarly:
 A value of type \inlinecode{Subset ps qs} has the underlying form of a function
 from \inlinecode{Member p ps} to \inlinecode{Member p qs},
 \emph{universally quantified over \inlinecode{p}}.
 Because these logical structures can be built from scratch inside Haskell's type system,
 all of the machinery we use to do so can safely be exposed to end-users so that they can write their own proofs, as needed, inside choreographies.
-In practice however, they will usually use higher-level operators.
-For example, the pattern \inlinecode{p @@ nobody}, read as \emph{"\inlinecode{p} and nobody else"},
-makes a \inlinecode{Subset '[p] ps} out of a \inlinecode{Member p ps}.
+For example, a user could import the types and functions shown in \Cref{fig:proof_witnesses} to write
+\begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
+-- | Cons an element to the superset in a `Subset` value.
+consSuper :: Subset xs ys -> Subset xs (y ': ys)
+consSuper sxy = transitive sxy (Subset Later)
+\end{minted}
+By far the most common such manipulation we used in our case studies was
+building "lists" (\inlinecode{Subset} values) out of constituent \inlinecode{Member} items
+using the pattern \inlinecode{p @@ q @@ nobody} (read as \emph{"\inlinecode{p} and \inlinecode{q} and nobody else"}),
+which makes a \inlinecode{Subset '[p, q] ps} out of a \inlinecode{Member p ps} and a \inlinecode{Member q ps}.
+
+\begin{figure*}[tbhp]
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/proof_witnesses.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  The proof witnesses are values of type \inlinecode{Member} or \inlinecode{Subset}.
+	  \inlinecode{Member p ps} (line~5) is a generic algebraic data type who's constructors
+	  can only be called when \inlinecode{p} actually is a member of \inlinecode{ps}.
+	  \inlinecode{Subset ps qs} (line~9) values are isomorphic to functions from membership-in-\inlinecode{ps}
+	  to membership-in-\inlinecode{qs}.
+	  (Haskell's \inlinecode{newtype} types are intermediate between data structures and type-aliases.
+	  To access the function form of a \inlinecode{Subset} one calls \inlinecode{inSuper} on it.
+	  This pattern avoids impredicative typing errors.)
+	  Lines~12--20 show examples of how proof witnesses can be made and combined,
+	  in particular the polymorphic value \inlinecode{nobody} (line~17)
+	  and the infix operator \inlinecode{@@} (line~19).
+  \end{minipage}
+  \end{tabular}
+    \caption{
+        \MultiChor's proof witness system for membership and subset constraints.
+    }
+    \label{fig:proof_witnesses}
+  \end{mdframed}
+\end{figure*}
 
 
 \section{Census Polymorphism}
