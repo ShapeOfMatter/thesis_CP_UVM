@@ -2,11 +2,12 @@
 %% dvanhorn@cs.uvm.edu
 %% updated February 2013 by Joshua Auerbach
 %% joshua.auerbach@uvm.edu
+%% updated July 2025 by Mako Bates
 
 \typeout{UVM Thesis Style, Version 0.1}
 \typeout{Copyright (c) 2005 David Van Horn}
 \typeout{Licensed under the Academic Free License version 2.0}
-\typeout{Updated 2013 by Joshua Auerbach}
+\typeout{Updated 2013 by Joshua Auerbach, updated 2025 by Mako Bates}
 
 \usepackage{setspace}
 \usepackage{chicago}
@@ -44,35 +45,49 @@
 
 \def\cs{\gdef\@spectype{Computer Science}}
 
-\newcommand{\graduatingIn}[1]{\gdef\@gradmonth{#1}}
+\newcommand{\graduatingIn}[2]{\gdef\@gradyear{#1}\gdef\@gradmonth{#2}} % year month
+\newcommand{\defendingOn}[3]{\gdef\@defenseyear{#1}\gdef\@defensemonth{#2}\gdef\@defenseday{#3}} % year month day
 
 
 \renewcommand\maketitle{%
   \thispagestyle{empty}
   \null%
-  \vskip 6em
+  \vskip 1em
+  \vfill
   \begin{center}
     {\LARGE \sc \@title \par} 
-    \vskip 5em 
-    \doublespacing
-    {\large
+    \vskip 1em 
+    \vfill
+    {\large\doublespacing
     \@thesistype\ \@presentationtype\\
-    \vskip 5em     
+    \vfill
     by\\
     \@author\\
     to\\
     The Faculty of the Graduate College\\
     of\\
     The University of Vermont\\
-    \vskip 5em
+    \vfill
     \singlespacing
     In Partial Fullfillment of the Requirements\\
     for the Degree of \@degreetype\\
     Specializing in \@spectype\\
-    \vskip 3em    
-    \@gradmonth, \number\year\par
+    \vfill
+    \@gradmonth, \@gradyear
     }
-  \end{center} \par
+  \end{center}
+  \vfill
+  \begin{flushright}\large
+	  Defense Date:\;\@defensemonth{} \@defenseday, \@defenseyear\\
+	  \@acceptancethesistype{} Examination Committee: \\[0.8em]
+          \@advisor, Advisor\\
+	  \@chair, Chairperson\\
+	  \@readerone\\
+	  \@ifundefined{@readertwo}{}{\@readertwo\\}
+          \@ifundefined{@readerthree}{}{\@readerthree\\}
+	  \@ifundefined{@readerfour}{}{\@readerfour\\}
+	  \@dean, Dean of the Graduate College
+  \end{flushright}
   \newpage
 }
 
@@ -86,7 +101,6 @@
 \newcommand\chair[1]{\gdef\@chair{#1}}
 \newcommand\dean[1]{\gdef\@dean{#1}}
 
-\newcommand\defensedate[1]{\gdef\@defensedate{#1}}
 
 \renewcommand{\headrulewidth}{0pt}
 
@@ -99,53 +113,6 @@
   \doublespacing
 }
 
-\def\makeacceptance{%
-  \singlespacing
-  \noindent
-  Accepted by the Faculty of the Graduate College, The University of
-  Vermont, in partial fulfillment of the requirements for the degree of
-  \@degreetype, specializing in \@spectype.\par
-  \vskip 2.5em
-  \noindent
-  \@acceptancethesistype\ Examination Committee:
-
-  \begin{center}
-    \begin{tabular}{ll}
-      \\ \\ \\
-      \hspace{3in} &  Advisor\\
-      \cline{1-1} \@advisor & \ \\
-      \\ \\ \\
-      \ & \ \\
-      \cline{1-1} \@readerone & \ \\
-      \\ \\ \\
-      \@ifundefined{@readertwo}
-        {}
-        {\ & \ \\
-	 \cline{1-1} \@readertwo & \ \\
-         \\ \\ \\}
-      \@ifundefined{@readerthree}
-        {}
-        {\ & \ \\
-	 \cline{1-1} \@readerthree & \ \\
-         \\ \\ \\}
-      \@ifundefined{@readerfour}
-        {}
-        {\ & \ \\
-	 \cline{1-1} \@readerfour & \ \\
-         \\ \\ \\}
-      \ & Chairperson\\
-      \cline{1-1} \@chair & \ \\
-      \\ \\ \\
-
-      \ & Dean, Graduate College \\
-      \cline{1-1} \@dean & \ \\
-      \\ \\ \\
-      Date: \@defensedate & \ \\
-    \end{tabular}
-  \end{center}
-  \thispagestyle{empty}
-  \newpage
-}
 
 \renewenvironment{abstract}{
   \thispagestyle{empty}
@@ -158,12 +125,9 @@
 
 
 \newenvironment{citationspage}{
+  \thispagestyle{empty}
   \addcontentsline{toc}{section}{Citations}
-  \vskip 6em
-  \begin{center}
-    {\large \sc CITATIONS \par} 
-    \singlespacing
-  \end{center}
+  \section*{Citations}
 }{
   \newpage
 }
