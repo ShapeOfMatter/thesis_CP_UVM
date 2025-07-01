@@ -1,27 +1,181 @@
-\chapter{\minichor is \MultiChor, Just Smaller}
-\label{sec:future}
+\chapter{Conclusions and Future Work}
+\label{sec:conclusion}
 
-\HLSCentral and the associated theorems demonstrate the theoretical soundness of the conclaves-\&-MLVs
-CP paradigm,
-and \MultiChor demonstrates that it is practical to implement and use that paradigm.
+In \Cref{sec:formalism} we introduced a new paradigm for choreographic programming,
+showed that it has the basic properties foundational to the field,
+and described how to replicate the expressivity and efficiency of other paradigms in this new \emph{conclaves} paradigm.
+In \Cref{sec:multichor} we showed how to implement library-level CP with conclaves (and MLVs) in Haskell,
+and showed how Haskell's type system enabled CP design patterns like census polymorphism that were previously impossible.
+In \Cref{sec:future} we demonstrated that some aspects of the \MultiChor system are extranious;
+the CP system \minichor can represent all of the same case-study programs
+without using freer monad handlers or having a built-in notion of located values.
+
+While we believe the advantages of \MultiChor to be unique at this time,
+we do not expect the field to remain stagnant
+and there are critical things \MultiChor choreographies can not do such as recover from communication failure.
+Furthermore, our experience observing other people attempt to use \MultiChor suggests
+that its flexibility may not suffice, in the minds of prospective users, to justify its corresponding cognitive overhead.
+Substantial work remains to do to make choreographic programming an attractive paradigm for industry users.
+Our hope at this time is that \MultiChor and \minichor are well built and well positioned as stepping-off points for such future work.
+
+In a few places in this chapter we have suggested immediate changes that could be made to \MultiChor.
+For version-2.0 \textit{per se}, we advocate incorporating as many of them as practical
+(improved documentation, streamlined user-facing API, instances of \inlinecode{Functor} \textit{etc} for \inlinecode{Located})
+while keeping fundamental systems like the proof-witnesses intact.
+Further future work constitutes a substantial and open-ended research campaign that might be tackled in any order:
+\begin{itemize}
+	\item Compose a formal model of \minichor and a comparable select-\&-merge model,
+		with the goal of showing an equivalence between them.
+	\item Conduct a structured study comparing the usability of \MultiChor, \minichor,
+		and other relevant systems that target real industry use.
+	\item Conduct a structured study comparing the performance of \MultiChor, \minichor,
+		and other relevant systems that target real industry use.
+	\item Develop a system for lazy choreographies as discussed in \Cref{sec:minichor-implications}.
+	\item Augment \MultiChor with tools for modeling and recovering from communication failures.
+\end{itemize}
+
+In the meantime, we hope that both researchers and interested industry practitioners
+will see the work presented here as the cutting edge of applied choreographic programming,
+and as a suitable foundation for further development.
+
+We believe \MultiChor to be the best off-the-shelf system presently available for any real-world applications of CP.
+We are also confident that \HLSCentral and the associated theorems demonstrate the theoretical soundness of the conclaves-\&-MLVs
+CP paradigm.
 That said, it is unsatisfying that the syntactic structures of these two systems are so different from each other.
-Furthermore, it is not clear that these systems as they stand are good foundations for the development of more advanced CP techniques:
-the \HLSCentral system is not readily adaptable for proving the safety of further extensions,
-and \MultiChor has some known usability problems as discussed in \Cref{sec:usability}.
-As a step toward future practical and theoretical developments, we developed \minichor~\cite{minichor-repo},
-a research-prototype fork of \MultiChor.
-\minichor is able to express all the same choreographies (with caveats noted in \Cref{sec:minichor-stg3})
-using a parred-down core API which we believe is simple enough to directly model in a formalism.
-\minichor also demonstrates some immediate insights that will affect
+Furthermore, it is not clear that these systems as they stand are good foundations for the development of more advanced CP techniques,
+nor is it clear that the current design of the \MultiChor as a software library is ideal for real-world engineering.
+In \Cref{sec:usability} we discuss some known usability problems with the existing \MultiChor implementation
+(as distinct from theoretical limitations).
+In \Cref{sec:future-implementation} we describe a fork of \MultiChor, a research prototype with some theoretical implications that will affect
 the design of future \MultiChor versions.
+In particular, we show that the concept of (multiply) located values can be redundant to the concept of conclaves,
+provided an appropriate API and type system.
+
+\section{User challenges in \MultiChor}
+
+Industry use of CP concepts remains nascent,
+but enough embedded or semi-embedded implementations now exist or are in development that prospective users
+will need to actively choose between them.
+Just within the Haskell ecosystem, it's possible that an engineer might accept the excess communication necessitated by \HasChor's
+KoC strategy in order to avoid the conceptual (and textual) overhead of census tracking.
+Indeed, although we know of no "in the wild" use of \MultiChor,
+anecdotal reports from academic peers who have attempted to use the library suggest it would benefit from substantial further cosmetic work,
+and may need theoretical breakthroughs to appeal to non-academic developers.
+
+\subsection{General Feedback}
+\label{sec:usability-sources}
+A few people that we know of (besides ourselves) have actually attempted to write programs using \MultiChor.
+A couple of our fellow students accepted our invitation to attempt a programming challenge modeled after a job-interview exercise.
+The exercise itself is described in \Cref{sec:usability-exercise}.
+These sessions were not structured as a controlled usability study;
+volunteers were invited to ask for help with any part of the exercise they wished.
+Nonetheless, none of the volunteers were able to implement the described protocol,
+which had been designed both for brevity and to exactly fit \MultiChor's capabilities.
+This was our most detailed source of feedback.
+
+While our own efforts to asses \MultiChor's usability were illuminating and negative,
+we also received feedback on the software artifact~\cite{ourArtifact} submitted alongside~\cite{batesenclaves}.
+
+One point of feedback has been practically unanimous:
+\MultiChor's existing documentation is insufficient.
+Relying on type signatures to communicate behavior presupposes familiarity with \MultiChor's types,
+and the textual documentation, however systematic, is not suitable for bootstrapping a new user's understanding.
+The example choreographies included in the \MultiChor repository are not presented as a form of documentation, 
+and therefor do not serve that purpose.
+Regarding specific directions for future documentation,
+the documentation of \MultiChor's API should have relevant examples built into it,
+and the entry-point of the documentation (the \inlinecode[bash]{README} file) should be structured as a tutorial.
+Furthermore, the module structure of the repository should be refactored to reflect how the API will be \emph{used},
+instead of how it was \emph{engineered}.
+
+\subsection{The proof-witnesses system}
+
+A major hurdle to writing correct choreographies with \MultiChor is constructing and managing the proof-witness arguments.
+Regardless of whether or not the system is overly-complicated
+(to quote both the volunteers from the usability exercise:
+\emph{"It's kinda complicated."})
+the cognitive load of using the proof-witness system is \emph{additional} to, and mostly \emph{perpendicular} to,
+the complexity of writing the actual choreography.
+In other words,
+a user must consider both how to represent a choreographic behavior using \MultiChor's operators
+and how to prove that the relevant parties have the relevant memberships,
+and because the proofs serve double-duty as identifiers, the user must think about those two problems simultaneously.
+
+It's not unusual for a Haskell library to have a steep learning curve,
+but we observe that the proof-witness system is a real bottleneck to use of \MultiChor,
+so it would be worth improving.
+Furthermore, the existing system is lacking certain capabilities one would expect,
+such as the ability to talk about set unions, intersections, and differences.
+There are two plausible directions for improvement;
+neither of them are perfectly clear at this time:
+\begin{enumerate}
+	\item Remove the witnesses altogether in favor of constraint programming.
+		(\inlinecode{Proxy} objects would still be necessary in some cases, but contain no complexity.)
+		As explained in \Cref{sec:membership}, normal \inlinecode{class}es will not suffice,
+		but quantified constraints~\cite{bottu2017} are not yet ruled out.
+		Specifically, type-level programming with GHC's \inlinecode{QuantifiedConstraints} extension
+		will be able to automatically infer sufficient subset relations,
+		\emph{if} a satisfactory representation of membership constraints can be expressed.
+	\item Externalize the proof-witness system.
+		Several experimental systems exist for reasoning about type-level sets in Haskell,
+		including \inlinecode[text]{gdp}~\cite{gdp_hackage} and \inlinecode[text]{type-level-sets}~\cite{tls_hackage}.
+		If truly no off-the-self library exists that's suitable for the challenges of \MultiChor,
+		then \MultiChor's solution should be separated as a stand-alone library.
+		Regardless of where an external library came from, its externalness would facilitate code-reuse 
+		and clarify a separation of concerns.
+\end{enumerate}
+
+\subsection{"Compute this" operators}
+
+\MultiChor offers three "basic" operators for embedding non-choreographic computation in a choreography:
+\inlinecode{locally}, \inlinecode{congruently}, and \inlinecode{parallel}.
+Each of these is derived from more primitive forms, and each has further derived forms
+(\eg \inlinecode{_locally_}, \inlinecode{purely}).
+Choosing the best of these options for any given task is worse than a needle-in-haystack problem,
+because multiple of them may actually work,
+and because some may appear to work for the immediate task while causing problems later in the program.
+
+In \Cref{sec:future-implementation} we will see a possibility for removing some of this complexity.
+Regardless of whether the development of \MultiChor actually goes in that direction,
+the cost (as measured in end-user boilerplate) of removing (or not exporting) most of these functions
+would probably be worth the benefit of simplifying the choices they present to end-users.
+
+\subsection{Clarity over flexibility}
+
+To send a value in \MultiChor one must (in addition to specifying the recipients)
+provide a MLV and prove that the sender both owns the value and is present in the census.
+This can be quite repetitive.
+To minimise boiler-plate, the surface API of \MultiChor uses a class \inlinecode{CanSend}
+so that the broad- and multi-cast functions can take the proof arguments in different formats.
+In keeping with the above theme of reducing the space of options users must navigate,
+\inlinecode{CanSend} should be removed and the functions should each have a single, general-purpose, signature.
+
+More broadly, we suggest abandoning the existing implementation-focused module structure
+that separates operators across three modules ("core", "surface", and "batteries")
+in favor of exporting a single surface-level API.
+We expect that users will build predictable helper functions on top of this,
+but trying to preempt their efforts doesn't seem to have helped prospective users.
+
+\section{"Mini"-Chor}
+\label{sec:future-implementation}
+
+Entirely perpendicular to questions of ergonomics and learning-curves, the expressivity of \MultiChor could be improved
+(\eg failable communication),
+and the \HLSCentral system is not readily adaptable for proving the safety of further extensions.
+Therefore, in this section we discuss a fork of \MultiChor, \minichor,
+which is able to express all the same choreographies (with caveats noted in \Cref{sec:minichor-stg3})
+using a parred-down core API which we believe is simple enough to directly model in a formalism~\cite{minichor-repo}.
+We do not present such a model at this time.
+We also don't present \minichor as "\MultiChor-V2",
+because it's differences from \MultiChor are potentially negative if measured in terms of performance or ergonomics.
 
 Of particular note is that \minichor does not feature located values (multiply or singly) as understood by prior CP systems.
 While the type \inlinecode{Located} appears in \minichor and is used similarly to the type of the same name in \MultiChor,
 in \minichor \inlinecode{Located} is just an alias for \inlinecode{Choreo}!
 The theoretical implication of this is that MLVs are actually just a special case of census-annotated choregraphies.
-We discuss further implications in \Cref{sec:minichor-implications}.
+We discuss further implicaitons in \Cref{sec:minichor-implications}.
 
-Most of this chapter will describe the differences between \MultiChor and \minichor narratively.
+Most of this section will describe the differences between \MultiChor and \minichor narratively.
 The first change is to remove the freer-monad system and instead implement \inlinecode{Functor}, \inlinecode{Applicative}, and \inlinecode{Monad}
 for \inlinecode{Choreo} directly.
 This has no effect on the rest of the system or on the case studies;
@@ -58,9 +212,9 @@ but the process follows a similar pattern of refactoring the core API and then e
 or propagating semantically-inconsequential changes into the case studies.
 Most of the case studies have robust unit tests based on them, to detect any mistakes during this process.
 
-\section{Monadic Unwrapping}
+\subsection{Monadic Unwrapping}
 \label{sec:minichor-stg1}
-We replace the core operator \inlinecode{congruently'} with \inlinecode{naked}, simplifying the core API.
+We replace the core operator \inlinecode{congruently'} with \inlinecode{naked}, simiplifying the core API.
 
 \HasChor enforces the rule that only the owner of a located value may call \inlinecode{unwrap} on it
 by hiding \inlinecode{unwrap} in a module (only its type, \inlinecode{Unwrap} is exported)
@@ -173,7 +327,7 @@ This intermediate system is shown in \Cref{fig:minichor-stg1}\textbf{(b)}.
 \end{figure*}
 
 
-\section{MLVs as quantified functions}
+\subsection{MLVs as quantified functions}
 \label{sec:minichor-stg2}
 In the \inlinecode{naked}-based system of \Cref{fig:minichor-stg1}\textbf{(b)},
 \inlinecode{naked} is the only means by which the actual value of an MLV can be accessed.
@@ -195,7 +349,7 @@ The point of the change described in \Cref{fig:minichor-stg2ab}\textbf{(b)} is t
 a core API for choreographic programming that
 doesn't have located values at all!
 
-\section{MLVs \emph{are} Choreographies}
+\subsection{MLVs \emph{are} Choreographies}
 \label{sec:minichor-stg3}
 
 We get rid of MLVs by relaxing our demands of them.
@@ -243,7 +397,7 @@ who's body-argument is required to return a located value, and which does not ad
 In \minichor, \inlinecode{conclave} is a derived function using monad-bind.)
 
 
-\section{Implications}
+\subsection{Implications}
 \label{sec:minichor-implications}
 Although \minichor was not intended to ever see real-world use,
 the usability trade-offs between it and \MultiChor are not obvious,
@@ -264,12 +418,11 @@ We leave as future work to compose a formal model of \minichor,
 and to prove theorems about it
 (especially that it enjoys some equivalence with a corresponding select-\&-merge system).
  
-Second, while the actual implementation of \minichor doesn't use any laziness beyond what's normal for Haskell programs,
-the use of \emph{choreographies} as the arguments and return-types of the choreographic operators
-makes laziness-based programming patterns immediately available to users.
+Second, while the actual implementation of \minichor doesn't enjoy any kind of laziness beyond what's normal for Haskell programs,
+the use of \emph{choreographies} to represent \emph{values} suggests that laziness could be built on top without additional boiler plate.
 Specifically, while the MLVs that arise naturally in naïve use of \minichor are generally trivial \inlinecode{Return} ASTs,
-nothing about the type system forbids passing a non-trivial choreography into any function that consumes an MLV.
-One can write a \inlinecode{lazyMulticast x} that performs no immediate action itself but just returns
+nothing about the type system requires that;
+one could write a \inlinecode{lazyBroadcast x} that performs no immediate action itself but just returns
 (as the "MLV") the choreography \inlinecode{broadcast x}.
 It would be worthwhile to explore the utility, performance, and limitations of such a system,
 and consider recapitulating it in \MultiChor.
@@ -282,30 +435,31 @@ since \MultiChor's representation of \inlinecode{Located} is isomorphic to \inli
 the class implementations are straightforward;
 all that was missing was confidence that those interfaces were safe to expose, and \minichor gives us that.
 For any construct in Haskell to implement these classes is a major usability advantage~\cite[Chapter~4]{haskell-cookbook}.
-As an example, a \MultiChor declaration of a variable \inlinecode{filtered} like
+As an example, we could rewrite
 \begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
 do let myFilter :: (Key -> Widgit -> Bool) -> Key -> [Widgit] -> [Widgit] = ...
        comparator :: Located servers (Key -> Widgit -> Bool) = ...
        key :: Located workers Key = ...
        values :: Located workers [Widgit] = ...
    filtered <- congruently (transitive workers servers) \un ->
-         myFilter (un workers comparator) (un refl key) (un refl values)
+              (un workers comparator) (un refl key) (un refl values)
    ...
 \end{minted}
-can be rewritten using "map" (\inlinecode{<$>} from \inlinecode{Functor}) and "splat" (\inlinecode{<*>} from \inlinecode{Applicative}) as
+using "map" and "splat" as
 \begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
 do let ...
-   let filtered = myFilter <$> (othersForget workers comparator) <*> key <*> values
+   let filtered = (othersForget workers comparator) <$> key <*> values
    ...
 \end{minted}
-In \minichor's case studies this pattern mostly replaces the analogs of \inlinecode{congruently};
-it's less clear if this pattern improves or degrades the ergonomics of \inlinecode{locally} and its variants.
-
-We don't present \minichor as "\MultiChor-V2"
-because it's advantages or disadvantages, compared to \MultiChor in terms of performance or ergonomics, are ambiguous.
-Although precisely assessing the usability of a system like \MultiChor will require a future human subjects study,
+This pattern could be used to completely replace \inlinecode{congruently},
+but on its own does not affect \inlinecode{locally}.
+Although precisely assessing the usability of a system like \MultiChor would require a human subjects study,
 it's plausible that that the advantages of the above pattern could more-than-offset the deficits of a \inlinecode{naked}-based system.
-For this reason, we suggest including \minichor or a system like it in any such future usability study.
+For this reason, we do suggest including \minichor or a system like it in any such future usability study.
+
+
+\section{Conclusion}
+\label{sec:conclusion}
 
 
 \bibliographystyle{chicago}

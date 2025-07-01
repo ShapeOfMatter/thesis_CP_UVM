@@ -1,5 +1,5 @@
-\chapter{Real World Choreographic Programming}
-\chaptermark{\MultiChor: Real World Choreographic Programming} %this is the chapter heading that will show on subsequent pages
+\chapter{The MultiChor Library for Haskell}
+%\chaptermark{\MultiChor: Real World Choreographic Programming} %this is the chapter heading that will show on subsequent pages
 \label{sec:multichor}
 
 
@@ -406,7 +406,7 @@ the type class \inlinecode{KnownSymbols} affords to the runtime environment suff
         Type signatures for \inlinecode{sequenceP}, \inlinecode{fanOut}, and \inlinecode{scatter}.
     }
     \label{fig:census-poly-haskell}
-    %\Description{Fourteen lines of Haskell code using the MulitChor library.}
+    %\Description{Fourteen lines of Haskell code using the MultiChor library.}
   \end{mdframed}
 \end{figure*}
 
@@ -429,8 +429,25 @@ Modern Haskell language features, especially type-variable quantification,
 enable \MultiChor's implementation of census polymorphism to be entirely type-safe and transparent to users.
 This is a flexible system within which users can easily write their own novel and bespoke functions and data structures.
 
+\section{Utility and Usability of MultiChor}
+\label{sec:utility}
 
-\section{The GMW Protocol in MultiChor}
+We have already shown a few programs written in \MultiChor, however these have been bespoke examples crafted for the purpose of demonstrating \MultiChor.
+\Cref{sec:mpc} describes our implementation of the Goldreich-Micali-Widgerson protocol for secure multiparty computation.
+Of the protocols we wrote during testing of \MultiChor, we choose to showcase this one because:
+\begin{itemize}
+	\item It is a pre-existing published protocol that other researchers have studied and implemented in non-choreographic systems.
+	\item Our implementation is complete
+		(in contrast to \eg our implementation of the lottery mechanism from \cite{dprio2023},
+		 which would need further work to implement the complete the differentially-private secure aggregation protocol DPrio).
+	\item Its implementation in any system is necessarily non-trivial because the protocol itself has some complexity.
+\end{itemize}
+
+In \Cref{sec:usability} we discuss other people's experience writing programs in \MultiChor.
+No quantitative data on this subject exists yet,
+but we have received sufficient (negative) feedback to motivate some future work discussed in \Cref{sec:conclusion}.
+
+\subsection{The GMW Protocol in MultiChor}
 \label{sec:mpc}
 
 \emph{Secure multiparty computation}~\cite{evans2018pragmatic} (MPC) is a family of techniques that allow a group of parties to jointly compute an agreed-upon function of their distributed data without revealing the data or any intermediate results to the other parties. We consider an MPC protocol named Goldreich-Micali-Widgerson (GMW)~\cite{goldreich2019play} after its authors. The GMW protocol requires the function to be computed to be specified as a binary circuit, and each of the parties who participates in the protocol may provide zero or more inputs to the circuit. At the conclusion of the protocol, all participating parties learn the circuit's output.
@@ -563,6 +580,75 @@ this operation leverages the oblivious transfer protocol to perform the multipli
 Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values
 and utilities for type-safe parallel, conclaved, and pairwise choreographies to build a fully-general implementation
 of the protocol that works for an arbitrary number of parties.
+
+
+\section{User challenges in \MultiChor}
+\label{sec:usability}
+
+Industry use of CP concepts remains nascent,
+but enough embedded or semi-embedded implementations now exist or are in development that prospective users
+will need to actively choose between them.
+Just within the Haskell ecosystem, it's possible that an engineer might accept the excess communication necessitated by \HasChor's
+KoC strategy in order to avoid the conceptual (and textual) overhead of census tracking.
+Indeed, although we know of no "in the wild" use of \MultiChor,
+anecdotal reports from academic peers who have attempted to use the library suggest it would benefit from substantial further cosmetic work,
+and may need theoretical breakthroughs to appeal to non-academic developers.
+
+A few people that we know of (besides ourselves) have actually attempted to write programs using \MultiChor.
+A couple of our fellow students accepted our invitation to attempt a programming challenge modeled after a job-interview exercise.
+The exercise itself is described in \Cref{sec:usability-exercise}.
+These sessions were not structured as a controlled usability study;
+volunteers were invited to ask for help with any part of the exercise they wished.
+Nonetheless, none of the volunteers were able to implement the described protocol,
+which had been designed both for brevity and to exactly fit \MultiChor's capabilities.
+This was our most detailed source of feedback.
+Separately, 
+we also received feedback on the software artifact~\cite{ourArtifact} submitted alongside~\cite{batesenclaves}.
+
+One point of feedback has been practically unanimous:
+\MultiChor's existing documentation is insufficient.
+Relying on type signatures to communicate behavior presupposes familiarity with \MultiChor's types,
+and the textual documentation, however systematic, is not suitable for bootstrapping a new user's understanding.
+The example choreographies included in the \MultiChor repository are not presented as a form of documentation, 
+and therefor do not serve that purpose.
+
+\paragraph{The proof-witnesses system}
+One major hurdle to writing correct choreographies with \MultiChor is constructing and managing the proof-witness arguments
+as described in \Cref{sec:membership}.
+Regardless of whether or not the system is overly-complicated
+(to quote both the volunteers from the usability exercise:
+\emph{"It's kinda complicated."})
+the cognitive load of using the proof-witness system is \emph{additional} to
+the complexity of writing the actual choreography.
+In other words,
+a user must consider both how to represent a choreographic behavior using \MultiChor's operators
+and how to prove that the relevant parties have the relevant memberships,
+and because the proofs serve double-duty as identifiers, the user must think about those two problems simultaneously.
+
+\paragraph{"Compute this" operators}
+\MultiChor offers three "basic" operators for embedding non-choreographic computation in a choreography:
+\inlinecode{locally}, \inlinecode{congruently}, and \inlinecode{parallel}.
+Each of these is derived from more primitive forms, and each has further derived forms
+(\eg \inlinecode{_locally_}, \inlinecode{purely}).
+Choosing the best of these options for any given task is worse than a needle-in-haystack problem,
+because multiple of them may actually work,
+and because some may appear to work for the immediate task while causing problems later in the program.
+
+\paragraph{The \inlinecode{CanSend} type class}
+To send a value in \MultiChor one must (in addition to specifying the recipients)
+provide a MLV and prove that the sender both owns the value and is present in the census.
+This can be quite repetitive.
+To minimise boiler-plate, the surface API of \MultiChor uses a class \inlinecode{CanSend}
+so that the broad- and multi-cast functions can take the proof arguments in different formats.
+Unfortunately, by offering so many options to a user, \MultiChor's API obfuscates the simple question of how to actually write a communication statement.
+
+At a broader level, we observe that the existing implementation-focused module structure,
+which separates operators across three modules ("core", "surface", and "batteries"),
+fails to guide new users to the tools they need to do their work,
+contributes nothing to the management of \inlinecode{import} statements,
+and is of dubious benefit even to the users who know the system best: ourselves.
+We will discuss practical implications of the above points in \Cref{sec:conclusion}.
+
 
 \bibliographystyle{chicago}
 \bibliography{refs}
