@@ -793,3 +793,87 @@ year = {2025}
   biburl       = {https://dblp.org/rec/conf/forte/Cruz-FilipeM17.bib},
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
+
+@PhdThesis{Petri1962,
+author={Petri, Carl Adam},
+title={Kommunikation mit Automaten},
+year={1962},
+publisher={Mathematisches Institut der Universität Bonn},
+address={Bonn},
+note={128 Seiten.},
+language={German},
+url={https://edoc.sub.uni-hamburg.de/informatik/volltexte/2011/160/pdf/diss_petri.pdf}
+}
+
+@inproceedings{hewitt_actor_model,
+author = {Hewitt, Carl and Bishop, Peter and Steiger, Richard},
+title = {A universal modular ACTOR formalism for artificial intelligence},
+year = {1973},
+publisher = {Morgan Kaufmann Publishers Inc.},
+address = {San Francisco, CA, USA},
+abstract = {This paper proposes a modular ACTOR architecture and definitional method for artificial intelligence that is conceptually based on a single kind of object: actors [or, if you will, virtual processors, activation frames, or streams]. The formalism makes no presuppositions about the representation of primitive data structures and control structures. Such structures can be programmed, micro-coded, or hard wired in a uniform modular fashion. In fact it is impossible to determine whether a given object is "really" represented as a list, a vector, a hash table, a function, or a process. The architecture will efficiently run the coming generation of PLANNER-like artificial intelligence languages including those requiring a high degree of parallelism. The efficiency is gained without loss of programming generality because it only makes certain actors more efficient; it does not change their behavioral characteristics. The architecture is general with respect to control structure and does not have or need goto, interrupt, or semaphore primitives. The formalism achieves the goals that the disallowed constructs are intended to achieve by other more structured methods.},
+booktitle = {Proceedings of the 3rd International Joint Conference on Artificial Intelligence},
+pages = {235–245},
+numpages = {11},
+location = {Stanford, USA},
+series = {IJCAI'73}
+}
+
+
+@book{baeten2004,
+title = "A brief history of process algebra",
+abstract = "Abstract. This note addresses the history of process algebra as an area of research in concurrency theory, the theory of parallel and distributed systems in computer science. Origins are traced back to the early seventies of the twentieth century, and developments since that time are sketched. The author gives his personal views on these matters. He also considers the present situation, and states some challenges for the future.",
+author = "J.C.M. Baeten",
+year = "2004",
+language = "English",
+series = "Computer science reports",
+publisher = "Technische Universiteit Eindhoven",
+}
+
+@InProceedings{stutz2025,
+author="Stutz, Felix
+and D'Osualdo, Emanuele",
+editor="Vafeiadis, Viktor",
+title="An Automata-theoretic Basis for Specification and Type Checking of Multiparty Protocols",
+booktitle="Programming Languages and Systems",
+year="2025",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="314--346",
+abstract="We propose the Automata-based Multiparty Protocols framework (AMP) for top-down protocol development. The framework features a new very general formalism for global protocol specifications called Protocol State Machines (PSMs), Communicating State Machines (CSMs) as specifications for local participants, and a type system to check a {\$}{\$}{\backslash}pi {\$}{\$}$\pi$-calculus with session interleaving and delegation against the CSM specification. Moreover, we define a large class of PSMs, called ``tame'', for which we provide a sound and complete PSPACE projection operation that computes a CSM describing the same protocol as a given PSM if one exists. We propose these components as a backwards-compatible new backend for frameworks in the style of Multiparty Session Types. In comparison to the latter, AMP offers a considerable improvement in expressivity, decoupling of the various components (e.g. projection and typing), and robustness (thanks to the complete projection).",
+isbn="978-3-031-91121-7"
+}
+
+@InProceedings{leBrun2025,
+author="Le Brun, Matthew Alan
+and Fowler, Simon
+and Dardha, Ornela",
+editor="Vafeiadis, Viktor",
+title="Multiparty Session Types with a Bang!",
+booktitle="Programming Languages and Systems",
+year="2025",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="125--153",
+abstract="Replication is an alternative construct to recursion for describing infinite behaviours in the {\$}{\$}{\backslash}pi {\$}{\$}$\pi$-calculus. In this paper we explore the implications of including type-level replication in Multiparty Session Types (MPST), a behavioural type theory for message-passing programs. We introduce {\$}{\$}{\backslash}textsf {\{}MPST!{\}} {\$}{\$}MPST!, a session-typed multiparty process calculus with replication and first-class roles. We show that replication is not an equivalent alternative to recursion in MPST, and that using both replication and recursion in one type system in fact allows us to express both context-free protocols and protocols that support mutual exclusion and races. We demonstrate the expressiveness of {\$}{\$}{\backslash}textsf {\{}MPST!{\}} {\$}{\$}MPST!on examples including binary tree serialisation, dining philosophers, and a model of an auction, and explore the implications of replication on the decidability of typechecking.",
+isbn="978-3-031-91121-7"
+}
+
+@article{scalaLoci,
+author = {Weisenburger, Pascal and K\"{o}hler, Mirko and Salvaneschi, Guido},
+title = {Distributed system development with ScalaLoci},
+year = {2018},
+issue_date = {November 2018},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {2},
+number = {OOPSLA},
+url = {https://doi.org/10.1145/3276499},
+doi = {10.1145/3276499},
+abstract = {Distributed applications are traditionally developed as separate modules, often in different languages, which react to events, like user input, and in turn produce new events for the other modules. Separation into components requires time-consuming integration. Manual implementation of communication forces programmers to deal with low-level details. The combination of the two results in obscure distributed data flows scattered among multiple modules, hindering reasoning about the system as a whole.  The ScalaLoci distributed programming language addresses these issues with a coherent model based on placement types that enables reasoning about distributed data flows, supporting multiple software architectures via dedicated language features and abstracting over low-level communication details and data conversions. As we show, ScalaLoci simplifies developing distributed systems, reduces error-prone communication code and favors early detection of bugs.},
+journal = {Proc. ACM Program. Lang.},
+month = oct,
+articleno = {129},
+numpages = {30},
+keywords = {Distributed Programming, Multitier Programming, Placement Types, Reactive Programming, Scala}
+}

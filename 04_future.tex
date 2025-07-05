@@ -10,7 +10,7 @@ the \HLSCentral system is not readily adaptable for proving the safety of furthe
 and \MultiChor has some known usability problems as discussed in \Cref{sec:usability}.
 As a step toward future practical and theoretical developments, we developed \minichor~\cite{minichor-repo},
 a research-prototype fork of \MultiChor.
-\minichor is able to express all the same choreographies (with caveats noted in \Cref{sec:minichor-stg3})
+\minichor is able to express all the same choreographies (see caveat in \Cref{sec:minichor-stg3})
 using a parred-down core API which we believe is simple enough to directly model in a formalism.
 \minichor also demonstrates some immediate insights that will affect
 the design of future \MultiChor versions.
@@ -52,7 +52,7 @@ Third, we remove the type parameter \inlinecode{m} (for monad) from \inlinecode{
 and simply assume that the local monad is always \inlinecode{CLI IO}.
 This is basically the same as just \inlinecode{IO}, and use-cases for local monads that \emph{aren't} basically just \inlinecode{IO}
 seem uncommon.
-The rest of the changes descried in this section are more impactful,
+The rest of the changes descried in this chapter are more impactful,
 but the process follows a similar pattern of refactoring the core API and then either shimming the difference in the surface API
 (so that the exposed system behaves the same)
 or propagating semantically-inconsequential changes into the case studies.
@@ -221,8 +221,11 @@ Giving up the ability to use a "located value" when not all of its owners are pr
 First, reusable software components can no longer take arguments with open-ended polymorphic ownership sets;
 an MLV is useless without proof that all its owners are present in the choreography.
 \inlinecode{othersForget} can still be used to reduce ownership sets, but it now needs all the original owners to also be present.
-Often, it's necessary to apply \inlinecode{othersForget} one or more layers up in the program's architecture from where the value gets used,
-and reusable components should be strict instead of lenient about the owners of their arguments.
+This implies a small \textbf{caveat} on the assertion that \minichor can do anything \MultiChor can do:
+Higher-order choreographies in \minichor enjoy slightly less-open-ended polymorphic typing than in \MultiChor.
+Reusable components must be restrictive (instead of lenient) about the owners of their arguments.
+In the case studies, we were still able to preserve all the same behavior
+by applying \inlinecode{othersForget} one or more layers up in the program's architecture from where the values in question are actually used.
 
 A more fundamental change is that it is no longer possible to write the function \inlinecode{flatten}.
 Consider its hypothetical type signature:
@@ -284,8 +287,8 @@ all that was missing was confidence that those interfaces were safe to expose, a
 For any construct in Haskell to implement these classes is a major usability advantage~\cite[Chapter~4]{haskell-cookbook}.
 As an example, a \MultiChor declaration of a variable \inlinecode{filtered} like
 \begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
-do let myFilter :: (Key -> Widgit -> Bool) -> Key -> [Widgit] -> [Widgit] = ...
-       comparator :: Located servers (Key -> Widgit -> Bool) = ...
+do let myFilter :: (Key->Widgit->Bool) -> Key -> [Widgit] -> [Widgit] = ...
+       comparator :: Located servers (Key->Widgit->Bool) = ...
        key :: Located workers Key = ...
        values :: Located workers [Widgit] = ...
    filtered <- congruently (transitive workers servers) \un ->
@@ -295,7 +298,9 @@ do let myFilter :: (Key -> Widgit -> Bool) -> Key -> [Widgit] -> [Widgit] = ...
 can be rewritten using "map" (\inlinecode{<$>} from \inlinecode{Functor}) and "splat" (\inlinecode{<*>} from \inlinecode{Applicative}) as
 \begin{minted}[xleftmargin=30pt,fontsize=\small]{haskell}
 do let ...
-   let filtered = myFilter <$> (othersForget workers comparator) <*> key <*> values
+   let filtered = myFilter <$> (othersForget workers comparator)
+	                   <*> key
+			   <*> values
    ...
 \end{minted}
 In \minichor's case studies this pattern mostly replaces the analogs of \inlinecode{congruently};

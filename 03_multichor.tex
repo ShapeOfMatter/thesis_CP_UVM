@@ -173,8 +173,9 @@ it should be checking \inlinecode{p}'s membership in.
 
 To work around such limitations, \MultiChor uses a strategy of \emph{proof witnesses}
 like those described by \cite{noonanGDP}.
-These are light-weight runtime values with specially crafted types,
-such that the existence of a value of the given type guarantees the truth of some logical assertion.
+These are light-weight runtime values with specially crafted types;
+the (static) type encodes a logical assertion (\eg $p \in \nonempty{p}$)
+and the existence of a value of that type guarantees the truth of the assertion.
 We do not actually use the \inlinecode{gdp}\footnote{
     "Ghosts of Departed Proofs"~\cite{gdp_hackage}
 } package; we found that writing our own purpose-specific system had a few advantages.

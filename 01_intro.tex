@@ -210,29 +210,66 @@ The global view of the distributed system enables easier reasoning about the sys
 for example choreographic languages can ensure \emph{deadlock freedom}~\cite{montesi-carbone-dfbd}
 and choreographies can be composed modularly like normal single-threaded protocols.
 
-\subsection{History}
+\subsection{History and Adjacent Domains}
 \label{sec:history}
+
+Theoretical and pragmatic frameworks for thinking clearly about concurrent and communicating systems are many and varied,
+and include well known examples like Petri Nets that are over sixty years old~\cite{Petri1962}.
+A number of other systems from the following decades are important both as historical markers and because modern research
+builds directly on their ideas, their theory, structural patterns, and terminology.
+The actor model~\cite{hewitt_actor_model} posits the description of an "actor" and their behavior as the fundamental
+unit of a concurrent program, while being deliberately abstract about what an actor actually is.
+Process- or \textpi-calculi are generally characterized by a designated syntax for parallelism
+(actions that may happen in any order or simultaneously),
+and typically have names or addresses associated with the participating processes and/or channels of communication between processes.
+\cite{baeten2004} gives a good history of the field as it developed and diversified through the end of the 20\textsuperscript{th} century.
+
+A basic goal in computer science is to provide guarantees that a program \emph{can't} exbibit a behavior that has been deemed bad,
+\eg run-time exceptions or deadlocking;
+a common way to accomplish this is by applying a type checker to the program.
+One successful system (or style of system) for typing concurrent protocols has been \emph{multiparty session types} (MPST)~\cite{honda-mpsts}.
+MPST encode a protocol of (possible sequences of) communication in a \emph{global type} in the language of MPST.
+Projection of a global type to a named party ("endpoint") in the type yields a \emph{local type}
+that can be ascribed to (and enforced against) an implementation (\eg in a \textpi-calculus) of that process's behavior\footnote{
+	As in CP, the endpoint projection function in MPST is incomplete.
+}.
+In addition to the simple "what kind of thing might \inlinecode{x} be" sense of type safety,
+MPST also provided communication safety (\eg a party never binds a received message to the wrong variable at runtime)
+and a form of deadlock freedom.
+
+Research extending MPST's expressiveness (the space of desirable programs that can be judged well-formed)
+and safety (the space of undesired programs that can be statically rejected) is ongoing.
+For example \cite{stutz2025} describe Automata-based Multiparty Protocols,
+a MPST-like framework that, with various caveats, is more expressive than MPST and in which endpoint projection is total.
+\cite{leBrun2025}, presented at the same conference, directly extend the syntax and semantics of MPST
+with first-class process names and open-ended receiving channels;
+in addition to the utility of these features \textit{per se}, this lets their system model mutual-exclusion and race conditions.
+One way to think about choreographic programming is as the extension of the core ideas of MPST to include
+\emph{both} the communication plan and the implementation of the computations each party is doing.
+
 Although in this present work we use the noun "choreography" to refer to actual programs written in CP systems,
 the word was already in use before the invention of choreographic programming \textit{per se}.
 The broader sense of the word is any unified 3rd-person description of or plan for interaction between two or more participating systems.
 Pseudo-code diagrams featuring a unified communication operator "→"
 were being used to describe cryptographic protocols at least as early as 1978 \cite{needham_schroeder_1978}.
+As an example,
 \cite{w3c2005} presented the \emph{"Web Services Choreography Description Language"}
 in which a user could specify the interaction, the sequence of communications, between parties.
-This was a specification language; implementations compatible with a given specification needed to be written separately.
-Later tools were to developed to statically check if a specification was actually implement\emph{able},
-whether a provided implementation was faithful to a specification,
-and whether the specification had other desired properties.
-In particular, \emph{multiparty session types} are a system in which a communication plan is specified as a "global type";
-the global type is \emph{projected} to a single party,
-resulting in a "local type" against which an implementation of that party's role can type-check
-\cite{honda-mpsts}.
-Multiparty session types also provided communication safety (\eg a party never misinterprets received data as being of the wrong type)
-and a form of deadlock freedom.
-One way to think about choreographic programming is as the extension of multiparty session types to include
-both the communication plan and the implementation of the computation each party is doing.
+Like MPST (introduced a few years later),
+this was a specification language; implementations compatible with a given specification needed to be written separately.
 
-For a comparison between choreographic programming and the closely-related field of \emph{multitier langauges}, we refer to~\cite{multiparty-languages}.
+Another technique for multiparty programming
+(broadly, any technique for representing the behavior of a system of concurrent participants in as a single program)
+is \emph{multitier programming}.
+A multitier program has a "first person" perspective the privileges one party or role;
+this perspective shifts to other roles, with implicit or explicit communication mediating these shifts.
+ScalaLoci is an example of a multitier language with an embedded implementation in Scala and a formalism demonstrating its soundness~\cite{scalaLoci}.
+Of particular interest to our current work, ScalaLoci can represent applications with variable quantities of participants.
+The network behavior of a ScalaLoci system is less straightforward than that of a similar-looking choreography in two ways:
+some communication is implicit
+and, because a recipient of a message doesn't generally know how many processes are fulfilling the role of sender,
+the continuation from that reception must be kept open for future additional instances of the messages.
+Nonetheless, \cite{multiparty-languages} were able to show a degree of equivalence between minimalist models of multitier and choreographic programming.
 
 \subsection{Endpoint Projection}
 \label{sec:endpoint-projection}
