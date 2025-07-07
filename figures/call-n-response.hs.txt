@@ -1,0 +1,24 @@
+callNResponse :: Choreo '["Client", "Server"] (CLI IO) ()
+callNResponse = do
+    name <- _locally client (getInput @String "Enter your name:")
+    x <- (client, name) ~> server @@ nobody
+    locally_ server \un -> putOutput "Received message:" (un singleton x)
+    response <- purely server \un -> "Hi " ++ last(words(un singleton x))
+    _ <- (server, response) ~> client @@ nobody
+    return ()
+  where client :: Member "Client" '["Client", "Server"] = explicitMember
+        server  :: Member "Server"  '["Client", "Server"] = explicitMember
+
+clientBehavior :: Network (CLI IO) ()
+clientBehavior = do
+    name <- run (getInput @String "Enter your name:")
+    send name ["Server"]
+    _ <- recv @String "Server"
+    return ()
+
+serverBehavior :: Network (CLI IO) ()
+serverBehavior = do
+    x <- recv @String "Client"
+    run (putOutput "Received message:" (unwrap singleton x))
+    let response = ("Hi " ++ last(words(unwrap singleton x)))
+    send response ["Client"]

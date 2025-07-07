@@ -18,15 +18,9 @@ In this chapter we describe the central concepts of choreographic programming,
 its advantages and disadvantages,
 and past and ongoing work to push the boundaries of the kinds of systems it can implement.
 
-\subsection{Layout and Contributions}
+\subsection{Layout}
 
-This chapter covers the history and theory of CP
-and discusses some modern work relevant to the ongoing development of CP systems.
-In particular, \Cref{sec:knowledge-of-choice} discusses the "Knowledge of Choice" (KoC) problem,
-a central difficulty in the design of CP systems,
-and a number of strategies that have been used to solve it.
-
-\Cref{sec:formalism} presents our first contribution:
+\Cref{sec:formalism} presents
 a formal model of a CP system with
 \emph{multiply-located values} (MLVs)
 and \emph{conclaves}.
@@ -34,19 +28,14 @@ These features combine to allow a compelling new strategy for KoC management.
 In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
 In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
 
-\Cref{sec:multichor} presents our second contribution: an implementation of the conclaves-\&-MLVs paradigm in Haskell.
+\Cref{sec:multichor} presents our implementation of the conclaves-\&-MLVs paradigm in Haskell.
 The \MultiChor library is already available on Hackage, Haskell's main package management system.
 \MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
 and combines Haskell's Hindley–Milner-based type system with a proof-witness system
 to capture the requisite notion of a well-typed choreography.
-
-Our third contribution is \emph{census polymorphism},
+We also describes \emph{census polymorphism},
 a design pattern for choreographies that different CP systems may or may not support.
-\MultiChor is the first CP system to support type-safe census polymorphism\footnote{
-	We do not rule out the possibility that pre-existing systems exist
-	in which it might be possible to recapitulate the patterns we describe in this work.
-	In particular, in \Cref{sec:modern-work} we mention a few works preceding systems that support comparable behavior.
-},
+\MultiChor is the first CP implementation to support type-safe census polymorphism,
 by which we mean the ability to write choreographies
 that are parametric over their set of participants.
 Because \MultiChor is fully embedded in and interoperable with Haskell,
@@ -56,19 +45,98 @@ to \MultiChor's core API.
 We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
 
 \Cref{sec:future} explores possibilities for the future development of \MultiChor,
-including our forth main contribution:
-Located values are not a necessary primitive component of CP systems.
+in particular we show that located values are not a necessary primitive component of CP systems.
 We show this
 by developing \minichor,
 a variant of \MultiChor which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
-In \Cref{sec:future} we also discus some usability issues with \MultiChor,
-and consider how these different findings can apply to future systems.
 
-\subsection{An illustrative example}
-To motivate the ideas of choreographic programming,
-we first consider the three (non-choreographic, single-thread) programs in \Cref{fig:kvspiecewise},
+\Cref{sec:conclusion} concludes this dissertation and describes promising avenues for future research.
+
+\subsection{Contributions}
+We enumerate four substantive contributions of this work:
+\begin{enumerate}
+	\item Description of the conclaves-\&-MLVs choreographic programming paradigm and knowledge-of-choice management strategy.
+		In \Cref{sec:formalism} we formalize these ideas,
+		prove relevant theorems about the formalism,
+		and compare the system to other CP systems.
+	\item Implementation of conclaves-\&-MLVs paradigm as a Haskell eDSL named \MultiChor.
+		In \Cref{sec:multichor} we discuss the engineering challenges involved,
+		our solutions to them,
+		some example programs,
+		and the qualitative experience of writing software in \MultiChor.
+	\item Description of and implementation of census polymorphism in \MultiChor.
+		Although it is common to describe concurrent protocols parametrically with respect to the quantities of participants,
+		we know of only one prior system capable of actually expressing choreographies in that way:
+		an un-implemented extension to Procedural Choreographies described abstractly in \cite{cp_practice_cruz_filipe_montesi}.
+		We discus this subject and our implementation in \Cref{sec:census-poly}.
+	\item Demonstration by example that (multiply or singly) located values need not be a primitive concept in choreographic programming.
+		Specifically, \Cref{sec:future} describes a transformation of \MultiChor into \minichor,
+		an equally expressive CP system in which MLVs are an emergent special case of conclaved computation.
+		In other words, in an appropriate computational context and type system, the conclaves-\&-MLVs system
+		can be collapsed into a \emph{just conclaves} system.
+\end{enumerate}
+
+\subsection{Basics of Choreographic Programming}
+Characteristic features of CP are the use of a single program to represent the behavior of multiple concurrent parties or threads,
+and a unified communication operator typically written $\rightsquigarrow$, \inlinecode{~>}, \inlinecode{comm}, or \inlinecode{com}.
+For example, the expression \inlinecode{Alice{"hello"} ~> Bob}
+represents both Alice's implementation \inlinecode{send "hello" to Bob}
+and Bob's implementation \inlinecode{receive String from Alice}.
+Endpoint projection is the process of automatically deriving these "local" implementations from a choreography; see \Cref{sec:endpoint-projection}.
+Traditional computations (possibly annotated with a location)
+and choreographic expressions like \inlinecode{comm} can be sequenced and composed to make more involved choreographies.
+For example, we could write a simple call-and-response choreography like
+\begin{align*}
+  & x := \textsf{Client}\{\texttt{"Hello, my name is "} +\!\!+\; \textit{input}()\} \rightsquigarrow \textsf{Server} ; \\[-0.9em]
+  & \textsf{Server}\{\textit{log}(x)\} ; \\[-0.9em]
+  & \_ := \textsf{Server}\{\texttt{"Hi "} +\!\!+\; \textit{last}(\textit{words}(x))\} \rightsquigarrow \textsf{Client} ;
+\end{align*}
+to represent both a client's behavior,
+\begin{align*}
+  & \textsf{send}\; \texttt{"Hello, my name is "} +\!\!+\; \textit{input}() \;\textsf{to}\; \textsf{Server} ; \\[-0.9em]
+  & \_ := \textsf{receive String from Server} ;
+\end{align*}
+and the corresponding server's behavior:
+\begin{align*}
+  & x := \textsf{receive String from Client} ; \\[-0.9em]
+  & \textit{log}(x) ; \\[-0.9em]
+  & \textsf{send}\; \texttt{"Hi "} +\!\!+\; \textit{last}(\textit{words}(x)) \;\textsf{to}\; \textsf{Client} ;
+\end{align*}
+Compare the above pseudo-code with the \MultiChor code in \Cref{fig:call-n-response}.
+\begin{figure}[tbhp]
+  \begin{mdframed}
+  \begin{tabular}{c}
+  \begin{minipage}{0.95\linewidth}
+    \inputminted[xleftmargin=10pt,linenos,fontsize=\footnotesize]{haskell}{figures/call-n-response.hs.txt}
+  \end{minipage} \\\\
+  \begin{minipage}{0.95\linewidth}
+	  The choreography \inlinecode{callNResponse} is defined on lines~2--8;
+	  its type is declared on line~1.
+	  In \MultiChor local computations must be sequenced with, rather than freely composed with,
+	  communication operations,
+	  \eg on line~3 \inlinecode{name} is first computed (by the side-effect-full \inlinecode{getInput})
+	  before it can be sent as a message on line~4.
+	  \MultiChor does contain helper functions that would allow a user to express \inlinecode{callNResponse}
+	  in a natural three-line format, but we neglect to use them here in the interest of simplicity.
+	  Endpoint projection of \inlinecode{callNResponse} to \inlinecode{"Client"}
+	  would result in a first-person procedure like \inlinecode{clientBehavior} (line~13),
+	  and \inlinecode{"Server"} would similarly get \inlinecode{serverBehavior} (line~20).
+	  Those two definitions are somewhat simplified compared to the actual \inlinecode{Network} values
+	  \MultiChor manipulates at runtime;
+	  the structure of the modules makes \inlinecode{unwrap} (lines~22 and~23) inaccessible to users,
+	  and in practice no human should ever need to inspect a \inlinecode{Network} value generated by \inlinecode{epp}.
+  \end{minipage}
+  \end{tabular}
+	  \caption{A Simple Choreography and its Projections: a call \& response.}
+  \label{fig:call-n-response}
+  \end{mdframed}
+\end{figure}
+
+\subsection{A More Involved Example}
+To motivate choreographic programming,
+consider the three (non-choreographic, single-thread) programs in \Cref{fig:kvspiecewise},
 which are intended to run concurrently and pass messages back and forth between each other.
-The overall effect is an elementary protocol in which the client makes a \inlinecode{Get} or \inlinecode{Put} request to
+The overall effect is a protocol in which the client makes a \inlinecode{Get} or \inlinecode{Put} request to
 a server (with a backup) that manages a key-value-store (KVS).
 Even this simplified example takes a moment for a reader to make sense of;
 one must read the three programs, infer the correspondence between messages sent and received by the three parties,
@@ -112,9 +180,9 @@ if the request is a \inlinecode{Get}, the backup server will hang indefinitely!
   \end{mdframed}
 \end{figure}
 
-In \Cref{sec:history} we will mention some intermediate frameworks that have historically been used to facilitate
+In \Cref{sec:history} we will mention some other techniques that have been used to facilitate
 writing large and complicated concurrent protocols,
-but here we jump ahead to choreographic programming (CP).
+but here we jump directly to choreographic programming (CP).
 \Cref{fig:kvspseudo} shows the same protocol as \Cref{fig:kvspiecewise}, but implemented as a choreography.
 In this form there is no cognitive overhead for matching \inlinecode{send} and \inlinecode{recv} operations,
 because matching pairs of them are combined into monolithic \inlinecode{comm} operations.
@@ -141,7 +209,7 @@ because \inlinecode{"backup"}'s behavior is ambiguous!
 	  Real CP systems have ways of detecting and fixing problems like this.
   \end{minipage}
   \end{tabular}
-  \caption{A Simple Choreography: a key-value store with a backup server}
+	  \caption{A (Less) Simple Choreography: a key-value store with a backup server}
   \label{fig:kvspseudo}
   \end{mdframed}
 \end{figure}
