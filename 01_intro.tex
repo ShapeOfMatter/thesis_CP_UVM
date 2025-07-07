@@ -300,10 +300,10 @@ A basic goal in computer science is to provide guarantees that a program \emph{c
 \eg run-time exceptions or deadlocking;
 a common way to accomplish this is by applying a type checker to the program.
 One successful system (or style of system) for typing concurrent protocols has been \emph{multiparty session types} (MPST)~\cite{honda-mpsts}.
-MPST encode a protocol of (possible sequences of) communication in a \emph{global type} in the language of MPST.
-Projection of a global type to a named party ("endpoint") in the type yields a \emph{local type}
+A user encodes a protocol of (possible sequences of) communication in a \emph{global type} in the language of MPST.
+Projection of that global type to a named party ("endpoint") in the type yields a \emph{local type}
 that can be ascribed to (and enforced against) an implementation (\eg in a \textpi-calculus) of that process's behavior\footnote{
-	As in CP, the endpoint projection function in MPST is incomplete.
+	As in many CP systems, the endpoint projection function in MPST is incomplete.
 }.
 In addition to the simple "what kind of thing might \inlinecode{x} be" sense of type safety,
 MPST also provided communication safety (\eg a party never binds a received message to the wrong variable at runtime)
