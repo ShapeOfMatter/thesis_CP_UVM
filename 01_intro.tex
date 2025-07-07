@@ -261,14 +261,15 @@ this was a specification language; implementations compatible with a given speci
 Another technique for multiparty programming
 (broadly, any technique for representing the behavior of a system of concurrent participants in as a single program)
 is \emph{multitier programming}.
-A multitier program has a "first person" perspective the privileges one party or role;
+A multitier program has a "first person" perspective that privileges one party or role;
 this perspective shifts to other roles, with implicit or explicit communication mediating these shifts.
 ScalaLoci is an example of a multitier language with an embedded implementation in Scala and a formalism demonstrating its soundness~\cite{scalaLoci}.
-Of particular interest to our current work, ScalaLoci can represent applications with variable quantities of participants.
-The network behavior of a ScalaLoci system is less straightforward than that of a similar-looking choreography in two ways:
-some communication is implicit
-and, because a recipient of a message doesn't generally know how many processes are fulfilling the role of sender,
-the continuation from that reception must be kept open for future additional instances of the messages.
+A similar computational model named "first person choreographies", implemented as a Rascal proof-of-concept named 1CPLT,
+omits ScalaLoci's reactive programming aspects~\cite{jongmans1cp2025}.
+Of particular interest to our current work, both these languages can represent applications with variable quantities of participants.
+The network behavior of a system built in these languages is less straightforward than that of a similar-looking choreography in two ways:
+critical contextual information (roughly corresponding to Knowledge of Choice) is communicated implicitly,
+and the exact communications that must or could happen (which depend on the variable quantities of participants) are determined dynamically.
 Nonetheless, \cite{multiparty-languages} were able to show a degree of equivalence between minimalist models of multitier and choreographic programming.
 
 \subsection{Endpoint Projection}
