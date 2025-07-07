@@ -77,13 +77,17 @@ We enumerate four substantive contributions of this work:
 \end{enumerate}
 
 \subsection{Basics of Choreographic Programming}
-Characteristic features of CP are the use of a single program to represent the behavior of multiple concurrent parties or threads,
-and a unified communication operator typically written $\rightsquigarrow$, \inlinecode{~>}, \inlinecode{comm}, or \inlinecode{com}.
-For example, the expression \inlinecode{Alice{"hello"} ~> Bob}
-represents both Alice's implementation \inlinecode{send "hello" to Bob}
+Characteristic features of CP are
+\begin{itemize}
+	\item the use of a single program to represent the behavior of multiple concurrent parties or threads,
+	\item the freedom to sequence actions by various parties without preferring any one party's perspective over others, and
+	\item a unified communication operator typically written $\rightsquigarrow$, \inlinecode{~>}, \inlinecode{comm}, or \inlinecode{com}.
+\end{itemize}
+A unified communication expression might look like \inlinecode{Alice{"hello"} ~> Bob};
+this represents both Alice's implementation \inlinecode{send "hello" to Bob}
 and Bob's implementation \inlinecode{receive String from Alice}.
 Endpoint projection is the process of automatically deriving these "local" implementations from a choreography; see \Cref{sec:endpoint-projection}.
-Traditional computations (possibly annotated with a location)
+Traditional computations (possibly annotated with locations)
 and choreographic expressions like \inlinecode{comm} can be sequenced and composed to make more involved choreographies.
 For example, we could write a simple call-and-response choreography like
 \begin{align*}
