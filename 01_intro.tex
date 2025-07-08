@@ -20,19 +20,18 @@ and past and ongoing work to push the boundaries of the kinds of systems it can 
 
 \subsection{Layout}
 
-\Cref{sec:formalism} presents
-a formal model of a CP system with
-\emph{multiply-located values} (MLVs)
-and \emph{conclaves}.
-These features combine to allow a compelling new strategy for KoC management.
+\Cref{sec:formalism-intro} introduces \emph{multiply-located values} (MLVs)
+and \emph{conclaves}, fundamental ideas that enable everything that follows.
+These features combine to allow a compelling new strategy for KoC management
+as demonstrated in our formalism \HLSCentral in \Cref{sec:more-formalism}.
 In particular, all well-typed \HLSCentral choreographies are projectable and have cromulent KoC by construction.
 In \Cref{sec:formalism-comparisons} we compare \HLSCentral to representative systems that use other KoC management strategies.
 
 \Cref{sec:multichor} presents our implementation of the conclaves-\&-MLVs paradigm in Haskell.
 The \MultiChor library is already available on Hackage, Haskell's main package management system.
-\MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL in Haskell,
-and combines Haskell's Hindley–Milner-based type system with a proof-witness system
-to capture the requisite notion of a well-typed choreography.
+\MultiChor directly implements the main concepts of \HLSCentral as a monadic eDSL which we describe in \Cref{sec:implementation}.
+Encoding the set-membership requirements in Haskell's Hindley–Milner-based type system presents particular chanleges
+which we discuss in \Cref{sec:membership}.
 We also describes \emph{census polymorphism},
 a design pattern for choreographies that different CP systems may or may not support.
 \MultiChor is the first CP implementation to support type-safe census polymorphism,
@@ -43,38 +42,66 @@ functional-programming patterns can be applied to the choreographic setting with
 \MultiChor's census polymorphic functions work by applying advanced type-level programming techniques native to modern Haskell
 to \MultiChor's core API.
 We discuss census polymorphism in greater detail in \Cref{sec:census-poly}.
+\Cref{sec:utility} presents a more involved case-study of what end-user \MultiChor code might look like,
+and describes some qualitative challenges facing users of the current version.
 
 \Cref{sec:future} explores possibilities for the future development of \MultiChor,
 in particular we show that located values are not a necessary primitive component of CP systems.
 We show this
-by developing \minichor,
-a variant of \MultiChor which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
+by developing \minichor in \Cref{sec:minichor-stg1,sec:minichor-stg2,sec:minichor-stg3}.
+\minichor is a variant of \MultiChor
+which can implement the same choreographies using only conclaves, communication, and local computation on normal ("naked") values.
+\Cref{sec:minichor-implications} relates the changes back to the subject of future developments in \MultiChor.
 
 \Cref{sec:conclusion} concludes this dissertation and describes promising avenues for future research.
 
 \subsection{Contributions}
-We enumerate four substantive contributions of this work:
-\begin{enumerate}
-	\item Description of the conclaves-\&-MLVs choreographic programming paradigm and knowledge-of-choice management strategy.
-		In \Cref{sec:formalism} we formalize these ideas,
-		prove relevant theorems about the formalism,
-		and compare the system to other CP systems.
-	\item Implementation of conclaves-\&-MLVs paradigm as a Haskell eDSL named \MultiChor.
-		In \Cref{sec:multichor} we discuss the engineering challenges involved,
-		our solutions to them,
-		some example programs,
-		and the qualitative experience of writing software in \MultiChor.
-	\item Description of and implementation of census polymorphism in \MultiChor.
-		Although it is common to describe concurrent protocols parametrically with respect to the quantities of participants,
-		we know of only one prior system capable of actually expressing choreographies in that way:
-		an un-implemented extension to Procedural Choreographies described abstractly in \cite{cp_practice_cruz_filipe_montesi}.
-		We discus this subject and our implementation in \Cref{sec:census-poly}.
-	\item Demonstration by example that (multiply or singly) located values need not be a primitive concept in choreographic programming.
-		Specifically, \Cref{sec:future} describes a transformation of \MultiChor into \minichor,
-		an equally expressive CP system in which MLVs are an emergent special case of conclaved computation.
-		In other words, in an appropriate computational context and type system, the conclaves-\&-MLVs system
-		can be collapsed into a \emph{just conclaves} system.
-\end{enumerate}
+We enumerate four substantive contributions of this work.
+
+\paragraph{Conclaves \& MLVs}
+In \Cref{sec:formalism} we demonstrate a choreographic calculus \HLSCentral that combines conclaves and multiply located values (MLVs)
+to enable a novel strategy for managing Knowledge of Choice (KoC).
+Prior works have featured structures similar to MLVs either in other computational contexts or as emergent patterns in choreographic systems,
+and prior works have also had conclaving behavior in their handling of functions,
+but \HLSCentral is the first work to combine them as built-in behaviors that enable KoC management.
+Prior strategies for KoC management required additional communication primitives and partial functions for EPP,
+or linearly-verbose conditional expressions and heavy predicate-transformers during static analysis.
+
+\paragraph{An efficient library-level implementation}
+Our Haskell library, \MultiChor, is available now on Hackage.
+It implements the conclaves-\&-MLVs CP paradigm as an eDSL in Haskell.
+Many existing systems for CP have required their own compilers (for stand-alone languages),
+custom compiler extensions to augment the syntax of a host language,
+or particular capabilities of a host language's macro system.
+A notable exception, and the direct ancestor of \MultiChor in engineering terms, is HasChor~\cite{shen-haschor}.
+Like HasChor, \MultiChor runs entirely within Haskell using the off-the-shelf GHC compiler.
+Unlike HasChor, \MultiChor does not add spurious communication to choreographies as part of its KoC strategy,
+so it can implement many protocols more efficiently.
+In \Cref{sec:multichor} we discuss the engineering challenges involved,
+our solutions to them,
+some example programs,
+and the qualitative experience of writing software in \MultiChor.
+
+\paragraph{Census polymorphism}
+Although it is common to describe concurrent protocols parametrically with respect to the quantities of participants,
+we know of only one prior system capable of actually expressing choreographies in that way:
+an un-implemented extension to Procedural Choreographies described abstractly in \cite{cp_practice_cruz_filipe_montesi}.
+In \Cref{sec:census-poly} we discuss this property in greater detail,
+describing in general what a system must provide to make census polymorphism actually useful,
+and how specifically this can be implemented as a type-safe layer on top of the core \MultiChor API.
+The principal motivation for census polymorphism is that choreographic code doesn't need to be updated every time the participant list changes.
+A variety of non-choreographic systems already support analogous
+capabilities~\cite{leBrun2025,scalaLoci,jongmans1cp2025,wysteria,Sweet_2023}
+in their respective contexts.
+
+\paragraph{Choreographies without located values}
+We demonstration by example that (multiply or singly) located values need not be a primitive concept in choreographic programming.
+Specifically, \Cref{sec:future} describes a transformation of \MultiChor into \minichor,
+an equally expressive CP system in which MLVs are an emergent special case of conclaved computation.
+Compared against the \HLSCentral formalism, this shows that in an appropriate computational context and type system the conclaves-\&-MLVs paradigm
+can be collapsed into a \emph{just conclaves} paradigm.
+As discussed in \Cref{sec:minichor-implications}, other CP systems feature analogous dualities.
+To the best of our knowledge \minichor is the CP system with a single mode of ownership.
 
 \subsection{Basics of Choreographic Programming}
 Characteristic features of CP are

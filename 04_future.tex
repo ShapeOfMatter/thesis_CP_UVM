@@ -251,10 +251,26 @@ In \minichor, \inlinecode{conclave} is a derived function using monad-bind.)
 Although \minichor was not intended to ever see real-world use,
 the usability trade-offs between it and \MultiChor are not obvious,
 and we can learn several things from it which can guide the development of a future CP frameworks.
-First and foremost, MLVs are emergent rather than fundamental to choreographic programming!
-This is a significant theoretical insight on its own.
-Whether it has practical implications for a system like \MultiChor is an open question,
-but the following other points suggest it may.
+Most significantly, MLVs are emergent rather than fundamental to choreographic programming!
+
+Many prior CP systems (\eg Pirouette~\cite{hirsch2021pirouette}) have featured syntactic distinctions between "global" choreographic code
+and local code;
+these systems feature dualities between choreographic variables and local variables (which have their own namespaces)
+and choreographic and local functions (which have distinct syntax).
+In contrast, in \minichor choreographies are first-class values in the same syntax and namespace as all other Haskell code;
+one can (and does) write values with types like \inlinecode{Choreo ps (Choreo qs Int)}.
+Other prior systems (\eg \chorLambda~\cite{chor-lambda}) keep everything in a single "layer",
+all values are located and all computation is choreographic.
+Such systems still maintain distinct senses in which a value can be located:
+data is annotated with owners and functions are annotated with participants;
+these annotations are handled differently by the typing and semantic rules.
+Because \minichor privileges the un-located ("naked") level of computation and treats choreographies as first-class values,
+it is able to use the single syntactic construct \inlinecode{conclaveTo} (and the corresponding typing property, censuses)
+as the sole ascription of locality.
+
+That located values are (or can be) an emergent pattern in choreographic programming is a significant theoretical insight on its own.
+Whether or not this pattern can be replicated for other styles of CP (\eg select-\&-merge) is beyond the scope of this work.
+Here we explore three ways the concepts used in \minichor may affect the future development of \MultiChor.
 
 First, as was the original intention, \minichor is a minimalist implementation;
 sufficiently concise in its inner workings to be targeted by a formal model.
