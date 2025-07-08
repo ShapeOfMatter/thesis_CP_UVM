@@ -1,27 +1,57 @@
-\chapter{Conclusions and Future Work}
+\chapter{Conclusions}
 \label{sec:conclusion}
 
 In \Cref{sec:formalism} we introduced a new paradigm for choreographic programming,
 showed that it has the basic properties foundational to the field,
-and described how to replicate the expressivity and efficiency of other paradigms in this new \emph{conclaves} paradigm.
-In \Cref{sec:multichor} we showed how to implement library-level CP with conclaves (and MLVs) in Haskell,
-and showed how Haskell's type system enabled CP design patterns like census polymorphism that were previously impossible.
-In \Cref{sec:future} we demonstrated that some aspects of the \MultiChor system are extranious;
+and described how to replicate the expressivity and efficiency of other paradigms in this new \emph{conclaves-\&-MLVs} paradigm.
+In \Cref{sec:multichor} we showed how to implement library-level CP with conclaves and MLVs in Haskell,
+and showed how Haskell's type system enabled CP design patterns like census polymorphism that were previously unavailable.
+In \Cref{sec:future} we demonstrated that some aspects of the \MultiChor system are extraneous;
 the CP system \minichor can represent all of the same case-study programs
 without using freer monad handlers or having a built-in notion of located values.
 
+Our intention in writing \HLSCentral and \MultiChor was to build a CP system that was easier to reason about
+and faster for new users to learn, but we do not yet have a quantitative assessment of our success in this dimension.
+What we have shown is that our systems are the first CP systems in which the well-formed-ness of programs is entirely type-directed.
+Furthermore, \MultiChor is the first implementation to support census polymorphism;
+we demonstrated the utility of this feature by example.
+
 While we believe the advantages of \MultiChor to be unique at this time,
 we do not expect the field to remain stagnant
-and there are critical things \MultiChor choreographies can not do such as recover from communication failure.
+and there are critical things \MultiChor choreographies can not do.
 Furthermore, our experience observing other people attempt to use \MultiChor suggests
 that its flexibility may not suffice, in the minds of prospective users, to justify its corresponding cognitive overhead.
 Substantial work remains to do to make choreographic programming an attractive paradigm for industry users.
 Our hope at this time is that \MultiChor and \minichor are well built and well positioned as stepping-off points for such future work.
 
-In a few places in this chapter we have suggested immediate changes that could be made to \MultiChor.
-For version-2.0 \textit{per se}, we advocate incorporating as many of them as practical
-(improved documentation, streamlined user-facing API, instances of \inlinecode{Functor} \textit{etc} for \inlinecode{Located})
-while keeping fundamental systems like the proof-witnesses intact.
+\section{Suggestions for Future Work}
+
+In \Cref{sec:utility,sec:minichor-implications} we suggested immediate changes that could be made to \MultiChor.
+For version-2.0 \textit{per se}, we advocate incorporating as many of them as practical in a timely fashion.
+
+\begin{itemize}
+	\item Identify a limited curated set of functions, values, and types to to expose to end users,
+		so that users can more easily find the relevant tools for their tasks.
+	\item Restructure the modules to better reflect how we expect the library to be used.
+		Ideally, everything used for writing choreographies should go in one module
+		and everything used for running them should go in another module,
+		and there should be no other modules for users to worry about.
+	\item \emph{Either}
+		\begin{itemize}
+			\item find a better way to represent, enforce, and satisfy membership and subset constraints, or
+			\item separate the set-membership proof witness system into its own (well documented) library
+				that's completely agnostic of the particular use to which \MultiChor puts it.
+		\end{itemize}
+	\item Improve the documentation.
+		Include a narrative tutorial in the landing page
+		and include examples of how to use most of the important functions.
+	\item Provide \inlinecode{instance}s for \inlinecode{Located} of \inlinecode{Functor}, \inlinecode{Applicative}, and \inlinecode{Monad}.
+	\item \emph{Possibly,} encourage the use of (or migrate the whole API to use)
+		\inlinecode{naked}-based active replication instead of \inlinecode{congruently}.
+	\item Furthermore, \MultiChor should be augmented with some mechanism,
+		however inelegant,
+		for representing fallible communication.
+\end{itemize}
 Further future work constitutes a substantial and open-ended research campaign that might be tackled in any order:
 \begin{itemize}
 	\item Compose a formal model of \minichor and a comparable select-\&-merge model,
@@ -31,7 +61,9 @@ Further future work constitutes a substantial and open-ended research campaign t
 	\item Conduct a structured study comparing the performance of \MultiChor, \minichor,
 		and other relevant systems that target real industry use.
 	\item Develop a system for lazy choreographies as discussed in \Cref{sec:minichor-implications}.
-	\item Augment \MultiChor with tools for modeling and recovering from communication failures.
+	\item Explore options for dynamic census polymorphism in library level CP.
+	\item Systematizing the increasingly diverse domain of multiparty programming techniques,
+		and better illuminating the relationships between them.
 \end{itemize}
 
 In the meantime, we hope that both researchers and interested industry practitioners
