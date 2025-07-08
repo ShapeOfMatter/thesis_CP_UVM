@@ -32,6 +32,9 @@
 \usepackage{cleveref}
 
 \usemintedstyle{friendly}
+%\setminted{fontfamily=lmtt}
+\usepackage{zlmtt}
+\usepackage[T1]{fontenc}
 
 \newunicodechar{⇒}{\ensuremath{\Rightarrow}}
 \newunicodechar{→}{\ensuremath{\rightarrow}}
@@ -116,9 +119,9 @@
 
 \newtheorem*{future}{Future Work}
 
-\newcommand{\todo}[1]
-    {{\color{red} \fbox{\bfseries\sffamily\scriptsize{TODO}}
-    {\small$\blacktriangleright$\textsf{\emph{#1}}$\blacktriangleleft$}}~}
+%\newcommand{\todo}[1]
+%    {{\color{red} \fbox{\bfseries\sffamily\scriptsize{TODO}}
+%    {\small$\blacktriangleright$\textsf{\emph{#1}}$\blacktriangleleft$}}~}
 
 \widowpenalty=1000000
 \clubpenalty=1000000
