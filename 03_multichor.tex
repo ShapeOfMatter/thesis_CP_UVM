@@ -550,15 +550,45 @@ Oblivious transfer is a \emph{two-party protocol}; it would be erroneous for any
 \MultiChor's \inlinecode{Faceted} values and utilities for type-safe embedding of conclaved sub-protocols within larger censuses
 make it possible to embed the use of pairwise oblivious transfer between parties in a general version of multi-party GMW.
 
-\paragraph{Computing secret-shared AND via OT}
-To compute the result of an AND gate, the parties compute \emph{pair-wise} ANDs using their respective shares of the input values,
-then use the results to derive shares of the gate's output.
-The \inlinecode{fAnd} choreography (\Cref{fig:gmw-helpers-multichor-example-b} lines~1--27)
-takes \inlinecode{Faceted} values holding the parties' shares of the input values,
+\paragraph{Computing secret-shared AND gates}
+Computing the result of an AND gate using only additively-homomorphic secret shares
+requires $n^2-n$ 1-out-of-2 OT procedures.
+This process is described in~\cite{gmwSlides};
+here we follow their example in writing addition and multiplication expressions to represent XOR and AND operations respectively.
+Supposing the plaintext relation $w = u v$, the goal is for each party $i$ to acquire a secret share $w_i$ of $w$
+without revealing their secret shares of $u$ and $v$ to the other parties.
+For each of the $n^2-n$ ordered pairs of distinct participants, two values are computed:
+$a_{ij}$ known to party $i$ and $b_{ij}$ known to party $j$.
+\begin{itemize}
+	\item $i$ chooses $a_{ij}$ randomly.
+	\item $i$ and $j$ make $b_{ij} = u_i v_j - a_{ij}$ using OT, where $v_j$ is $j$'s select bit
+		and the two secrets offered by $i$ are the two possible values of $b_{ij}$.
+\end{itemize}
+Each party $i$ then sets $w_i = u_i v_i + \sum_{j \neq i} a_{ij} + \sum_{j \neq i} b_{ji}$.
+Algebraically:
+\begin{align*}
+\sum_i w_i &= \sum_i \left( u_i v_i + \sum_{j \neq i} a_{ij} + \sum_{j \neq i} b_{ji} \right) \\
+	   &= \sum_i \left( u_i v_i + \sum_{j \neq i} a_{ij} + \sum_{j \neq i} \left(u_j v_i - a_{ji}\right) \right)
+	       && \text{\small expand $b_{ji}$} \\
+	   &= \sum_i \left( u_i v_i + \sum_{j \neq i} u_j v_i \right) + \sum_i \left( \sum_{j \neq i} a_{ij} - \sum_{j \neq i} a_{ji} \right)
+	       && \text{\small rearrange summations} \\
+	   &= \sum_i v_i \left( u_i + \sum_{j \neq i} u_j \right)
+	       && \text{\small cancel terms \& factor} \\
+	   &= \sum_i v_i u = u \sum_i v_i = u v = w
+	       && \text{\small by definition of secret shares}
+\end{align*}
+Therefore the resulting values $w_i$ are a valid secret shares of the output wire value $w$.
+When the parties actually compute their shares in our implementation,
+rather than skipping the $i=j$ cases they simply force all $a_{ii}$ and $b_{ii}$ to be $0$ (\inlinecode{False}).
+The implementing choreography is \inlinecode{fAnd} (\Cref{fig:gmw-helpers-multichor-example-b} lines~1--27);
+it takes \inlinecode{Faceted} values holding the parties' shares of the input values,
 and returns a \inlinecode{Faceted} value representing each party's share of the output.
-On line~10, the parties perform a \inlinecode{fanOut} to begin the pairwise computation;
-the \inlinecode{fanIn} on line~12 completes the pairing,
-and uses \inlinecode{conclaveTo} (line~20) to embed pairwise OTs (via \inlinecode{ot2}) in the larger set of parties.
+On line~10, the parties perform a \inlinecode{fanOut} to begin the pairwise computation.
+The \inlinecode{fanIn} on line~12 completes the pairing,
+and uses \inlinecode{conclaveTo} (line~20) to embed pairwise OTs (via \inlinecode{ot2}, defined on line~33) in the larger set of parties.
+The variable names used in \Cref{fig:gmw-helpers-multichor-example-b} attempt to reflect the homogeneous perspective of
+MLVs, quires, and faceted values,
+but no best-practices for variable naming in this context have been established yet.
 
 \paragraph{The GMW protocol}
 The complete GMW protocol operates as summarized earlier, by secret sharing input values and then evaluating the circuit gate-by-gate.
@@ -573,10 +603,9 @@ and then each party computes one share of the gate's output by XORing their shar
 This approach leverages the additive homomorphism of additive secret shares.
 For AND gates (lines~13--15), the parties compute shares of the gate's inputs,
 then use the \inlinecode{fAnd} protocol to perform multiplication of the two inputs.
-This implements the protocol as described in  Section 3.2.1 of \cite{evans2018pragmatic},
-namely the \emph{Generalization to more than two parties} case.
 Since additive secret shares are not multiplicatively homomorphic,
 this operation leverages the oblivious transfer protocol to perform the multiplication.
+This implements the many-party extension of the protocol as described in \cite{evans2018pragmatic,gmwSlides}.
 
 Our implementation of GMW leverages \MultiChor's \inlinecode{Faceted} values
 and utilities for type-safe parallel, conclaved, and pairwise choreographies to build a fully-general implementation
