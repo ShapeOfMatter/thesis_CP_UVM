@@ -1,18 +1,24 @@
 Bigger things:
-- Add a high-level description of the topic and contributions in the intro
-  - Even the illustrative example is too complex
-  - Need gentler intro - a page or two aimed at a more general audience
-- Add a more detailed description of contributions
-  - Motivation for why they matter
-  - Specific, detailed improvement over previous ways of doing the same thing
-  - Eliminate subjective claims about simplicity, usability, or real-world readiness that don't have evidence
-- Add more detailed comparison to related areas (e.g. multiparty session types)
-- Improve the conclusion
+X Add a high-level description of the topic and contributions in the intro
+  X Even the illustrative example is too complex
+  X  Need gentler intro - a page or two aimed at a more general audience
+X Add a more detailed description of contributions
+  X Motivation for why they matter
+  X Specific, detailed improvement over previous ways of doing the same thing
+  ? Eliminate subjective claims about simplicity, usability, or real-world readiness that don't have evidence
+X Add more detailed comparison to related areas (e.g. multiparty session types)
+X Improve the conclusion
   X Split minichor from future work, make minichor a chapter
   X Make conclusion/future work a separate chapter
 
 Smaller things:
-- Motivate GMW - a real world protocol that includes multiple communication patterns (say why you included it as an example)
-- on the GMW example, either fix the citation (if 1-out-of-2 OT is correct) or fix the code (if 1-out-of-4 is needed).
+X Motivate GMW - a real world protocol that includes multiple communication patterns (say why you included it as an example)
+X on the GMW example, either fix the citation (if 1-out-of-2 OT is correct) or fix the code (if 1-out-of-4 is needed).
 X Add info on the proof witness system - need some background or explanation
 X Cite ESOP paper on first-person choreographic programming
+
+Additionally:
+X clarify MiniChor's relation to earlier systems.
+- fix tilde in code font.
+X fix urls in bibliography.
+
